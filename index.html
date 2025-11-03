@@ -1987,59 +1987,6 @@
             }
         }
 
-        async function enviarTarefaParaPushcut(tarefa) {
-            const apiKey = localStorage.getItem(KEY_PUSHCUT_API);
-
-            // Se não tiver API Key, não faz nada (silencioso)
-            if (!apiKey || apiKey.trim() === '') {
-                return;
-            }
-
-            // Se tarefa não tiver horários, não envia
-            if (!tarefa.horarios || tarefa.horarios.length === 0) {
-                return;
-            }
-
-            // Enviar uma notificação para cada horário da tarefa
-            let totalEnviados = 0;
-
-            for (const horario of tarefa.horarios) {
-                const horarioNotificacao = calcularHorarioAntes(horario, 5);
-
-                try {
-                    const response = await fetch('https://api.pushcut.io/v1/notifications/Tarefa', {
-                        method: 'POST',
-                        headers: {
-                            'API-Key': apiKey,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            title: `⏰ ${tarefa.categoria || 'Tarefa'}`,
-                            text: `${tarefa.nome}\n🕐 Horário: ${horario}`,
-                            isTimeSensitive: tarefa.prioridade === 'Alta' || tarefa.prioridade === 'Urgente',
-                            input: {
-                                horario: horario,
-                                horarioNotificacao: horarioNotificacao,
-                                tarefa: tarefa.nome,
-                                categoria: tarefa.categoria || 'Sem categoria',
-                                prioridade: tarefa.prioridade || 'Média',
-                                id: tarefa.id
-                            }
-                        })
-                    });
-
-                    if (response.ok) {
-                        totalEnviados++;
-                    }
-                } catch (error) {
-                    console.error('Erro ao enviar notificação:', error);
-                }
-            }
-
-            if (totalEnviados > 0) {
-                mostrarToast(`📱 ${totalEnviados} notificação(ões) enviada(s) para Pushcut!`, 'success');
-            }
-        }
 
         function init() {
             // Configurar API Key padrão se não existir
@@ -2053,74 +2000,6 @@
             setupEventos();
             verificarDarkMode();
             iniciarVerificacaoDiaria();
-        }
-
-        async function sincronizarTarefasPushcut() {
-            const apiKey = localStorage.getItem(KEY_PUSHCUT_API);
-
-            // Se não tiver API Key, não faz nada
-            if (!apiKey || apiKey.trim() === '') {
-                return;
-            }
-
-            // Esperar 2 segundos para não sobrecarregar na inicialização
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Filtrar tarefas com horários que não estão concluídas nem pausadas
-            const tarefasParaEnviar = tarefasRotina.filter(t =>
-                t.horarios &&
-                t.horarios.length > 0 &&
-                !t.concluida &&
-                !t.pausada
-            );
-
-            if (tarefasParaEnviar.length === 0) {
-                return;
-            }
-
-            let totalEnviados = 0;
-
-            for (const tarefa of tarefasParaEnviar) {
-                for (const horario of tarefa.horarios) {
-                    const horarioNotificacao = calcularHorarioAntes(horario, 5);
-
-                    try {
-                        const response = await fetch('https://api.pushcut.io/v1/notifications/Tarefa', {
-                            method: 'POST',
-                            headers: {
-                                'API-Key': apiKey,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                title: `⏰ ${tarefa.categoria || 'Tarefa'}`,
-                                text: `${tarefa.nome}\n🕐 Horário: ${horario}`,
-                                isTimeSensitive: tarefa.prioridade === 'Alta' || tarefa.prioridade === 'Urgente',
-                                input: {
-                                    horario: horario,
-                                    horarioNotificacao: horarioNotificacao,
-                                    tarefa: tarefa.nome,
-                                    categoria: tarefa.categoria || 'Sem categoria',
-                                    prioridade: tarefa.prioridade || 'Média',
-                                    id: tarefa.id
-                                }
-                            })
-                        });
-
-                        if (response.ok) {
-                            totalEnviados++;
-                        }
-
-                        // Pequeno delay entre envios para não sobrecarregar
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    } catch (error) {
-                        console.error('Erro ao sincronizar:', error);
-                    }
-                }
-            }
-
-            if (totalEnviados > 0) {
-                mostrarToast(`🔄 ${totalEnviados} notificação(ões) sincronizada(s) automaticamente!`, 'success');
-            }
         }
 
         function carregarDados() {
@@ -2227,7 +2106,7 @@
             localStorage.setItem(KEY_HISTORICO, JSON.stringify(historico));
             localStorage.setItem(KEY_CATEGORIAS, JSON.stringify(categorias));
             localStorage.setItem(KEY_AVALIACOES, JSON.stringify(avaliacoesDiarias));
-            
+
             // Sincronizar com arquivo dados.json para GitHub Actions
             sincronizarDadosJson();
         }
@@ -2239,7 +2118,7 @@
                 ultimaAtualizacao: new Date().toISOString(),
                 apiKey: localStorage.getItem(KEY_PUSHCUT_API) || "ljP19czEYJxX28x3rce_LdUZ"
             };
-            
+
             // Salvar no localStorage para mostrar no modal
             localStorage.setItem('dados_github_json', JSON.stringify(dadosParaGitHub, null, 2));
         }
@@ -2249,9 +2128,11 @@
             if (!dadosJson) {
                 sincronizarDadosJson();
             }
-            
+
             const dados = localStorage.getItem('dados_github_json');
-            const blob = new Blob([dados], { type: 'application/json' });
+            const blob = new Blob([dados], {
+                type: 'application/json'
+            });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
