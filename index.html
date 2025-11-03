@@ -1237,6 +1237,7 @@
                     <button class="btn-icon" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
                     <button class="btn btn-success" onclick="salvarArquivo()">💾 Salvar</button>
                     <button class="btn btn-secondary" onclick="$('inputArquivo').click()">📂 Importar</button>
+                    <button class="btn btn-primary" onclick="baixarDadosJson()" title="Baixar dados.json para GitHub">🔄 Sync GitHub</button>
                     <input type="file" id="inputArquivo" accept=".json" style="display:none" onchange="importarArquivo(this.files[0])">
                 </div>
             </div>
@@ -2229,6 +2230,38 @@
             localStorage.setItem(KEY_HISTORICO, JSON.stringify(historico));
             localStorage.setItem(KEY_CATEGORIAS, JSON.stringify(categorias));
             localStorage.setItem(KEY_AVALIACOES, JSON.stringify(avaliacoesDiarias));
+            
+            // Sincronizar com arquivo dados.json para GitHub Actions
+            sincronizarDadosJson();
+        }
+
+        function sincronizarDadosJson() {
+            // Gerar JSON para download/commit manual
+            const dadosParaGitHub = {
+                tarefasRotina: tarefasRotina,
+                ultimaAtualizacao: new Date().toISOString(),
+                apiKey: localStorage.getItem(KEY_PUSHCUT_API) || "ljP19czEYJxX28x3rce_LdUZ"
+            };
+            
+            // Salvar no localStorage para mostrar no modal
+            localStorage.setItem('dados_github_json', JSON.stringify(dadosParaGitHub, null, 2));
+        }
+
+        function baixarDadosJson() {
+            const dadosJson = localStorage.getItem('dados_github_json');
+            if (!dadosJson) {
+                sincronizarDadosJson();
+            }
+            
+            const dados = localStorage.getItem('dados_github_json');
+            const blob = new Blob([dados], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dados.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            mostrarToast('📥 Arquivo dados.json baixado! Faça commit no GitHub.', 'success');
         }
 
         // PROJETOS

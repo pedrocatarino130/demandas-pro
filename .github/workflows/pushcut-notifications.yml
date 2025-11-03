@@ -1,0 +1,26 @@
+name: Pushcut Notificações Automáticas
+
+on:
+  schedule:
+    # Roda a cada 5 minutos
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Permite executar manualmente
+
+jobs:
+  enviar-notificacoes:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Verificar e enviar notificações
+        env:
+          PUSHCUT_API_KEY: ${{ secrets.PUSHCUT_API_KEY }}
+        run: node .github/scripts/verificar-notificacoes.js
+
