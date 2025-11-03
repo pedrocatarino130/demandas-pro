@@ -2053,9 +2053,6 @@
             setupEventos();
             verificarDarkMode();
             iniciarVerificacaoDiaria();
-
-            // Enviar automaticamente todas as tarefas do dia quando abrir o sistema
-            sincronizarTarefasPushcut();
         }
 
         async function sincronizarTarefasPushcut() {
@@ -2448,11 +2445,6 @@
                     renderizarRotina();
                     cancelarEdicaoRotina();
                     mostrarToast('Tarefa atualizada!', 'success');
-
-                    // Enviar automaticamente para Pushcut se tiver horário e API Key configurada
-                    if (tarefa.horarios && tarefa.horarios.length > 0) {
-                        enviarTarefaParaPushcut(tarefa);
-                    }
                     return;
                 }
             }
@@ -2480,11 +2472,6 @@
             renderizarRotina();
             cancelarEdicaoRotina();
             mostrarToast('Tarefa adicionada!', 'success');
-
-            // Enviar automaticamente para Pushcut se tiver horário e API Key configurada
-            if (novaTarefa.horarios && novaTarefa.horarios.length > 0) {
-                enviarTarefaParaPushcut(novaTarefa);
-            }
         }
 
         function editarTarefaRotina(id) {
