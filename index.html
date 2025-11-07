@@ -2865,6 +2865,16 @@
                 });
             }
             iniciarVerificacaoDiaria();
+
+            // AUTO-SAVE: Salvar automaticamente a cada 10 segundos
+            setInterval(() => {
+                salvarDados();
+            }, 10000);
+
+            // AUTO-SAVE: Salvar antes de sair da página (F5, fechar aba, etc)
+            window.addEventListener('beforeunload', () => {
+                salvarDados();
+            });
         }
 
         async function sincronizarTarefasPushcut() {
@@ -4993,14 +5003,14 @@
                 const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
 
                 return `
-                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area.cor}; transition: transform 0.2s; cursor: pointer;"
+                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area.cor}; transition: transform 0.2s;"
                          onmouseenter="this.style.transform='translateY(-4px)'"
                          onmouseleave="this.style.transform='translateY(0)'">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                             <div style="font-size: 32px;">${area.icone || '📚'}</div>
-                            <div style="display: flex; gap: 4px;">
-                                <button class="btn-icon" onclick="event.stopPropagation(); editarArea('${area.id}')" title="Editar">✏️</button>
-                                <button class="btn-icon" onclick="event.stopPropagation(); excluirArea('${area.id}')" title="Excluir">🗑️</button>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-icon" onclick="event.stopPropagation(); editarArea('${area.id}')" title="Editar" style="font-size: 18px; padding: 8px;">✏️</button>
+                                <button class="btn-icon" onclick="event.stopPropagation(); excluirArea('${area.id}')" title="Excluir" style="font-size: 18px; padding: 8px;">🗑️</button>
                             </div>
                         </div>
                         <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: ${area.cor};">${esc(area.nome)}</h3>
@@ -5021,9 +5031,10 @@
                             <span>✅ ${concluidos} concluídos</span>
                         </div>
 
-                        <button class="btn btn-sm btn-primary" onclick="filtrarTopicosPorArea('${area.id}')" style="width: 100%; margin-top: 12px;">
-                            Ver Tópicos
-                        </button>
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button class="btn btn-sm" onclick="editarArea('${area.id}')" style="background: #3b82f6; color: white; font-weight: 600; flex: 1;">✏️ Editar</button>
+                            <button class="btn btn-sm btn-primary" onclick="filtrarTopicosPorArea('${area.id}')" style="flex: 1;">Ver Tópicos</button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -5110,9 +5121,9 @@
                                 <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${esc(topico.titulo)}</h3>
                                 ${topico.descricao ? `<p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">${esc(topico.descricao)}</p>` : ''}
                             </div>
-                            <div style="display: flex; gap: 4px;">
-                                <button class="btn-icon" onclick="editarTopico('${topico.id}')" title="Editar">✏️</button>
-                                <button class="btn-icon" onclick="excluirTopico('${topico.id}')" title="Excluir">🗑️</button>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-icon" onclick="editarTopico('${topico.id}')" title="Editar" style="font-size: 18px; padding: 8px;">✏️</button>
+                                <button class="btn-icon" onclick="excluirTopico('${topico.id}')" title="Excluir" style="font-size: 18px; padding: 8px;">🗑️</button>
                             </div>
                         </div>
 
@@ -5129,6 +5140,7 @@
                         </div>
 
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-sm" onclick="editarTopico('${topico.id}')" style="background: #3b82f6; color: white; font-weight: 600;">✏️ Editar Tópico</button>
                             <button class="btn btn-sm btn-primary" onclick="registrarSessaoTopico('${topico.id}')">📝 Registrar Sessão</button>
                             ${sessoes.length > 0 ? `<button class="btn btn-sm btn-secondary" onclick="verSessoesTopico('${topico.id}')" title="Ver histórico de sessões">🎯 Ver Sessões (${sessoes.length})</button>` : ''}
                             ${precisaRevisao ? `<button class="btn btn-sm btn-success" onclick="marcarRevisao('${topico.id}')">✅ Marcar Revisão</button>` : ''}
