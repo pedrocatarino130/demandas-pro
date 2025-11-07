@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gerenciador Pro</title>
+    <title>Gerenciador Pedro</title>
     <style>
         :root {
             --bg-primary: #0f172a;
@@ -1072,6 +1072,116 @@
             transition: width 0.3s;
         }
 
+        /* Minha Rotina - Vista Simplificada */
+        .rotina-item-simples {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .rotina-item-simples:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .rotina-item-simples.concluida {
+            opacity: 0.6;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-left-color: var(--success);
+        }
+
+        .rotina-item-simples.pausada {
+            opacity: 0.5;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-left-color: var(--text-secondary);
+        }
+
+        .rotina-hora {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        .rotina-conteudo-simples {
+            flex: 1;
+        }
+
+        .rotina-titulo-simples {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .rotina-item-simples.concluida .rotina-titulo-simples {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .rotina-descricao-simples {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .rotina-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .rotina-badge-simples {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rotina-acoes-simples {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .check-btn-simples {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        .check-btn-simples:hover {
+            transform: scale(1.1);
+            border-color: var(--accent);
+        }
+
+        .check-btn-simples.checked {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            animation: checkBounce 0.5s;
+        }
+
         /* Streak */
         .streak-display {
             display: flex;
@@ -1224,6 +1334,35 @@
             .tarefa-acoes {
                 flex-direction: row
             }
+
+            .rotina-item-simples {
+                grid-template-columns: 60px 1fr auto;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .rotina-hora {
+                font-size: 18px;
+            }
+
+            .rotina-titulo-simples {
+                font-size: 16px;
+            }
+
+            .rotina-descricao-simples {
+                font-size: 13px;
+            }
+
+            .check-btn-simples {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .rotina-badges {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -1232,18 +1371,19 @@
     <div class="container">
         <header class="header">
             <div class="header-top">
-                <h1>🎯 Gerenciador Pro</h1>
+                <h1>🎯 Gerenciador Pedro</h1>
                 <div class="header-actions">
                     <button class="btn-icon" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
                     <button class="btn btn-success" onclick="salvarArquivo()">💾 Salvar</button>
                     <button class="btn btn-secondary" onclick="$('inputArquivo').click()">📂 Importar</button>
-                    <button class="btn btn-primary" onclick="baixarDadosJson()" title="Baixar dados.json para GitHub">🔄 Sync GitHub</button>
                     <input type="file" id="inputArquivo" accept=".json" style="display:none" onchange="importarArquivo(this.files[0])">
                 </div>
             </div>
             <div class="tabs">
                 <button class="tab active" onclick="trocarAba('projetos')">📋 Projetos</button>
                 <button class="tab" onclick="trocarAba('rotina')">✅ Rotina Diária</button>
+                <button class="tab" onclick="trocarAba('minhaRotina')">📅 Minha Rotina</button>
+                <button class="tab" onclick="abrirTerapia()">🌱 Espaço Terapêutico</button>
             </div>
         </header>
 
@@ -1480,6 +1620,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- ABA MINHA ROTINA - Vista Simplificada -->
+        <div id="minhaRotina" class="tab-content">
+            <div style="max-width:800px;margin:0 auto">
+                <div class="progresso-principal" style="margin-bottom:30px">
+                    <div class="progresso-header">
+                        <div class="progresso-titulo">📅 Minha Rotina de Hoje</div>
+                        <button class="btn btn-primary" onclick="trocarAba('rotina')">✏️ Gerenciar Tarefas</button>
+                    </div>
+                    <div style="color:var(--text-secondary);font-size:15px;margin-top:12px" id="infoRotinaSimples"></div>
+                </div>
+
+                <div class="lista-tarefas">
+                    <div id="listaRotinaSimplificada"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Nova Tarefa Rotina -->
@@ -1597,7 +1754,7 @@
     <div class="modal" id="modalPushcut">
         <div class="modal-conteudo" style="max-width:800px">
             <div class="modal-header">
-                <div class="modal-titulo">📱 Pushcut - Notificações Automáticas</div>
+                <div class="modal-titulo">📱 Pushcut - Notificações Manuais</div>
                 <button class="btn-icon" onclick="fecharModal('modalPushcut')">✕</button>
             </div>
 
@@ -1616,6 +1773,7 @@
                         <br>1. Baixar o app Pushcut na App Store
                         <br>2. Criar uma notificação chamada exatamente "<strong>Tarefa</strong>" no Pushcut
                         <br>3. Clicar em "🔍 Testar" para verificar se está funcionando
+                        <br><br>📌 <strong>Modo de envio:</strong> Apenas manual. Clique em "🚀 Enviar Notificações Agora" quando desejar enviar.
                     </small>
                 </div>
             </div>
@@ -1640,16 +1798,16 @@
                 <div style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--accent)">📚 Como Usar</div>
 
                 <div style="background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(59,130,246,0.15));padding:20px;border-radius:12px;margin-bottom:16px;border:2px solid var(--success)">
-                    <div style="font-weight:700;margin-bottom:12px;font-size:16px">🚀 Método Automático (Recomendado - Com API Key)</div>
+                    <div style="font-weight:700;margin-bottom:12px;font-size:16px">🚀 Método Manual (Com API Key)</div>
                     <ol style="line-height:1.8;color:var(--text-primary);padding-left:20px">
                         <li>Cole sua API Key no campo acima e clique em <strong>"💾 Salvar"</strong></li>
                         <li>Clique em <strong>"🔍 Testar"</strong> para verificar a conexão</li>
                         <li>No app Pushcut no iPhone, crie uma notificação chamada <strong>"Tarefa"</strong></li>
-                        <li>Volte aqui e clique em <strong>"🚀 Enviar Notificações Agora"</strong></li>
-                        <li>Pronto! Você receberá as notificações 5 minutos antes de cada tarefa automaticamente! 🎉</li>
+                        <li>Volte aqui e clique em <strong>"🚀 Enviar Notificações Agora"</strong> quando desejar enviar</li>
+                        <li>As notificações serão configuradas para 5 minutos antes de cada tarefa 🎉</li>
                     </ol>
                     <div style="margin-top:12px;padding:12px;background:rgba(16,185,129,0.2);border-radius:8px;font-size:14px;font-weight:600">
-                        ⚡ <strong>Super Fácil:</strong> Com este método, basta clicar um botão e todas as notificações são enviadas automaticamente!
+                        📌 <strong>Importante:</strong> As notificações não são enviadas automaticamente. Você precisa clicar no botão para enviar quando desejar.
                     </div>
                 </div>
 
@@ -1987,19 +2145,135 @@
             }
         }
 
+        async function enviarTarefaParaPushcut(tarefa) {
+            const apiKey = localStorage.getItem(KEY_PUSHCUT_API);
 
-        function init() {
-            // Configurar API Key padrão se não existir
-            if (!localStorage.getItem(KEY_PUSHCUT_API)) {
-                localStorage.setItem(KEY_PUSHCUT_API, 'ljP19czEYJxX28x3rce_LdUZ');
+            // Se não tiver API Key, não faz nada (silencioso)
+            if (!apiKey || apiKey.trim() === '') {
+                return;
             }
 
+            // Se tarefa não tiver horários, não envia
+            if (!tarefa.horarios || tarefa.horarios.length === 0) {
+                return;
+            }
+
+            // Enviar uma notificação para cada horário da tarefa
+            let totalEnviados = 0;
+
+            for (const horario of tarefa.horarios) {
+                const horarioNotificacao = calcularHorarioAntes(horario, 5);
+
+                try {
+                    const response = await fetch('https://api.pushcut.io/v1/notifications/Tarefa', {
+                        method: 'POST',
+                        headers: {
+                            'API-Key': apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: `⏰ ${tarefa.categoria || 'Tarefa'}`,
+                            text: `${tarefa.nome}\n🕐 Horário: ${horario}`,
+                            isTimeSensitive: tarefa.prioridade === 'Alta' || tarefa.prioridade === 'Urgente',
+                            input: {
+                                horario: horario,
+                                horarioNotificacao: horarioNotificacao,
+                                tarefa: tarefa.nome,
+                                categoria: tarefa.categoria || 'Sem categoria',
+                                prioridade: tarefa.prioridade || 'Média',
+                                id: tarefa.id
+                            }
+                        })
+                    });
+
+                    if (response.ok) {
+                        totalEnviados++;
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar notificação:', error);
+                }
+            }
+
+            if (totalEnviados > 0) {
+                mostrarToast(`📱 ${totalEnviados} notificação(ões) enviada(s) para Pushcut!`, 'success');
+            }
+        }
+
+        function init() {
             carregarDados();
             renderizarProjetos();
             renderizarRotina();
             setupEventos();
             verificarDarkMode();
             iniciarVerificacaoDiaria();
+        }
+
+        async function sincronizarTarefasPushcut() {
+            const apiKey = localStorage.getItem(KEY_PUSHCUT_API);
+
+            // Se não tiver API Key, não faz nada
+            if (!apiKey || apiKey.trim() === '') {
+                return;
+            }
+
+            // Esperar 2 segundos para não sobrecarregar na inicialização
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Filtrar tarefas com horários que não estão concluídas nem pausadas
+            const tarefasParaEnviar = tarefasRotina.filter(t =>
+                t.horarios &&
+                t.horarios.length > 0 &&
+                !t.concluida &&
+                !t.pausada
+            );
+
+            if (tarefasParaEnviar.length === 0) {
+                return;
+            }
+
+            let totalEnviados = 0;
+
+            for (const tarefa of tarefasParaEnviar) {
+                for (const horario of tarefa.horarios) {
+                    const horarioNotificacao = calcularHorarioAntes(horario, 5);
+
+                    try {
+                        const response = await fetch('https://api.pushcut.io/v1/notifications/Tarefa', {
+                            method: 'POST',
+                            headers: {
+                                'API-Key': apiKey,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                title: `⏰ ${tarefa.categoria || 'Tarefa'}`,
+                                text: `${tarefa.nome}\n🕐 Horário: ${horario}`,
+                                isTimeSensitive: tarefa.prioridade === 'Alta' || tarefa.prioridade === 'Urgente',
+                                input: {
+                                    horario: horario,
+                                    horarioNotificacao: horarioNotificacao,
+                                    tarefa: tarefa.nome,
+                                    categoria: tarefa.categoria || 'Sem categoria',
+                                    prioridade: tarefa.prioridade || 'Média',
+                                    id: tarefa.id
+                                }
+                            })
+                        });
+
+                        if (response.ok) {
+                            totalEnviados++;
+                        }
+
+                        // Pequeno delay entre envios para não sobrecarregar
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    } catch (error) {
+                        console.error('Erro ao sincronizar:', error);
+                    }
+                }
+            }
+
+            if (totalEnviados > 0) {
+                mostrarToast(`🔄 ${totalEnviados} notificação(ões) sincronizada(s) automaticamente!`, 'success');
+            }
         }
 
         function carregarDados() {
@@ -2106,40 +2380,6 @@
             localStorage.setItem(KEY_HISTORICO, JSON.stringify(historico));
             localStorage.setItem(KEY_CATEGORIAS, JSON.stringify(categorias));
             localStorage.setItem(KEY_AVALIACOES, JSON.stringify(avaliacoesDiarias));
-
-            // Sincronizar com arquivo dados.json para GitHub Actions
-            sincronizarDadosJson();
-        }
-
-        function sincronizarDadosJson() {
-            // Gerar JSON para download/commit manual
-            const dadosParaGitHub = {
-                tarefasRotina: tarefasRotina,
-                ultimaAtualizacao: new Date().toISOString(),
-                apiKey: localStorage.getItem(KEY_PUSHCUT_API) || "ljP19czEYJxX28x3rce_LdUZ"
-            };
-
-            // Salvar no localStorage para mostrar no modal
-            localStorage.setItem('dados_github_json', JSON.stringify(dadosParaGitHub, null, 2));
-        }
-
-        function baixarDadosJson() {
-            const dadosJson = localStorage.getItem('dados_github_json');
-            if (!dadosJson) {
-                sincronizarDadosJson();
-            }
-
-            const dados = localStorage.getItem('dados_github_json');
-            const blob = new Blob([dados], {
-                type: 'application/json'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'dados.json';
-            a.click();
-            URL.revokeObjectURL(url);
-            mostrarToast('📥 Arquivo dados.json baixado! Faça commit no GitHub.', 'success');
         }
 
         // PROJETOS
@@ -2561,6 +2801,164 @@
             renderizarCalendario();
             atualizarSelectCategorias();
             renderizarResumoAvaliacao();
+            renderizarRotinaSimplificada();
+        }
+
+        function renderizarRotinaSimplificada() {
+            const lista = $('listaRotinaSimplificada');
+            const info = $('infoRotinaSimples');
+
+            if (!lista || !info) return;
+
+            // Preparar tarefas com horários expandidos
+            const tarefasExpandidas = [];
+
+            tarefasRotina.forEach(tarefa => {
+                if (tarefa.horarios && tarefa.horarios.length > 0) {
+                    // Para cada horário, criar uma entrada separada
+                    tarefa.horarios.forEach(horario => {
+                        tarefasExpandidas.push({
+                            ...tarefa,
+                            horarioAtual: horario
+                        });
+                    });
+                } else {
+                    // Tarefas sem horário definido
+                    tarefasExpandidas.push({
+                        ...tarefa,
+                        horarioAtual: null
+                    });
+                }
+            });
+
+            // Ordenar por horário
+            tarefasExpandidas.sort((a, b) => {
+                if (!a.horarioAtual) return 1;
+                if (!b.horarioAtual) return -1;
+
+                const timeA = a.horarioAtual.split(':').map(Number);
+                const timeB = b.horarioAtual.split(':').map(Number);
+                return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+            });
+
+            // Atualizar info
+            const totalTarefas = tarefasRotina.length;
+            const totalConcluidas = tarefasRotina.filter(t => t.concluida).length;
+            const totalComHorario = tarefasExpandidas.filter(t => t.horarioAtual).length;
+
+            info.innerHTML = `
+                ${totalTarefas} tarefa${totalTarefas !== 1 ? 's' : ''} no total • 
+                ${totalConcluidas} concluída${totalConcluidas !== 1 ? 's' : ''} • 
+                ${totalComHorario} com horário definido
+            `;
+
+            // Renderizar lista
+            lista.innerHTML = '';
+
+            if (tarefasExpandidas.length === 0) {
+                lista.innerHTML = `
+                    <div style="text-align:center;padding:60px 20px;color:var(--text-secondary)">
+                        <div style="font-size:48px;margin-bottom:16px">📅</div>
+                        <div style="font-size:18px;margin-bottom:12px">Nenhuma tarefa cadastrada</div>
+                        <button class="btn btn-primary btn-lg" onclick="trocarAba('rotina')">➕ Adicionar Tarefas</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Separar tarefas com e sem horário
+            const comHorario = tarefasExpandidas.filter(t => t.horarioAtual);
+            const semHorario = tarefasExpandidas.filter(t => !t.horarioAtual);
+
+            // Renderizar tarefas com horário
+            if (comHorario.length > 0) {
+                comHorario.forEach(tarefa => {
+                    lista.appendChild(criarItemRotinaSimples(tarefa));
+                });
+            }
+
+            // Renderizar tarefas sem horário (se houver)
+            if (semHorario.length > 0) {
+                const divider = document.createElement('div');
+                divider.style.cssText = 'margin:30px 0;padding:12px;background:var(--surface-hover);border-radius:8px;text-align:center;color:var(--text-secondary);font-weight:600;font-size:14px';
+                divider.textContent = '📋 Tarefas sem horário definido';
+                lista.appendChild(divider);
+
+                semHorario.forEach(tarefa => {
+                    lista.appendChild(criarItemRotinaSimples(tarefa));
+                });
+            }
+        }
+
+        function criarItemRotinaSimples(tarefa) {
+            const cat = categorias.find(c => c.nome === tarefa.categoria) || {
+                emoji: '✨',
+                cor: '#8b5cf6',
+                nome: 'Outros'
+            };
+
+            const item = document.createElement('div');
+            item.className = 'rotina-item-simples' +
+                (tarefa.concluida ? ' concluida' : '') +
+                (tarefa.pausada ? ' pausada' : '');
+
+            // Definir cor da borda baseada na prioridade
+            let corBorda = 'var(--accent)';
+            if (tarefa.prioridade === 'Urgente') corBorda = '#ef4444';
+            else if (tarefa.prioridade === 'Alta') corBorda = '#f59e0b';
+            else if (tarefa.prioridade === 'Baixa') corBorda = '#64748b';
+
+            if (!tarefa.concluida && !tarefa.pausada) {
+                item.style.borderLeftColor = corBorda;
+            }
+
+            // Descrição (baseada em tempo estimado ou subtarefas)
+            let descricao = '';
+            if (tarefa.tempoEstimado && tarefa.tempoEstimado > 0) {
+                descricao = `⏱️ ${tarefa.tempoEstimado} minutos de atividade`;
+            }
+            if (tarefa.subtarefas && tarefa.subtarefas.length > 0) {
+                const subsConcluidas = tarefa.subtarefas.filter(s => s.concluida).length;
+                descricao += (descricao ? ' • ' : '') + `${subsConcluidas}/${tarefa.subtarefas.length} passos concluídos`;
+            }
+
+            const html = `
+                <div class="rotina-hora">
+                    ${tarefa.horarioAtual || '--:--'}
+                </div>
+                <div class="rotina-conteudo-simples">
+                    <div class="rotina-titulo-simples">
+                        ${esc(tarefa.nome)} ${tarefa.pausada ? '⏸️' : ''}
+                    </div>
+                    ${descricao ? `<div class="rotina-descricao-simples">${descricao}</div>` : ''}
+                    <div class="rotina-badges">
+                        <span class="rotina-badge-simples tag-prioridade ${tarefa.prioridade}">
+                            ${tarefa.prioridade}
+                        </span>
+                        <span class="rotina-badge-simples" style="background:${cat.cor}20;color:${cat.cor}">
+                            ${cat.emoji} ${cat.nome}
+                        </span>
+                        ${tarefa.recorrencia && tarefa.recorrencia !== 'unica' ? 
+                            `<span class="rotina-badge-simples" style="background:rgba(59,130,246,0.1);color:var(--accent)">
+                                🔄 ${tarefa.recorrencia}
+                            </span>` : ''}
+                        ${tarefa.quantidadeTotal > 1 ? 
+                            `<span class="rotina-badge-simples" style="background:rgba(139,92,246,0.1);color:var(--purple)">
+                                ${tarefa.quantidadeAtual}/${tarefa.quantidadeTotal}
+                            </span>` : ''}
+                    </div>
+                </div>
+                <div class="rotina-acoes-simples">
+                    <div class="check-btn-simples ${tarefa.concluida ? 'checked' : ''}" 
+                         onclick="toggleTarefaRotina('${tarefa.id}')" 
+                         title="${tarefa.concluida ? 'Marcar como não concluída' : 'Marcar como concluída'}">
+                        ${tarefa.concluida ? '✓' : ''}
+                    </div>
+                </div>
+            `;
+
+            item.innerHTML = html;
+            return item;
         }
 
         function atualizarHUD() {
@@ -3163,7 +3561,14 @@
             if (aba === 'rotina') {
                 verificarResetDiario();
                 renderizarRotina();
+            } else if (aba === 'minhaRotina') {
+                verificarResetDiario();
+                renderizarRotinaSimplificada();
             }
+        }
+
+        function abrirTerapia() {
+            window.open('Terapia-Pedro/index.html', '_blank');
         }
 
         // DRAG & DROP
