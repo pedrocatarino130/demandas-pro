@@ -20,10 +20,10 @@
         "responsavel": "Pedro",
         "tipo": "Melhoria",
         "prioridade": "Alta",
-        "status": "A Fazer",
+        "status": "Fazendo",
         "dataPrevista": "",
         "criado": "2025-11-05T23:14:38.746Z",
-        "atualizado": "2025-11-05T23:14:38.746Z"
+        "atualizado": "2025-11-07T13:05:02.826Z"
       },
       {
         "id": "T-0006",
@@ -67,11 +67,11 @@
         "descricao": "fazer um planejamento de melhorias - bem estruturada e implementar!",
         "responsavel": "Pedro/Vini",
         "tipo": "Melhoria",
-        "prioridade": "Média",
+        "prioridade": "Alta",
         "status": "A Fazer",
         "dataPrevista": "",
         "criado": "2025-11-03T17:39:00.097Z",
-        "atualizado": "2025-11-03T17:39:00.097Z"
+        "atualizado": "2025-11-07T13:05:49.979Z"
       },
       {
         "id": "T-0002",
@@ -83,7 +83,7 @@
         "status": "A Fazer",
         "dataPrevista": "",
         "criado": "2025-11-03T17:37:54.378Z",
-        "atualizado": "2025-11-03T17:37:54.378Z"
+        "atualizado": "2025-11-07T15:47:50.878Z"
       },
       {
         "id": "T-0001",
@@ -236,30 +236,10 @@
         "quantidadeTotal": 1,
         "quantidadeAtual": 0,
         "subtarefas": [],
-        "concluida": true,
+        "concluida": false,
         "pausada": false,
         "humor": null,
         "criado": "2025-10-30T23:55:31.085Z"
-      },
-      {
-        "id": "R-0017",
-        "nome": "Treinar Hero / passear hero lucky",
-        "categoria": "",
-        "prioridade": "Urgente",
-        "horarios": [
-          "16:00"
-        ],
-        "tempoEstimado": 0,
-        "recorrencia": "unica",
-        "quantidadeTotal": 1,
-        "quantidadeAtual": 0,
-        "subtarefas": [],
-        "concluida": true,
-        "pausada": false,
-        "humor": "feliz",
-        "criado": "2025-11-04T14:27:42.350Z",
-        "humorMotivo": "legal",
-        "humorData": "2025-11-04T21:31:59.255Z"
       }
     ],
     "contador": 17,
@@ -272,5 +252,195 @@
   "categorias": [],
   "historico": [],
   "avaliacoesDiarias": [],
-  "exportado": "2025-11-07T11:55:56.604Z"
+  "estudos": {
+    "areas": [
+      {
+        "id": "AREA-0001",
+        "nome": "Curso de JavaScript e TypeScript do básico ao avançado JS/TS",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:09:25.359Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0002",
+        "nome": "Formação Engenheiro de IA Generativa 2025: IA na Prática",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:09:41.084Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0003",
+        "nome": "Curso de Python 3 do básico ao avançado - com projetos reais",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:09:46.454Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0004",
+        "nome": "Curso Web Frontend Fundamentos HTML CSS JS + de 10 Projetos",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:09:56.430Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0005",
+        "nome": "fórmula da fluência - hotmart",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:08.235Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0006",
+        "nome": "Starter Kit V2",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:21.697Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0007",
+        "nome": "Engenharia de Contexto",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:29.928Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0008",
+        "nome": "Spec Engineering",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:31.962Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0009",
+        "nome": "Radar",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:36.883Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0010",
+        "nome": "Masterclass Exclusiva: Ecossistema Cursor AI 2.0",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:40.034Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0011",
+        "nome": "Live de lançamento do starter kit mentoria pair programming",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:45.589Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0012",
+        "nome": "Live Extra - aprenda a criar o seu próprio Lovable",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:49.769Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0013",
+        "nome": "Master Class Claude Code Parte 2",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:52.794Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0014",
+        "nome": "Masterclass - criando um agente de voz com IA e integrando ao seu projeto",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:10:57.505Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0015",
+        "nome": "Masterclass - Codex CLI",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:11:01.150Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0016",
+        "nome": "Masterclass Claude Code - Parte 3",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:11:04.796Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0017",
+        "nome": "Starter kit V2 - crie seu micro saas de IA e comece a vender em até 7 dias",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:11:07.845Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0018",
+        "nome": "Live exclusiva: Criando o seu próprio Agent Builder",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:11:12.894Z",
+        "status": "ativo"
+      },
+      {
+        "id": "AREA-0019",
+        "nome": "Masterclass: CLI de IA",
+        "descricao": "",
+        "cor": "#3b82f6",
+        "icone": "📚",
+        "criadoEm": "2025-11-07T18:11:16.312Z",
+        "status": "ativo"
+      }
+    ],
+    "topicos": [],
+    "sessoes": [],
+    "contador": 19,
+    "configuracoes": {
+      "revisaoEspacada": {
+        "ativo": true,
+        "intervalos": [
+          7,
+          15,
+          30
+        ]
+      },
+      "notificacoes": true,
+      "viewPadrao": "lista"
+    }
+  },
+  "exportado": "2025-11-07T18:11:27.957Z"
 }
