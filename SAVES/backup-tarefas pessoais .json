@@ -1,0 +1,276 @@
+{
+  "projetos": {
+    "tarefas": [
+      {
+        "id": "T-0008",
+        "titulo": "Gerenciador - Demandas",
+        "descricao": "Adicionar uma parte para acompanhar demandas de estudos - etc ...",
+        "responsavel": "Pedro",
+        "tipo": "Tarefa",
+        "prioridade": "Alta",
+        "status": "Fazendo",
+        "dataPrevista": "",
+        "criado": "2025-11-06T03:29:33.571Z",
+        "atualizado": "2025-11-07T11:48:02.035Z"
+      },
+      {
+        "id": "T-0007",
+        "titulo": "Meu Espaço Terapêutico",
+        "descricao": "melhorar",
+        "responsavel": "Pedro",
+        "tipo": "Melhoria",
+        "prioridade": "Alta",
+        "status": "A Fazer",
+        "dataPrevista": "",
+        "criado": "2025-11-05T23:14:38.746Z",
+        "atualizado": "2025-11-05T23:14:38.746Z"
+      },
+      {
+        "id": "T-0006",
+        "titulo": "adicionar func-estudando",
+        "descricao": "app-estudos/Estudos\n\nadicionar aba anotações - para guardar anotações ou salvar releitura de expecifica com mapa mental cards etc",
+        "responsavel": "Pedro",
+        "tipo": "Tarefa",
+        "prioridade": "Urgente",
+        "status": "Concluída",
+        "dataPrevista": "",
+        "criado": "2025-11-04T19:15:45.150Z",
+        "atualizado": "2025-11-06T03:26:04.216Z"
+      },
+      {
+        "id": "T-0005",
+        "titulo": "Fazer analise no PDF",
+        "descricao": "hotmart pdf fazer analise para copiar e vender",
+        "responsavel": "Pedro/Sato",
+        "tipo": "Tarefa",
+        "prioridade": "Média",
+        "status": "A Fazer",
+        "dataPrevista": "",
+        "criado": "2025-11-03T18:27:47.325Z",
+        "atualizado": "2025-11-03T18:27:47.327Z"
+      },
+      {
+        "id": "T-0004",
+        "titulo": "Viewer-tarefas-sato",
+        "descricao": "vizualizador de linha do tempo das tarefas - para viajem!",
+        "responsavel": "Pedro",
+        "tipo": "Melhoria",
+        "prioridade": "Alta",
+        "status": "Fazendo",
+        "dataPrevista": "",
+        "criado": "2025-11-03T17:40:22.872Z",
+        "atualizado": "2025-11-07T01:10:50.162Z"
+      },
+      {
+        "id": "T-0003",
+        "titulo": "App-Futsal-sem-drogas",
+        "descricao": "fazer um planejamento de melhorias - bem estruturada e implementar!",
+        "responsavel": "Pedro/Vini",
+        "tipo": "Melhoria",
+        "prioridade": "Média",
+        "status": "A Fazer",
+        "dataPrevista": "",
+        "criado": "2025-11-03T17:39:00.097Z",
+        "atualizado": "2025-11-03T17:39:00.097Z"
+      },
+      {
+        "id": "T-0002",
+        "titulo": "Fazer warkframe - Juninho",
+        "descricao": "Fazer um Warkframe de demonstração  - \" pedir lista de funcionalidade para ele\"",
+        "responsavel": "Pedro/Juninho",
+        "tipo": "Tarefa",
+        "prioridade": "Alta",
+        "status": "A Fazer",
+        "dataPrevista": "",
+        "criado": "2025-11-03T17:37:54.378Z",
+        "atualizado": "2025-11-03T17:37:54.378Z"
+      },
+      {
+        "id": "T-0001",
+        "titulo": "Terminar PWA-adestramentos",
+        "descricao": "Terminar a produção desse trabalho!\n-para melhora de produção em casa",
+        "responsavel": "Pedro/sato",
+        "tipo": "Tarefa",
+        "prioridade": "Alta",
+        "status": "Revisão",
+        "dataPrevista": "",
+        "criado": "2025-11-03T17:36:16.734Z",
+        "atualizado": "2025-11-07T11:40:27.687Z"
+      }
+    ],
+    "contador": 8
+  },
+  "rotina": {
+    "tarefas": [
+      {
+        "id": "R-0002",
+        "nome": "LIMPAR-CANIL/BAIXO",
+        "categoria": "Canil",
+        "prioridade": "Alta",
+        "horarios": [
+          "08:00",
+          "15:30"
+        ],
+        "tempoEstimado": 50,
+        "recorrencia": "diaria",
+        "quantidadeTotal": 2,
+        "quantidadeAtual": 0,
+        "subtarefas": [
+          {
+            "texto": "Trocar agua de baixo quando limpar canil",
+            "concluida": true
+          },
+          {
+            "texto": "Trocar agua de DENTRO quando limpar canil",
+            "concluida": true
+          },
+          {
+            "texto": "Trocar agua de baixo quando limpar canil",
+            "concluida": true
+          },
+          {
+            "texto": "Trocar agua de DENTRO quando limpar canil",
+            "concluida": true
+          }
+        ],
+        "concluida": false,
+        "pausada": false,
+        "humor": null,
+        "criado": "2025-10-30T21:27:20.489Z"
+      },
+      {
+        "id": "R-0003",
+        "nome": "LIMPAR-CANIL/CIMA",
+        "categoria": "Canil",
+        "prioridade": "Alta",
+        "horarios": [
+          "9:00",
+          "16:30"
+        ],
+        "tempoEstimado": 40,
+        "recorrencia": "diaria",
+        "quantidadeTotal": 2,
+        "quantidadeAtual": 0,
+        "subtarefas": [
+          {
+            "texto": "Trocar agua de CIMA quando limpar canil",
+            "concluida": true
+          },
+          {
+            "texto": "Trocar agua de CIMA quando limpar canil",
+            "concluida": false
+          }
+        ],
+        "concluida": false,
+        "pausada": false,
+        "humor": null,
+        "criado": "2025-10-30T21:28:07.690Z"
+      },
+      {
+        "id": "R-0011",
+        "nome": "Trocar os tapetes Higienicos",
+        "categoria": "",
+        "prioridade": "Alta",
+        "horarios": [
+          "09:00 : 15:00"
+        ],
+        "tempoEstimado": 0,
+        "recorrencia": "diaria",
+        "quantidadeTotal": 2,
+        "quantidadeAtual": 0,
+        "subtarefas": [
+          {
+            "texto": "Trocar os tapetes Higienicos dentro",
+            "concluida": true
+          },
+          {
+            "texto": "Trocar os tapetes Higienicos fora",
+            "concluida": true
+          },
+          {
+            "texto": "manutenção dentro",
+            "concluida": false
+          },
+          {
+            "texto": "manutencao fora",
+            "concluida": false
+          }
+        ],
+        "concluida": false,
+        "pausada": false,
+        "humor": null,
+        "criado": "2025-10-30T21:50:16.682Z",
+        "humorMotivo": "",
+        "humorData": "2025-11-03T21:32:52.225Z"
+      },
+      {
+        "id": "R-0007",
+        "nome": "Caminhada diaria",
+        "categoria": "Saúde",
+        "prioridade": "Baixa",
+        "horarios": [],
+        "tempoEstimado": 0,
+        "recorrencia": "diaria",
+        "quantidadeTotal": 1,
+        "quantidadeAtual": 0,
+        "subtarefas": [
+          {
+            "texto": "ao concluir avisar Ju psico",
+            "concluida": false
+          }
+        ],
+        "concluida": false,
+        "pausada": false,
+        "humor": null,
+        "criado": "2025-10-30T21:43:46.613Z",
+        "motivoPausa": "hj que eu criei"
+      },
+      {
+        "id": "R-0012",
+        "nome": "rezar o terço",
+        "categoria": "Outros",
+        "prioridade": "Alta",
+        "horarios": [],
+        "tempoEstimado": 0,
+        "recorrencia": "unica",
+        "quantidadeTotal": 1,
+        "quantidadeAtual": 0,
+        "subtarefas": [],
+        "concluida": true,
+        "pausada": false,
+        "humor": null,
+        "criado": "2025-10-30T23:55:31.085Z"
+      },
+      {
+        "id": "R-0017",
+        "nome": "Treinar Hero / passear hero lucky",
+        "categoria": "",
+        "prioridade": "Urgente",
+        "horarios": [
+          "16:00"
+        ],
+        "tempoEstimado": 0,
+        "recorrencia": "unica",
+        "quantidadeTotal": 1,
+        "quantidadeAtual": 0,
+        "subtarefas": [],
+        "concluida": true,
+        "pausada": false,
+        "humor": "feliz",
+        "criado": "2025-11-04T14:27:42.350Z",
+        "humorMotivo": "legal",
+        "humorData": "2025-11-04T21:31:59.255Z"
+      }
+    ],
+    "contador": 17,
+    "streak": 0,
+    "conquistas": {
+      "primeira": true,
+      "5tarefas": true
+    }
+  },
+  "categorias": [],
+  "historico": [],
+  "avaliacoesDiarias": [],
+  "exportado": "2025-11-07T11:56:23.794Z"
+}
