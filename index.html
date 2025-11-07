@@ -24,6 +24,37 @@
             --purple: #8b5cf6;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+            /* Status Colors - Mais Contrastados (PRD v2.1) */
+            --status-todo: #3b82f6;
+            --status-doing: #f59e0b;
+            --status-review: #8b5cf6;
+            --status-blocked: #ef4444;
+            --status-done: #10b981;
+
+            /* Priority Colors */
+            --priority-urgent: #dc2626;
+            --priority-high: #f59e0b;
+            --priority-medium: #64748b;
+            --priority-low: #94a3b8;
+
+            /* Spacing System */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            /* Radius System */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 350ms ease;
         }
 
         body.dark-mode {
@@ -210,6 +241,273 @@
             background: var(--border)
         }
 
+        /* DASHBOARD HOME */
+        .dashboard-home {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-lg) 0;
+        }
+
+        .dashboard-welcome {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dashboard-welcome h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-welcome p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .dashboard-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-base);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-md);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .dashboard-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .dashboard-card-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .dashboard-card-link:hover {
+            color: var(--accent-hover);
+        }
+
+        .dashboard-card-content {
+            min-height: 200px;
+        }
+
+        .dashboard-item {
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            background: var(--surface-hover);
+            border-radius: var(--radius-md);
+            border-left: 4px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .dashboard-item:hover {
+            border-left-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .dashboard-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .dashboard-item-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-empty {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--text-secondary);
+        }
+
+        .dashboard-stats {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: var(--space-lg);
+        }
+
+        .dashboard-stat {
+            text-align: center;
+        }
+
+        .dashboard-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: var(--space-xs);
+        }
+
+        .dashboard-stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* FAB (Floating Action Button) */
+        .fab-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+
+        .fab-button {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .fab-button.active {
+            transform: rotate(45deg);
+        }
+
+        .fab-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .fab-menu.active {
+            display: flex;
+            animation: fabMenuFadeIn var(--transition-base);
+        }
+
+        @keyframes fabMenuFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fab-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .fab-menu-item:hover .fab-menu-button {
+            transform: scale(1.1);
+        }
+
+        .fab-menu-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab-menu-label {
+            background: var(--surface);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .fab-menu-item:hover .fab-menu-label {
+            opacity: 1;
+        }
+
+        .fab-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+        }
+
+        .fab-overlay.active {
+            display: block;
+            animation: fadeIn var(--transition-fast);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* PROJETOS - mantem */
         .main-grid {
             display: grid;
@@ -225,14 +523,65 @@
             box-shadow: var(--shadow-lg);
             height: fit-content;
             position: sticky;
-            top: 20px
+            top: 20px;
+            transition: all var(--transition-base);
+            position: relative;
+        }
+
+        .form-card.collapsed {
+            width: 60px;
+            padding: 16px;
+            overflow: hidden;
+        }
+
+        .form-card.collapsed .form-title,
+        .form-card.collapsed .form-group,
+        .form-card.collapsed .form-actions,
+        .form-card.collapsed form {
+            display: none;
+        }
+
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all var(--transition-fast);
+            z-index: 10;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+        }
+
+        .form-card.collapsed .sidebar-toggle-btn {
+            position: static;
+            margin: 0 auto;
+        }
+
+        .main-grid.sidebar-collapsed {
+            grid-template-columns: 60px 1fr;
         }
 
         .form-title {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: var(--accent)
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .form-group {
@@ -359,6 +708,26 @@
             margin-bottom: 12px;
             cursor: grab;
             transition: all 0.2s
+        }
+
+        /* Hierarquia de Prioridades nos Cards */
+        .task-card.priority-urgente {
+            border-left: 4px solid var(--priority-urgent);
+            border-left-width: 4px;
+        }
+
+        .task-card.priority-alta {
+            border-left: 4px solid var(--priority-high);
+            border-left-width: 4px;
+        }
+
+        .task-card.priority-media {
+            border-left: 2px solid var(--priority-medium);
+        }
+
+        .task-card.priority-baixa {
+            opacity: 0.7;
+            border-left: 2px solid var(--priority-low);
         }
 
         .task-card:hover {
@@ -1380,17 +1749,82 @@
                 </div>
             </div>
             <div class="tabs">
-                <button class="tab active" onclick="trocarAba('projetos')">📋 Projetos</button>
-                <button class="tab" onclick="trocarAba('rotina')">✅ Rotina Diária</button>
+                <button class="tab active" onclick="trocarAba('home')">🏠 Home</button>
+                <button class="tab" onclick="trocarAba('projetos')">📋 Projetos</button>
+                <button class="tab" onclick="trocarAba('estudos')">📚 Estudos</button>
                 <button class="tab" onclick="trocarAba('minhaRotina')">📅 Minha Rotina</button>
                 <button class="tab" onclick="abrirTerapia()">🌱 Espaço Terapêutico</button>
             </div>
         </header>
 
+        <!-- ABA HOME - Dashboard -->
+        <div id="home" class="tab-content active">
+            <div class="dashboard-home">
+                <!-- Welcome Section -->
+                <div class="dashboard-welcome">
+                    <h2>🏠 Bem-vindo, Pedro!</h2>
+                    <p>Aqui está um resumo das suas atividades hoje</p>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-grid">
+                    <!-- Card Projetos -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">📋 Projetos</div>
+                            <a href="#" class="dashboard-card-link" onclick="trocarAba('projetos'); return false;">Ver todos →</a>
+                        </div>
+                        <div class="dashboard-card-content" id="dashboardProjetos">
+                            <div class="dashboard-empty">Carregando...</div>
+                        </div>
+                    </div>
+
+                    <!-- Card Estudos -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">📚 Estudos</div>
+                            <a href="#" class="dashboard-card-link" onclick="trocarAba('estudos'); return false;">Ver todos →</a>
+                        </div>
+                        <div class="dashboard-card-content" id="dashboardEstudos">
+                            <div class="dashboard-empty">Carregando...</div>
+                        </div>
+                    </div>
+
+                    <!-- Card Rotina -->
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">📅 Rotina</div>
+                            <a href="#" class="dashboard-card-link" onclick="trocarAba('minhaRotina'); return false;">Ver todos →</a>
+                        </div>
+                        <div class="dashboard-card-content" id="dashboardRotina">
+                            <div class="dashboard-empty">Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Section -->
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value" id="statProjetos">0</div>
+                        <div class="dashboard-stat-label">Projetos Ativos</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value" id="statEstudos">0</div>
+                        <div class="dashboard-stat-label">Tópicos de Estudo</div>
+                    </div>
+                    <div class="dashboard-stat">
+                        <div class="dashboard-stat-value" id="statRotina">0</div>
+                        <div class="dashboard-stat-label">Tarefas de Rotina</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ABA PROJETOS (mantém) -->
-        <div id="projetos" class="tab-content active">
-            <div class="main-grid">
-                <aside class="form-card">
+        <div id="projetos" class="tab-content">
+            <div class="main-grid" id="mainGridProjetos">
+                <aside class="form-card" id="sidebarProjetos">
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarProjetos', 'mainGridProjetos')" title="Colapsar sidebar">◀</button>
                     <div class="form-title" id="formModo">➕ Nova Tarefa</div>
                     <form id="taskForm" onsubmit="salvarTarefa(event)">
                         <input type="hidden" id="editId">
@@ -1467,6 +1901,187 @@
                         <span class="stats" id="stats"></span>
                     </div>
                     <div class="kanban" id="kanban"></div>
+                </main>
+            </div>
+        </div>
+
+        <!-- ABA ESTUDOS v2.0 -->
+        <div id="estudos" class="tab-content">
+            <div class="main-grid" id="mainGridEstudos">
+                <!-- Sidebar com formulários -->
+                <aside class="form-card" id="sidebarEstudos">
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebar('sidebarEstudos', 'mainGridEstudos')" title="Colapsar sidebar">◀</button>
+                    <div class="form-title" id="estudosFormModo">➕ Nova Área</div>
+
+                    <!-- Form Área -->
+                    <form id="formArea" onsubmit="salvarArea(event)" style="display:block">
+                        <input type="hidden" id="areaEditId">
+                        <div class="form-group">
+                            <label>Nome da Área *</label>
+                            <input class="form-control" id="areaNome" required placeholder="Ex: JavaScript">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <textarea class="form-control" id="areaDescricao" placeholder="Sobre o que você vai estudar..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Cor</label>
+                            <input type="color" class="form-control" id="areaCor" value="#3b82f6">
+                        </div>
+                        <div class="form-group">
+                            <label>Ícone (emoji)</label>
+                            <input class="form-control" id="areaIcone" placeholder="💡" maxlength="2">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" style="flex:1" id="btnSalvarArea">Adicionar Área</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelarEdicaoEstudos()">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <!-- Form Tópico -->
+                    <form id="formTopico" onsubmit="salvarTopico(event)" style="display:none">
+                        <input type="hidden" id="topicoEditId">
+                        <div class="form-group">
+                            <label>Área *</label>
+                            <select class="form-control" id="topicoAreaId" required>
+                                <option value="">Selecione uma área</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Título do Tópico *</label>
+                            <input class="form-control" id="topicoTitulo" required placeholder="Ex: Promises e Async/Await">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <textarea class="form-control" id="topicoDescricao" placeholder="O que você vai aprender..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control" id="topicoStatus">
+                                <option>Não iniciado</option>
+                                <option>Estudando</option>
+                                <option>Concluído</option>
+                                <option>Precisa revisão</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Prioridade</label>
+                            <select class="form-control" id="topicoPrioridade">
+                                <option>Baixa</option>
+                                <option selected>Média</option>
+                                <option>Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Agendada</label>
+                            <input type="date" class="form-control" id="topicoData">
+                        </div>
+                        <div class="form-group">
+                            <label>Horário</label>
+                            <input type="time" class="form-control" id="topicoHorario">
+                        </div>
+                        <div class="form-group">
+                            <label>Tags (separadas por vírgula)</label>
+                            <input class="form-control" id="topicoTags" placeholder="javascript, async, promises">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" style="flex:1" id="btnSalvarTopico">Adicionar Tópico</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelarEdicaoEstudos()">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <!-- Form Sessão -->
+                    <form id="formSessao" onsubmit="salvarSessao(event)" style="display:none">
+                        <input type="hidden" id="sessaoEditId">
+                        <input type="hidden" id="sessaoTopicoId">
+                        <div class="form-group">
+                            <label>Tópico</label>
+                            <input class="form-control" id="sessaoTopicoNome" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Duração (minutos)</label>
+                            <input type="number" class="form-control" id="sessaoDuracao" value="60" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Notas (markdown)</label>
+                            <textarea class="form-control" id="sessaoNotas" placeholder="# O que aprendi&#10;&#10;- Ponto 1&#10;- Ponto 2&#10;&#10;**Importante:** ..." style="min-height: 150px"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="sessaoConcluiu" checked>
+                                Concluí o estudo deste tópico
+                            </label>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" style="flex:1">Registrar Sessão</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelarEdicaoEstudos()">Cancelar</button>
+                        </div>
+                    </form>
+
+                    <!-- Botões para alternar formulários -->
+                    <div style="display: flex; gap: 8px; margin-top: 20px; flex-direction: column;">
+                        <button class="btn btn-sm btn-secondary" onclick="mostrarFormulario('area')">➕ Nova Área</button>
+                        <button class="btn btn-sm btn-secondary" onclick="mostrarFormulario('topico')">➕ Novo Tópico</button>
+                    </div>
+                </aside>
+
+                <!-- Área principal -->
+                <main>
+                    <!-- Tabs internas -->
+                    <div style="background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: var(--shadow-lg);">
+                        <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--border); margin-bottom: 16px;">
+                            <button class="btn btn-sm" id="tabAreas" onclick="trocarTabEstudos('areas')" style="border-bottom: 3px solid var(--accent);">📚 Áreas</button>
+                            <button class="btn btn-sm" id="tabTopicos" onclick="trocarTabEstudos('topicos')" style="border-bottom: 3px solid transparent;">📝 Tópicos</button>
+                            <button class="btn btn-sm" id="tabSessoes" onclick="trocarTabEstudos('sessoes')" style="border-bottom: 3px solid transparent;">🎯 Sessões</button>
+                            <button class="btn btn-sm" id="tabProgresso" onclick="trocarTabEstudos('progresso')" style="border-bottom: 3px solid transparent;">📊 Progresso</button>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="filters" id="filtrosEstudos">
+                            <input type="text" class="filter-input" id="buscaEstudos" placeholder="🔍 Buscar...">
+                            <select class="form-control" id="filtroStatusEstudos" style="width:auto" onchange="renderizarEstudos()">
+                                <option value="">Todos Status</option>
+                                <option>Não iniciado</option>
+                                <option>Estudando</option>
+                                <option>Concluído</option>
+                                <option>Precisa revisão</option>
+                            </select>
+                            <select class="form-control" id="filtroPrioridadeEstudos" style="width:auto" onchange="renderizarEstudos()">
+                                <option value="">Todas Prioridades</option>
+                                <option>Baixa</option>
+                                <option>Média</option>
+                                <option>Alta</option>
+                            </select>
+                            <select class="form-control" id="filtroAreaEstudos" style="width:auto" onchange="renderizarEstudos()">
+                                <option value="">Todas Áreas</option>
+                            </select>
+                            <button class="btn btn-sm btn-secondary" onclick="limparFiltrosEstudos()">Limpar</button>
+                            <span class="stats" id="statsEstudos"></span>
+                        </div>
+                    </div>
+
+                    <!-- View Áreas -->
+                    <div id="viewAreas" style="display:block;">
+                        <div id="listaAreas" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+                    </div>
+
+                    <!-- View Tópicos -->
+                    <div id="viewTopicos" style="display:none;">
+                        <div id="listaTopicos"></div>
+                    </div>
+
+                    <!-- View Sessões -->
+                    <div id="viewSessoes" style="display:none;">
+                        <div id="listaSessoes"></div>
+                    </div>
+
+                    <!-- View Progresso -->
+                    <div id="viewProgresso" style="display:none;">
+                        <div style="background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-lg);">
+                            <h2 style="font-size: 20px; margin-bottom: 20px;">📊 Seu Progresso</h2>
+                            <div id="progressoGeral"></div>
+                        </div>
+                    </div>
                 </main>
             </div>
         </div>
@@ -1627,7 +2242,7 @@
                 <div class="progresso-principal" style="margin-bottom:30px">
                     <div class="progresso-header">
                         <div class="progresso-titulo">📅 Minha Rotina de Hoje</div>
-                        <button class="btn btn-primary" onclick="trocarAba('rotina')">✏️ Gerenciar Tarefas</button>
+                        <button class="btn btn-primary" onclick="trocarAba('rotina')">⚙️ Gerenciar Tarefas</button>
                     </div>
                     <div style="color:var(--text-secondary);font-size:15px;margin-top:12px" id="infoRotinaSimples"></div>
                 </div>
@@ -1835,6 +2450,26 @@
         </div>
     </div>
 
+    <!-- FAB (Floating Action Button) -->
+    <div class="fab-overlay" id="fabOverlay" onclick="toggleFAB()"></div>
+    <div class="fab-container">
+        <div class="fab-menu" id="fabMenu">
+            <div class="fab-menu-item" onclick="acaoFAB('projeto')">
+                <div class="fab-menu-label">Nova Tarefa (Projeto)</div>
+                <button class="fab-menu-button">📋</button>
+            </div>
+            <div class="fab-menu-item" onclick="acaoFAB('estudo')">
+                <div class="fab-menu-label">Novo Tópico (Estudo)</div>
+                <button class="fab-menu-button">📚</button>
+            </div>
+            <div class="fab-menu-item" onclick="acaoFAB('rotina')">
+                <div class="fab-menu-label">Nova Tarefa (Rotina)</div>
+                <button class="fab-menu-button">📅</button>
+            </div>
+        </div>
+        <button class="fab-button" id="fabButton" onclick="toggleFAB()">➕</button>
+    </div>
+
     <script>
         const KEY_PROJETOS = 'tarefas_projetos_v2';
         const KEY_ROTINA = 'tarefas_rotina_v5';
@@ -1842,6 +2477,7 @@
         const KEY_CATEGORIAS = 'categorias_rotina_v4';
         const KEY_AVALIACOES = 'avaliacoes_diarias_v1';
         const KEY_PUSHCUT_API = 'pushcut_api_key_v1';
+        const KEY_ESTUDOS = 'estudos_dados_v1';
         const COLUNAS = ['A Fazer', 'Fazendo', 'Revisão', 'Bloqueado', 'Concluída'];
 
         let tarefas = [];
@@ -1857,6 +2493,20 @@
         let darkMode = false;
         let filtroStatus = null;
         let avaliacoesDiarias = [];
+
+        // ESTUDOS - Módulo v2.0
+        let areasEstudo = [];
+        let topicosEstudo = [];
+        let sessoesEstudo = [];
+        let contadorEstudos = 0;
+        let configEstudos = {
+            revisaoEspacada: {
+                ativo: true,
+                intervalos: [7, 15, 30]
+            },
+            notificacoes: true,
+            viewPadrao: 'lista'
+        };
 
         const CONQUISTAS_LISTA = [{
                 id: 'primeira',
@@ -2201,11 +2851,30 @@
 
         function init() {
             carregarDados();
+            renderizarDashboard(); // Renderizar dashboard na inicialização
             renderizarProjetos();
             renderizarRotina();
             setupEventos();
             verificarDarkMode();
+
+            // Event listener para busca de estudos em tempo real
+            const buscaEstudos = $('buscaEstudos');
+            if (buscaEstudos) {
+                buscaEstudos.addEventListener('input', () => {
+                    renderizarEstudos();
+                });
+            }
             iniciarVerificacaoDiaria();
+
+            // AUTO-SAVE: Salvar automaticamente a cada 10 segundos
+            setInterval(() => {
+                salvarDados();
+            }, 10000);
+
+            // AUTO-SAVE: Salvar antes de sair da página (F5, fechar aba, etc)
+            window.addEventListener('beforeunload', () => {
+                salvarDados();
+            });
         }
 
         async function sincronizarTarefasPushcut() {
@@ -2363,6 +3032,23 @@
             } catch (e) {
                 avaliacoesDiarias = [];
             }
+
+            // ESTUDOS v2.0
+            try {
+                const dadosEstudos = JSON.parse(localStorage.getItem(KEY_ESTUDOS));
+                if (dadosEstudos) {
+                    areasEstudo = dadosEstudos.areas || [];
+                    topicosEstudo = dadosEstudos.topicos || [];
+                    sessoesEstudo = dadosEstudos.sessoes || [];
+                    contadorEstudos = dadosEstudos.contador || 0;
+                    configEstudos = dadosEstudos.configuracoes || configEstudos;
+                }
+            } catch (e) {
+                areasEstudo = [];
+                topicosEstudo = [];
+                sessoesEstudo = [];
+                contadorEstudos = 0;
+            }
         }
 
         function salvarDados() {
@@ -2380,6 +3066,15 @@
             localStorage.setItem(KEY_HISTORICO, JSON.stringify(historico));
             localStorage.setItem(KEY_CATEGORIAS, JSON.stringify(categorias));
             localStorage.setItem(KEY_AVALIACOES, JSON.stringify(avaliacoesDiarias));
+
+            // ESTUDOS v2.0
+            localStorage.setItem(KEY_ESTUDOS, JSON.stringify({
+                areas: areasEstudo,
+                topicos: topicosEstudo,
+                sessoes: sessoesEstudo,
+                contador: contadorEstudos,
+                configuracoes: configEstudos
+            }));
         }
 
         // PROJETOS
@@ -2501,7 +3196,8 @@
 
         function criarCard(task) {
             const card = document.createElement('div');
-            card.className = 'task-card';
+            const priorityClass = task.prioridade ? `priority-${task.prioridade.toLowerCase()}` : '';
+            card.className = `task-card ${priorityClass}`;
             card.draggable = true;
             card.dataset.id = task.id;
             const desc = task.descricao ? (task.descricao.slice(0, 120) + (task.descricao.length > 120 ? '...' : '')) : '';
@@ -3558,17 +4254,158 @@
             event.target.classList.add('active');
             $(aba).classList.add('active');
 
-            if (aba === 'rotina') {
+            if (aba === 'home') {
+                renderizarDashboard();
+            } else if (aba === 'rotina') {
                 verificarResetDiario();
                 renderizarRotina();
             } else if (aba === 'minhaRotina') {
                 verificarResetDiario();
                 renderizarRotinaSimplificada();
+            } else if (aba === 'estudos') {
+                renderizarEstudos();
+                atualizarSelectAreas();
             }
+        }
+
+        // DASHBOARD HOME
+        function renderizarDashboard() {
+            // Renderizar Projetos (top 3 prioritários)
+            const dashboardProjetos = $('dashboardProjetos');
+            const projetosAtivos = tarefas.filter(t => t.status !== 'Concluída').sort((a, b) => {
+                const prioridadeOrdem = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
+                return (prioridadeOrdem[a.prioridade] || 99) - (prioridadeOrdem[b.prioridade] || 99);
+            }).slice(0, 3);
+
+            if (projetosAtivos.length === 0) {
+                dashboardProjetos.innerHTML = '<div class="dashboard-empty">Nenhum projeto ativo</div>';
+            } else {
+                dashboardProjetos.innerHTML = projetosAtivos.map(t => `
+                    <div class="dashboard-item">
+                        <div class="dashboard-item-title">${t.id} - ${t.titulo}</div>
+                        <div class="dashboard-item-meta">
+                            ${t.prioridade} • ${t.status}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Renderizar Estudos (áreas ativas + tópicos recentes)
+            const dashboardEstudos = $('dashboardEstudos');
+            const areasAtivas = areasEstudo.filter(a => a.status === 'ativo').slice(0, 2);
+            const topicosRecentes = topicosEstudo.slice(-1);
+
+            if (areasAtivas.length === 0 && topicosRecentes.length === 0) {
+                dashboardEstudos.innerHTML = '<div class="dashboard-empty">Nenhuma área de estudo ativa</div>';
+            } else {
+                let html = '';
+                if (areasAtivas.length > 0) {
+                    html += areasAtivas.map(a => `
+                        <div class="dashboard-item">
+                            <div class="dashboard-item-title">${a.icone} ${a.nome}</div>
+                            <div class="dashboard-item-meta">${a.topicos?.length || 0} tópicos</div>
+                        </div>
+                    `).join('');
+                }
+                if (topicosRecentes.length > 0) {
+                    html += topicosRecentes.map(t => `
+                        <div class="dashboard-item">
+                            <div class="dashboard-item-title">📝 ${t.titulo}</div>
+                            <div class="dashboard-item-meta">Estudo recente</div>
+                        </div>
+                    `).join('');
+                }
+                dashboardEstudos.innerHTML = html || '<div class="dashboard-empty">Nenhum tópico recente</div>';
+            }
+
+            // Renderizar Rotina (próximas 3 tarefas)
+            const dashboardRotina = $('dashboardRotina');
+            const tarefasHoje = tarefasRotina.filter(t => t.status !== 'feito').slice(0, 3);
+
+            if (tarefasHoje.length === 0) {
+                dashboardRotina.innerHTML = '<div class="dashboard-empty">Nenhuma tarefa pendente</div>';
+            } else {
+                dashboardRotina.innerHTML = tarefasHoje.map(t => `
+                    <div class="dashboard-item">
+                        <div class="dashboard-item-title">${t.horario} - ${t.titulo}</div>
+                        <div class="dashboard-item-meta">${t.status === 'meiofeito' ? 'Em andamento' : 'A fazer'}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Atualizar Stats
+            $('statProjetos').textContent = tarefas.filter(t => t.status !== 'Concluída').length;
+            $('statEstudos').textContent = topicosEstudo.length;
+            $('statRotina').textContent = tarefasRotina.filter(t => t.status !== 'feito').length;
         }
 
         function abrirTerapia() {
             window.open('Terapia-Pedro/index.html', '_blank');
+        }
+
+        // FAB (Floating Action Button)
+        function toggleFAB() {
+            const fabButton = $('fabButton');
+            const fabMenu = $('fabMenu');
+            const fabOverlay = $('fabOverlay');
+
+            fabButton.classList.toggle('active');
+            fabMenu.classList.toggle('active');
+            fabOverlay.classList.toggle('active');
+        }
+
+        function acaoFAB(tipo) {
+            toggleFAB(); // Fechar o menu
+
+            if (tipo === 'projeto') {
+                // Trocar para aba Projetos e focar no formulário
+                trocarAba('projetos');
+                setTimeout(() => {
+                    const tituloInput = $('titulo');
+                    if (tituloInput) tituloInput.focus();
+                }, 100);
+            } else if (tipo === 'estudo') {
+                // Trocar para aba Estudos e abrir modal de novo tópico
+                trocarAba('estudos');
+                setTimeout(() => {
+                    mostrarViewEstudos('topicos');
+                    // Tentar focar no campo de novo tópico se existir
+                    const novoTopicoBtn = document.querySelector('[onclick*="novoTopico"]');
+                    if (novoTopicoBtn) novoTopicoBtn.click();
+                }, 100);
+            } else if (tipo === 'rotina') {
+                // Abrir modal de nova tarefa de rotina
+                abrirModalNovaTarefa();
+            }
+        }
+
+        // Fechar FAB com tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const fabMenu = $('fabMenu');
+                if (fabMenu && fabMenu.classList.contains('active')) {
+                    toggleFAB();
+                }
+            }
+        });
+
+        // SIDEBAR COLAPSÁVEL
+        function toggleSidebar(sidebarId, gridId) {
+            const sidebar = $(sidebarId);
+            const grid = $(gridId);
+            const btn = sidebar.querySelector('.sidebar-toggle-btn');
+
+            sidebar.classList.toggle('collapsed');
+            grid.classList.toggle('sidebar-collapsed');
+
+            // Mudar o ícone do botão
+            if (sidebar.classList.contains('collapsed')) {
+                btn.textContent = '▶';
+                btn.title = 'Expandir sidebar';
+            } else {
+                btn.textContent = '◀';
+                btn.title = 'Colapsar sidebar';
+            }
         }
 
         // DRAG & DROP
@@ -3672,6 +4509,13 @@
                     categorias,
                     historico,
                     avaliacoesDiarias,
+                    estudos: {
+                        areas: areasEstudo,
+                        topicos: topicosEstudo,
+                        sessoes: sessoesEstudo,
+                        contador: contadorEstudos,
+                        configuracoes: configEstudos
+                    },
                     exportado: new Date().toISOString()
                 };
                 const blob = new Blob([JSON.stringify(dados, null, 2)], {
@@ -3740,9 +4584,18 @@
                         avaliacoesDiarias = dados.avaliacoesDiarias;
                     }
 
+                    if (dados.estudos) {
+                        areasEstudo = dados.estudos.areas || [];
+                        topicosEstudo = dados.estudos.topicos || [];
+                        sessoesEstudo = dados.estudos.sessoes || [];
+                        contadorEstudos = dados.estudos.contador || 0;
+                        configEstudos = dados.estudos.configuracoes || configEstudos;
+                    }
+
                     salvarDados();
                     renderizarProjetos();
                     renderizarRotina();
+                    renderizarEstudos();
                     mostrarToast('Importado!', 'success');
                 } catch (e) {
                     mostrarToast('Erro ao importar', 'error');
@@ -3751,6 +4604,946 @@
 
             reader.readAsText(file);
         }
+
+        // ===== MÓDULO DE ESTUDOS v2.0 =====
+
+        // CRUD DE ÁREAS
+        function salvarArea(e) {
+            e.preventDefault();
+            const nome = $('areaNome').value.trim();
+            if (!nome) {
+                mostrarToast('Preencha o nome da área', 'error');
+                return;
+            }
+
+            const editId = $('areaEditId').value;
+            if (editId) {
+                const area = areasEstudo.find(a => a.id === editId);
+                if (area) {
+                    Object.assign(area, {
+                        nome,
+                        descricao: $('areaDescricao').value.trim(),
+                        cor: $('areaCor').value,
+                        icone: $('areaIcone').value.trim(),
+                        atualizadoEm: new Date().toISOString()
+                    });
+                    mostrarToast('Área atualizada!', 'success');
+                }
+            } else {
+                contadorEstudos++;
+                areasEstudo.push({
+                    id: 'AREA-' + String(contadorEstudos).padStart(4, '0'),
+                    nome,
+                    descricao: $('areaDescricao').value.trim(),
+                    cor: $('areaCor').value,
+                    icone: $('areaIcone').value.trim() || '📚',
+                    criadoEm: new Date().toISOString(),
+                    status: 'ativo'
+                });
+                mostrarToast('Área criada!', 'success');
+            }
+
+            salvarDados();
+            renderizarEstudos();
+            atualizarSelectAreas();
+            cancelarEdicaoEstudos();
+        }
+
+        function editarArea(id) {
+            const area = areasEstudo.find(a => a.id === id);
+            if (!area) return;
+
+            $('areaEditId').value = area.id;
+            $('areaNome').value = area.nome;
+            $('areaDescricao').value = area.descricao || '';
+            $('areaCor').value = area.cor;
+            $('areaIcone').value = area.icone || '';
+            $('btnSalvarArea').textContent = '💾 Salvar Alterações';
+            $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Área: ' + esc(area.nome) + '</span></div>';
+            mostrarFormulario('area');
+
+            // Scroll to form e highlight
+            const formCard = document.querySelector('.form-card');
+            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.style.boxShadow = '0 0 0 3px var(--accent)';
+            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+
+            mostrarToast('Editando área: ' + area.nome, 'info');
+        }
+
+        function excluirArea(id) {
+            const area = areasEstudo.find(a => a.id === id);
+            const topicos = topicosEstudo.filter(t => t.areaId === id);
+            const sessoes = sessoesEstudo.filter(s => topicos.some(t => t.id === s.topicoId));
+
+            const msg = `Excluir a área "${area?.nome}"?\n\nSerão excluídos:\n• ${topicos.length} tópicos\n• ${sessoes.length} sessões de estudo\n\nEsta ação não pode ser desfeita!`;
+            if (!confirm(msg)) return;
+
+            areasEstudo = areasEstudo.filter(a => a.id !== id);
+            topicosEstudo = topicosEstudo.filter(t => t.areaId !== id);
+            sessoesEstudo = sessoesEstudo.filter(s => !topicos.some(t => t.id === s.topicoId));
+
+            salvarDados();
+            renderizarEstudos();
+            atualizarSelectAreas();
+            mostrarToast(`Área "${area?.nome}" excluída com ${topicos.length} tópicos e ${sessoes.length} sessões`, 'success');
+        }
+
+        function arquivarArea(id) {
+            const area = areasEstudo.find(a => a.id === id);
+            if (!area) return;
+
+            area.status = area.status === 'ativo' ? 'arquivado' : 'ativo';
+            salvarDados();
+            renderizarEstudos();
+            mostrarToast(area.status === 'ativo' ? 'Área reativada' : 'Área arquivada', 'success');
+        }
+
+        // CRUD DE TÓPICOS
+        function salvarTopico(e) {
+            e.preventDefault();
+            const titulo = $('topicoTitulo').value.trim();
+            const areaId = $('topicoAreaId').value;
+
+            if (!titulo || !areaId) {
+                mostrarToast('Preencha título e área', 'error');
+                return;
+            }
+
+            const tags = $('topicoTags').value.split(',').map(t => t.trim()).filter(t => t);
+
+            const editId = $('topicoEditId').value;
+            if (editId) {
+                const topico = topicosEstudo.find(t => t.id === editId);
+                if (topico) {
+                    const statusAnterior = topico.status;
+                    const novoStatus = $('topicoStatus').value;
+
+                    Object.assign(topico, {
+                        titulo,
+                        areaId,
+                        descricao: $('topicoDescricao').value.trim(),
+                        status: novoStatus,
+                        prioridade: $('topicoPrioridade').value,
+                        agendamento: {
+                            data: $('topicoData').value || null,
+                            horario: $('topicoHorario').value || null
+                        },
+                        tags,
+                        atualizadoEm: new Date().toISOString()
+                    });
+
+                    // Se mudou para "Concluído", calcular próxima revisão
+                    if (statusAnterior !== 'Concluído' && novoStatus === 'Concluído') {
+                        topico.concluidoEm = new Date().toISOString();
+                        topico.proximaRevisao = calcularProximaRevisao(topico.concluidoEm, 0);
+                    }
+
+                    mostrarToast('Tópico atualizado!', 'success');
+                }
+            } else {
+                contadorEstudos++;
+                topicosEstudo.push({
+                    id: 'TOPICO-' + String(contadorEstudos).padStart(4, '0'),
+                    areaId,
+                    titulo,
+                    descricao: $('topicoDescricao').value.trim(),
+                    status: $('topicoStatus').value,
+                    prioridade: $('topicoPrioridade').value,
+                    agendamento: {
+                        data: $('topicoData').value || null,
+                        horario: $('topicoHorario').value || null
+                    },
+                    tags,
+                    criadoEm: new Date().toISOString(),
+                    concluidoEm: null,
+                    proximaRevisao: null,
+                    ordem: topicosEstudo.length
+                });
+                mostrarToast('Tópico criado!', 'success');
+            }
+
+            salvarDados();
+            renderizarEstudos();
+            cancelarEdicaoEstudos();
+        }
+
+        function editarTopico(id) {
+            const topico = topicosEstudo.find(t => t.id === id);
+            if (!topico) return;
+
+            $('topicoEditId').value = topico.id;
+            $('topicoAreaId').value = topico.areaId;
+            $('topicoTitulo').value = topico.titulo;
+            $('topicoDescricao').value = topico.descricao || '';
+            $('topicoStatus').value = topico.status;
+            $('topicoPrioridade').value = topico.prioridade;
+            $('topicoData').value = topico.agendamento?.data || '';
+            $('topicoHorario').value = topico.agendamento?.horario || '';
+            $('topicoTags').value = topico.tags?.join(', ') || '';
+
+            $('btnSalvarTopico').textContent = '💾 Salvar Alterações';
+            $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Tópico: ' + esc(topico.titulo) + '</span></div>';
+            mostrarFormulario('topico');
+
+            // Scroll to form e highlight
+            const formCard = document.querySelector('.form-card');
+            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.style.boxShadow = '0 0 0 3px var(--accent)';
+            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+
+            mostrarToast('Editando tópico: ' + topico.titulo, 'info');
+        }
+
+        function excluirTopico(id) {
+            const topico = topicosEstudo.find(t => t.id === id);
+            const sessoes = sessoesEstudo.filter(s => s.topicoId === id);
+
+            const msg = `Excluir o tópico "${topico?.titulo}"?\n\n${sessoes.length} ${sessoes.length === 1 ? 'sessão será excluída' : 'sessões serão excluídas'}.\n\nEsta ação não pode ser desfeita!`;
+            if (!confirm(msg)) return;
+
+            topicosEstudo = topicosEstudo.filter(t => t.id !== id);
+            sessoesEstudo = sessoesEstudo.filter(s => s.topicoId !== id);
+
+            salvarDados();
+            renderizarEstudos();
+            mostrarToast(`Tópico "${topico?.titulo}" e ${sessoes.length} ${sessoes.length === 1 ? 'sessão excluídos' : 'sessões excluídas'}`, 'success');
+        }
+
+        function registrarSessaoTopico(topicoId) {
+            const topico = topicosEstudo.find(t => t.id === topicoId);
+            if (!topico) return;
+
+            const area = areasEstudo.find(a => a.id === topico.areaId);
+
+            $('sessaoTopicoId').value = topicoId;
+            $('sessaoTopicoNome').value = `${area?.icone || '📚'} ${area?.nome || ''} → ${topico.titulo}`;
+            $('sessaoDuracao').value = 60;
+            $('sessaoNotas').value = '';
+            $('sessaoConcluiu').checked = topico.status === 'Estudando';
+
+            $('estudosFormModo').textContent = '📝 Registrar Sessão';
+            mostrarFormulario('sessao');
+
+            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function salvarSessao(e) {
+            e.preventDefault();
+            const topicoId = $('sessaoTopicoId').value;
+            const duracao = parseInt($('sessaoDuracao').value) * 60; // converter para segundos
+            const notas = $('sessaoNotas').value.trim();
+            const concluiu = $('sessaoConcluiu').checked;
+
+            const editId = $('sessaoEditId').value;
+            if (editId) {
+                // Editando sessão existente
+                const sessao = sessoesEstudo.find(s => s.id === editId);
+                if (sessao) {
+                    Object.assign(sessao, {
+                        duracao,
+                        notas,
+                        concluiu,
+                        atualizadaEm: new Date().toISOString()
+                    });
+                    mostrarToast('Sessão atualizada! ✏️', 'success');
+                }
+            } else {
+                // Nova sessão
+                contadorEstudos++;
+                sessoesEstudo.push({
+                    id: 'SESSAO-' + String(contadorEstudos).padStart(4, '0'),
+                    topicoId,
+                    data: new Date().toISOString(),
+                    duracao,
+                    notas,
+                    tipoSessao: 'estudo',
+                    concluiu
+                });
+                mostrarToast('Sessão registrada! 🎉', 'success');
+
+                // Atualizar status do tópico (apenas para novas sessões)
+                const topico = topicosEstudo.find(t => t.id === topicoId);
+                if (topico) {
+                    if (concluiu) {
+                        topico.status = 'Concluído';
+                        topico.concluidoEm = new Date().toISOString();
+                        topico.proximaRevisao = calcularProximaRevisao(topico.concluidoEm, 0);
+                    } else if (topico.status === 'Não iniciado') {
+                        topico.status = 'Estudando';
+                    }
+                }
+            }
+
+            salvarDados();
+            renderizarEstudos();
+            cancelarEdicaoEstudos();
+        }
+
+        function editarSessao(id) {
+            const sessao = sessoesEstudo.find(s => s.id === id);
+            if (!sessao) return;
+
+            const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
+            const area = areasEstudo.find(a => a.id === topico?.areaId);
+
+            $('sessaoEditId').value = sessao.id;
+            $('sessaoTopicoId').value = sessao.topicoId;
+            $('sessaoTopicoNome').value = `${area?.icone || '📚'} ${area?.nome || ''} → ${topico?.titulo || ''}`;
+            $('sessaoDuracao').value = Math.round(sessao.duracao / 60); // converter de segundos para minutos
+            $('sessaoNotas').value = sessao.notas || '';
+            $('sessaoConcluiu').checked = sessao.concluiu || false;
+
+            const dataFormatada = new Date(sessao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Sessão de ' + dataFormatada + '</span></div>';
+            mostrarFormulario('sessao');
+
+            // Scroll to form e highlight
+            const formCard = document.querySelector('.form-card');
+            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.style.boxShadow = '0 0 0 3px var(--accent)';
+            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+
+            mostrarToast('Editando sessão de estudo', 'info');
+        }
+
+        function excluirSessao(id) {
+            if (!confirm('Excluir esta sessão de estudo?')) return;
+
+            sessoesEstudo = sessoesEstudo.filter(s => s.id !== id);
+
+            salvarDados();
+            renderizarEstudos();
+            mostrarToast('Sessão excluída', 'success');
+        }
+
+        // REVISÃO ESPAÇADA
+        function calcularProximaRevisao(dataConlusao, tentativaRevisao = 0) {
+            const intervalos = configEstudos.revisaoEspacada.intervalos;
+            const dias = intervalos[Math.min(tentativaRevisao, intervalos.length - 1)];
+            const proxima = new Date(dataConlusao);
+            proxima.setDate(proxima.getDate() + dias);
+            return proxima.toISOString();
+        }
+
+        function marcarRevisao(topicoId) {
+            const topico = topicosEstudo.find(t => t.id === topicoId);
+            if (!topico) return;
+
+            // Registrar sessão de revisão
+            contadorEstudos++;
+            sessoesEstudo.push({
+                id: 'SESSAO-' + String(contadorEstudos).padStart(4, '0'),
+                topicoId,
+                data: new Date().toISOString(),
+                duracao: 1800, // 30min padrão
+                notas: 'Revisão agendada',
+                tipoSessao: 'revisao',
+                concluiu: true
+            });
+
+            // Calcular próxima revisão
+            const sessoesRevisao = sessoesEstudo.filter(s => s.topicoId === topicoId && s.tipoSessao === 'revisao');
+            topico.proximaRevisao = calcularProximaRevisao(new Date().toISOString(), sessoesRevisao.length);
+            topico.status = 'Concluído';
+
+            salvarDados();
+            renderizarEstudos();
+            mostrarToast('Revisão marcada! 📝', 'success');
+        }
+
+        function getTopicosRevisaoPendente() {
+            const hoje = new Date();
+            return topicosEstudo.filter(t => {
+                if (!t.proximaRevisao) return false;
+                return new Date(t.proximaRevisao) <= hoje;
+            });
+        }
+
+        // RENDERIZAÇÃO
+        function renderizarEstudos() {
+            const tabAtiva = document.querySelector('#viewAreas').style.display !== 'none' ? 'areas' :
+                            document.querySelector('#viewTopicos').style.display !== 'none' ? 'topicos' :
+                            document.querySelector('#viewSessoes').style.display !== 'none' ? 'sessoes' : 'progresso';
+
+            if (tabAtiva === 'areas') {
+                renderizarAreas();
+            } else if (tabAtiva === 'topicos') {
+                renderizarTopicos();
+            } else if (tabAtiva === 'sessoes') {
+                renderizarSessoes();
+            } else {
+                renderizarProgresso();
+            }
+
+            atualizarStatsEstudos();
+        }
+
+        function renderizarAreas() {
+            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
+            const container = $('listaAreas');
+
+            let areasFiltradas = areasEstudo.filter(a => a.status === 'ativo');
+
+            if (busca) {
+                areasFiltradas = areasFiltradas.filter(a =>
+                    a.nome.toLowerCase().includes(busca) ||
+                    (a.descricao || '').toLowerCase().includes(busca)
+                );
+            }
+
+            if (areasFiltradas.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-secondary);">📚 Nenhuma área cadastrada.<br><br>Crie sua primeira área de estudo!</div>';
+                return;
+            }
+
+            container.innerHTML = areasFiltradas.map(area => {
+                const topicos = topicosEstudo.filter(t => t.areaId === area.id);
+                const concluidos = topicos.filter(t => t.status === 'Concluído').length;
+                const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
+
+                return `
+                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area.cor}; transition: transform 0.2s;"
+                         onmouseenter="this.style.transform='translateY(-4px)'"
+                         onmouseleave="this.style.transform='translateY(0)'">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div style="font-size: 32px;">${area.icone || '📚'}</div>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-icon" onclick="event.stopPropagation(); editarArea('${area.id}')" title="Editar" style="font-size: 18px; padding: 8px;">✏️</button>
+                                <button class="btn-icon" onclick="event.stopPropagation(); excluirArea('${area.id}')" title="Excluir" style="font-size: 18px; padding: 8px;">🗑️</button>
+                            </div>
+                        </div>
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: ${area.cor};">${esc(area.nome)}</h3>
+                        ${area.descricao ? `<p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">${esc(area.descricao)}</p>` : ''}
+
+                        <div style="margin: 12px 0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                                <span>Progresso</span>
+                                <span>${progresso}%</span>
+                            </div>
+                            <div style="background: var(--border); border-radius: 8px; height: 6px; overflow: hidden;">
+                                <div style="background: ${area.cor}; height: 100%; width: ${progresso}%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; font-size: 13px; color: var(--text-secondary); margin-top: 12px;">
+                            <span>📝 ${topicos.length} tópicos</span>
+                            <span>✅ ${concluidos} concluídos</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 12px;">
+                            <button class="btn btn-sm" onclick="editarArea('${area.id}')" style="background: #3b82f6; color: white; font-weight: 600; flex: 1;">✏️ Editar</button>
+                            <button class="btn btn-sm btn-primary" onclick="filtrarTopicosPorArea('${area.id}')" style="flex: 1;">Ver Tópicos</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarTopicos() {
+            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
+            const filtroStatus = $('filtroStatusEstudos')?.value || '';
+            const filtroPrioridade = $('filtroPrioridadeEstudos')?.value || '';
+            const filtroArea = $('filtroAreaEstudos')?.value || '';
+            const container = $('listaTopicos');
+
+            let topicosFiltrados = [...topicosEstudo];
+
+            // Aplicar filtros
+            if (busca) {
+                topicosFiltrados = topicosFiltrados.filter(t =>
+                    t.titulo.toLowerCase().includes(busca) ||
+                    (t.descricao || '').toLowerCase().includes(busca) ||
+                    (t.tags || []).some(tag => tag.toLowerCase().includes(busca))
+                );
+            }
+
+            if (filtroStatus) {
+                topicosFiltrados = topicosFiltrados.filter(t => t.status === filtroStatus);
+            }
+
+            if (filtroPrioridade) {
+                topicosFiltrados = topicosFiltrados.filter(t => t.prioridade === filtroPrioridade);
+            }
+
+            if (filtroArea) {
+                topicosFiltrados = topicosFiltrados.filter(t => t.areaId === filtroArea);
+            }
+
+            // Ordenar por prioridade e data
+            const prioridadeOrdem = { 'Alta': 0, 'Média': 1, 'Baixa': 2 };
+            topicosFiltrados.sort((a, b) => {
+                const prioA = prioridadeOrdem[a.prioridade] || 999;
+                const prioB = prioridadeOrdem[b.prioridade] || 999;
+                if (prioA !== prioB) return prioA - prioB;
+                return new Date(b.criadoEm) - new Date(a.criadoEm);
+            });
+
+            if (topicosFiltrados.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 60px; color: var(--text-secondary); background: var(--surface); border-radius: 16px;">📝 Nenhum tópico encontrado.<br><br>Crie seu primeiro tópico de estudo!</div>';
+                return;
+            }
+
+            // Verificar revisões pendentes
+            const topicosPendentes = getTopicosRevisaoPendente().map(t => t.id);
+
+            container.innerHTML = topicosFiltrados.map(topico => {
+                const area = areasEstudo.find(a => a.id === topico.areaId);
+                const sessoes = sessoesEstudo.filter(s => s.topicoId === topico.id);
+                const tempoTotal = sessoes.reduce((acc, s) => acc + s.duracao, 0);
+                const horas = Math.floor(tempoTotal / 3600);
+                const minutos = Math.floor((tempoTotal % 3600) / 60);
+
+                const corStatus = {
+                    'Não iniciado': '#94a3b8',
+                    'Estudando': '#3b82f6',
+                    'Concluído': '#10b981',
+                    'Precisa revisão': '#f59e0b'
+                };
+
+                const corPrioridade = {
+                    'Alta': '#ef4444',
+                    'Média': '#f59e0b',
+                    'Baixa': '#10b981'
+                };
+
+                const precisaRevisao = topicosPendentes.includes(topico.id);
+
+                return `
+                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area?.cor || '#3b82f6'};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 20px;">${area?.icone || '📚'}</span>
+                                    <span style="font-size: 12px; color: var(--text-secondary);">${esc(area?.nome || 'Área desconhecida')}</span>
+                                    ${precisaRevisao ? '<span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">⏰ REVISÃO PENDENTE</span>' : ''}
+                                </div>
+                                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${esc(topico.titulo)}</h3>
+                                ${topico.descricao ? `<p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">${esc(topico.descricao)}</p>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-icon" onclick="editarTopico('${topico.id}')" title="Editar" style="font-size: 18px; padding: 8px;">✏️</button>
+                                <button class="btn-icon" onclick="excluirTopico('${topico.id}')" title="Excluir" style="font-size: 18px; padding: 8px;">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                            <span style="background: ${corStatus[topico.status]}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${topico.status}</span>
+                            <span style="background: ${corPrioridade[topico.prioridade]}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${topico.prioridade}</span>
+                            ${topico.agendamento?.data ? `<span style="background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">📅 ${formatarData(topico.agendamento.data)}</span>` : ''}
+                            ${topico.tags?.map(tag => `<span style="background: var(--border); color: var(--text-secondary); padding: 4px 8px; border-radius: 12px; font-size: 11px;">#${esc(tag)}</span>`).join('') || ''}
+                        </div>
+
+                        <div style="display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                            <span>📚 ${sessoes.length} sessões</span>
+                            <span>⏱️ ${horas}h ${minutos}min estudados</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-sm" onclick="editarTopico('${topico.id}')" style="background: #3b82f6; color: white; font-weight: 600;">✏️ Editar Tópico</button>
+                            <button class="btn btn-sm btn-primary" onclick="registrarSessaoTopico('${topico.id}')">📝 Registrar Sessão</button>
+                            ${sessoes.length > 0 ? `<button class="btn btn-sm btn-secondary" onclick="verSessoesTopico('${topico.id}')" title="Ver histórico de sessões">🎯 Ver Sessões (${sessoes.length})</button>` : ''}
+                            ${precisaRevisao ? `<button class="btn btn-sm btn-success" onclick="marcarRevisao('${topico.id}')">✅ Marcar Revisão</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarProgresso() {
+            const container = $('progressoGeral');
+
+            // Calcular estatísticas
+            const totalTopicos = topicosEstudo.length;
+            const topicosConcluidos = topicosEstudo.filter(t => t.status === 'Concluído').length;
+            const topicosEstudando = topicosEstudo.filter(t => t.status === 'Estudando').length;
+            const topicosPendentes = topicosEstudo.filter(t => t.status === 'Não iniciado').length;
+            const revisoesPendentes = getTopicosRevisaoPendente().length;
+
+            const totalSessoes = sessoesEstudo.length;
+            const tempoTotal = sessoesEstudo.reduce((acc, s) => acc + s.duracao, 0);
+            const horasTotal = Math.floor(tempoTotal / 3600);
+            const minutosTotal = Math.floor((tempoTotal % 3600) / 60);
+
+            // Progresso por área
+            const progressoPorArea = areasEstudo.map(area => {
+                const topicos = topicosEstudo.filter(t => t.areaId === area.id);
+                const concluidos = topicos.filter(t => t.status === 'Concluído').length;
+                const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
+
+                return { area, topicos: topicos.length, concluidos, progresso };
+            });
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;">${totalTopicos}</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Total de Tópicos</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;">${topicosConcluidos}</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Concluídos</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;">${topicosEstudando}</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Em Estudo</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700;">${revisoesPendentes}</div>
+                        <div style="font-size: 14px; opacity: 0.9;">Revisões Pendentes</div>
+                    </div>
+                </div>
+
+                <div style="background: var(--surface-hover); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">⏱️ Tempo de Estudo</h3>
+                    <div style="font-size: 32px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">${horasTotal}h ${minutosTotal}min</div>
+                    <div style="font-size: 14px; color: var(--text-secondary);">${totalSessoes} sessões registradas</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">📚 Progresso por Área</h3>
+                        ${progressoPorArea.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma área cadastrada ainda.</p>' : progressoPorArea.map(item => `
+                            <div style="margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 20px;">${item.area.icone || '📚'}</span>
+                                        <span style="font-weight: 600;">${esc(item.area.nome)}</span>
+                                    </div>
+                                    <span style="font-size: 14px; color: var(--text-secondary);">${item.concluidos}/${item.topicos} • ${item.progresso}%</span>
+                                </div>
+                                <div style="background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;">
+                                    <div style="background: ${item.area.cor}; height: 100%; width: ${item.progresso}%; transition: width 0.3s;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">⏱️ Tempo por Área</h3>
+                        ${progressoPorArea.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma área cadastrada ainda.</p>' : (() => {
+                            const tempoPorArea = areasEstudo.map(area => {
+                                const topicosArea = topicosEstudo.filter(t => t.areaId === area.id);
+                                const sessoesArea = sessoesEstudo.filter(s => topicosArea.some(t => t.id === s.topicoId));
+                                const tempoArea = sessoesArea.reduce((acc, s) => acc + s.duracao, 0);
+                                const horasArea = Math.floor(tempoArea / 3600);
+                                const minutosArea = Math.floor((tempoArea % 3600) / 60);
+                                return { area, tempo: tempoArea, horasArea, minutosArea };
+                            }).filter(item => item.tempo > 0).sort((a, b) => b.tempo - a.tempo);
+
+                            const maxTempo = Math.max(...tempoPorArea.map(item => item.tempo), 1);
+
+                            return tempoPorArea.map(item => `
+                                <div style="margin-bottom: 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 20px;">${item.area.icone || '📚'}</span>
+                                            <span style="font-weight: 600; font-size: 14px;">${esc(item.area.nome)}</span>
+                                        </div>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">${item.horasArea}h ${item.minutosArea}m</span>
+                                    </div>
+                                    <div style="background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;">
+                                        <div style="background: ${item.area.cor}; height: 100%; width: ${Math.round((item.tempo / maxTempo) * 100)}%; transition: width 0.3s;"></div>
+                                    </div>
+                                </div>
+                            `).join('') || '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>';
+                        })()}
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="font-size: 16px; font-weight: 600;">🎯 Sessões Recentes</h3>
+                        <button class="btn btn-sm btn-primary" onclick="trocarTabEstudos('sessoes')">Ver Todas</button>
+                    </div>
+                    ${sessoesEstudo.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>' : (() => {
+                        const sessoesRecentes = [...sessoesEstudo].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 5);
+                        return sessoesRecentes.map(sessao => {
+                            const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
+                            const area = areasEstudo.find(a => a.id === topico?.areaId);
+                            const dataFormatada = new Date(sessao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                            const horas = Math.floor(sessao.duracao / 3600);
+                            const minutos = Math.floor((sessao.duracao % 3600) / 60);
+                            const tipoIcon = sessao.tipoSessao === 'revisao' ? '🔄' : '📚';
+
+                            return `
+                                <div style="background: var(--surface); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid ${area?.cor || '#3b82f6'};">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
+                                                <span style="font-size: 16px;">${area?.icone || '📚'}</span>
+                                                <span style="font-size: 13px; font-weight: 600;">${esc(topico?.titulo || 'Tópico removido')}</span>
+                                                ${sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">✓</span>' : ''}
+                                            </div>
+                                            <div style="display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary);">
+                                                <span>${tipoIcon}</span>
+                                                <span>${dataFormatada}</span>
+                                                <span>•</span>
+                                                <span>${horas}h ${minutos}m</span>
+                                            </div>
+                                        </div>
+                                        <button class="btn-icon" onclick="editarSessao('${sessao.id}')" title="Editar">✏️</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    })()}
+                </div>
+            `;
+        }
+
+        function renderizarSessoes() {
+            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
+            const filtroArea = $('filtroAreaEstudos')?.value || '';
+            const container = $('listaSessoes');
+
+            let sessoesFiltradas = [...sessoesEstudo];
+
+            // Filtrar por busca
+            if (busca) {
+                sessoesFiltradas = sessoesFiltradas.filter(s => {
+                    const topico = topicosEstudo.find(t => t.id === s.topicoId);
+                    const area = areasEstudo.find(a => a.id === topico?.areaId);
+                    return (topico?.titulo || '').toLowerCase().includes(busca) ||
+                           (area?.nome || '').toLowerCase().includes(busca) ||
+                           (s.notas || '').toLowerCase().includes(busca);
+                });
+            }
+
+            // Filtrar por área
+            if (filtroArea) {
+                sessoesFiltradas = sessoesFiltradas.filter(s => {
+                    const topico = topicosEstudo.find(t => t.id === s.topicoId);
+                    return topico?.areaId === filtroArea;
+                });
+            }
+
+            // Ordenar por data (mais recente primeiro)
+            sessoesFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            if (sessoesFiltradas.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 60px; color: var(--text-secondary); background: var(--surface); border-radius: 16px;">🎯 Nenhuma sessão registrada ainda.<br><br>Registre suas sessões de estudo para acompanhar seu progresso!</div>';
+                return;
+            }
+
+            // Agrupar por data
+            const sessoesPorData = {};
+            sessoesFiltradas.forEach(sessao => {
+                const data = new Date(sessao.data);
+                const dataKey = data.toLocaleDateString('pt-BR');
+                if (!sessoesPorData[dataKey]) {
+                    sessoesPorData[dataKey] = [];
+                }
+                sessoesPorData[dataKey].push(sessao);
+            });
+
+            let html = `<div style="max-width: 900px; margin: 0 auto;">`;
+
+            // Stats rápidos
+            const totalSessoes = sessoesFiltradas.length;
+            const tempoTotal = sessoesFiltradas.reduce((acc, s) => acc + s.duracao, 0);
+            const horasTotal = Math.floor(tempoTotal / 3600);
+            const minutosTotal = Math.floor((tempoTotal % 3600) / 60);
+            const sessoesCompletas = sessoesFiltradas.filter(s => s.concluiu).length;
+
+            html += `
+                <div style="background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-lg);">
+                    <h2 style="font-size: 20px; margin-bottom: 20px;">🎯 Histórico de Sessões</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700;">${totalSessoes}</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Total de Sessões</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700;">${horasTotal}h ${minutosTotal}m</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Tempo Total</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700;">${sessoesCompletas}</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Completas</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Renderizar sessões agrupadas por data
+            Object.keys(sessoesPorData).forEach(dataKey => {
+                const sessoesDoDia = sessoesPorData[dataKey];
+                const tempoDoDia = sessoesDoDia.reduce((acc, s) => acc + s.duracao, 0);
+                const horasDia = Math.floor(tempoDoDia / 3600);
+                const minutosDia = Math.floor((tempoDoDia % 3600) / 60);
+
+                html += `
+                    <div style="margin-bottom: 32px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border);">
+                            <h3 style="font-size: 16px; font-weight: 600; color: var(--accent);">📅 ${dataKey}</h3>
+                            <span style="font-size: 13px; color: var(--text-secondary);">${sessoesDoDia.length} sessões • ${horasDia}h ${minutosDia}m</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                `;
+
+                sessoesDoDia.forEach(sessao => {
+                    const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
+                    const area = areasEstudo.find(a => a.id === topico?.areaId);
+                    const hora = new Date(sessao.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const horas = Math.floor(sessao.duracao / 3600);
+                    const minutos = Math.floor((sessao.duracao % 3600) / 60);
+
+                    const tipoIcon = sessao.tipoSessao === 'revisao' ? '🔄' : '📚';
+                    const tipoLabel = sessao.tipoSessao === 'revisao' ? 'Revisão' : 'Estudo';
+                    const tipoCor = sessao.tipoSessao === 'revisao' ? '#f59e0b' : '#3b82f6';
+
+                    html += `
+                        <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border-left: 4px solid ${area?.cor || '#3b82f6'};">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-size: 20px;">${area?.icone || '📚'}</span>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">${esc(area?.nome || 'Área desconhecida')}</span>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">•</span>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">${hora}</span>
+                                        ${sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">✅ CONCLUÍDO</span>' : ''}
+                                    </div>
+                                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${esc(topico?.titulo || 'Tópico removido')}</h4>
+                                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                        <span style="background: ${tipoCor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${tipoIcon} ${tipoLabel}</span>
+                                        <span style="background: var(--border); color: var(--text-secondary); padding: 4px 10px; border-radius: 12px; font-size: 11px;">⏱️ ${horas}h ${minutos}min</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn-icon" onclick="editarSessao('${sessao.id}')" title="Editar sessão">✏️</button>
+                                    <button class="btn-icon" onclick="excluirSessao('${sessao.id}')" title="Excluir sessão">🗑️</button>
+                                </div>
+                            </div>
+                            ${sessao.notas ? `
+                                <div style="background: var(--bg); padding: 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;">
+                                    ${esc(sessao.notas)}
+                                </div>
+                            ` : '<p style="font-size: 13px; color: var(--text-secondary); font-style: italic;">Sem notas registradas</p>'}
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // FUNÇÕES AUXILIARES
+        function mostrarFormulario(tipo) {
+            // Esconder todos os forms
+            $('formArea').style.display = 'none';
+            $('formTopico').style.display = 'none';
+            $('formSessao').style.display = 'none';
+
+            // Limpar campos
+            if (tipo === 'area') {
+                $('formArea').style.display = 'block';
+                $('estudosFormModo').textContent = '➕ Nova Área';
+                $('btnSalvarArea').textContent = 'Adicionar Área';
+                $('formArea').reset();
+                $('areaEditId').value = '';
+                $('areaCor').value = '#3b82f6';
+            } else if (tipo === 'topico') {
+                $('formTopico').style.display = 'block';
+                $('estudosFormModo').textContent = '➕ Novo Tópico';
+                $('btnSalvarTopico').textContent = 'Adicionar Tópico';
+                $('formTopico').reset();
+                $('topicoEditId').value = '';
+                atualizarSelectAreas();
+            } else if (tipo === 'sessao') {
+                $('formSessao').style.display = 'block';
+            }
+        }
+
+        function cancelarEdicaoEstudos() {
+            $('formArea').reset();
+            $('formTopico').reset();
+            $('formSessao').reset();
+            $('areaEditId').value = '';
+            $('topicoEditId').value = '';
+            $('sessaoEditId').value = '';
+            $('sessaoTopicoId').value = '';
+
+            $('estudosFormModo').textContent = '➕ Nova Área';
+            $('btnSalvarArea').textContent = 'Adicionar Área';
+            $('btnSalvarTopico').textContent = 'Adicionar Tópico';
+
+            mostrarFormulario('area');
+        }
+
+        function atualizarSelectAreas() {
+            const select = $('topicoAreaId');
+            const filtroSelect = $('filtroAreaEstudos');
+
+            const areasAtivas = areasEstudo.filter(a => a.status === 'ativo');
+
+            select.innerHTML = '<option value="">Selecione uma área</option>' +
+                areasAtivas.map(a => `<option value="${a.id}">${a.icone || '📚'} ${esc(a.nome)}</option>`).join('');
+
+            filtroSelect.innerHTML = '<option value="">Todas Áreas</option>' +
+                areasAtivas.map(a => `<option value="${a.id}">${a.icone || '📚'} ${esc(a.nome)}</option>`).join('');
+        }
+
+        function trocarTabEstudos(tab) {
+            // Atualizar tabs
+            $('tabAreas').style.borderBottom = tab === 'areas' ? '3px solid var(--accent)' : '3px solid transparent';
+            $('tabTopicos').style.borderBottom = tab === 'topicos' ? '3px solid var(--accent)' : '3px solid transparent';
+            $('tabSessoes').style.borderBottom = tab === 'sessoes' ? '3px solid var(--accent)' : '3px solid transparent';
+            $('tabProgresso').style.borderBottom = tab === 'progresso' ? '3px solid var(--accent)' : '3px solid transparent';
+
+            // Atualizar views
+            $('viewAreas').style.display = tab === 'areas' ? 'block' : 'none';
+            $('viewTopicos').style.display = tab === 'topicos' ? 'block' : 'none';
+            $('viewSessoes').style.display = tab === 'sessoes' ? 'block' : 'none';
+            $('viewProgresso').style.display = tab === 'progresso' ? 'block' : 'none';
+
+            renderizarEstudos();
+        }
+
+        function filtrarTopicosPorArea(areaId) {
+            trocarTabEstudos('topicos');
+            $('filtroAreaEstudos').value = areaId;
+            renderizarEstudos();
+        }
+
+        function verSessoesTopico(topicoId) {
+            const topico = topicosEstudo.find(t => t.id === topicoId);
+            if (!topico) return;
+
+            trocarTabEstudos('sessoes');
+            // A busca vai filtrar pelo título do tópico
+            $('buscaEstudos').value = topico.titulo;
+            renderizarEstudos();
+
+            mostrarToast(`Mostrando sessões de: ${topico.titulo}`, 'info');
+        }
+
+        function limparFiltrosEstudos() {
+            $('buscaEstudos').value = '';
+            $('filtroStatusEstudos').value = '';
+            $('filtroPrioridadeEstudos').value = '';
+            $('filtroAreaEstudos').value = '';
+            renderizarEstudos();
+        }
+
+        function atualizarStatsEstudos() {
+            const stats = $('statsEstudos');
+            if (!stats) return;
+
+            const total = topicosEstudo.length;
+            const concluidos = topicosEstudo.filter(t => t.status === 'Concluído').length;
+            const estudando = topicosEstudo.filter(t => t.status === 'Estudando').length;
+
+            stats.textContent = `Total: ${total} | Estudando: ${estudando} | Concluídos: ${concluidos}`;
+        }
+
+        // ===== FIM DO MÓDULO DE ESTUDOS =====
 
         // UTILS
         function $(id) {
