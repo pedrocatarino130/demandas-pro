@@ -436,6 +436,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -504,8 +505,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         /* PROJETOS - mantem */
@@ -932,8 +938,11 @@
             font-size: 42px;
             font-weight: 700;
             background: linear-gradient(135deg, var(--success), var(--accent));
-            -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
         }
 
         .progresso-barra {
@@ -1603,6 +1612,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.6);
+            -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
@@ -4273,7 +4283,12 @@
             // Renderizar Projetos (top 3 prioritários)
             const dashboardProjetos = $('dashboardProjetos');
             const projetosAtivos = tarefas.filter(t => t.status !== 'Concluída').sort((a, b) => {
-                const prioridadeOrdem = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
+                const prioridadeOrdem = {
+                    'Urgente': 0,
+                    'Alta': 1,
+                    'Média': 2,
+                    'Baixa': 3
+                };
                 return (prioridadeOrdem[a.prioridade] || 99) - (prioridadeOrdem[b.prioridade] || 99);
             }).slice(0, 3);
 
@@ -4664,9 +4679,13 @@
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
-            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.scrollIntoView({
+                behavior: 'smooth'
+            });
             formCard.style.boxShadow = '0 0 0 3px var(--accent)';
-            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+            setTimeout(() => {
+                formCard.style.boxShadow = '';
+            }, 2000);
 
             mostrarToast('Editando área: ' + area.nome, 'info');
         }
@@ -4778,9 +4797,9 @@
             $('topicoDescricao').value = topico.descricao || '';
             $('topicoStatus').value = topico.status;
             $('topicoPrioridade').value = topico.prioridade;
-            $('topicoData').value = topico.agendamento?.data || '';
-            $('topicoHorario').value = topico.agendamento?.horario || '';
-            $('topicoTags').value = topico.tags?.join(', ') || '';
+            $('topicoData').value = topico.agendamento && topico.agendamento.data ? topico.agendamento.data : '';
+            $('topicoHorario').value = topico.agendamento && topico.agendamento.horario ? topico.agendamento.horario : '';
+            $('topicoTags').value = topico.tags && topico.tags.length > 0 ? topico.tags.join(', ') : '';
 
             $('btnSalvarTopico').textContent = '💾 Salvar Alterações';
             $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Tópico: ' + esc(topico.titulo) + '</span></div>';
@@ -4788,9 +4807,13 @@
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
-            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.scrollIntoView({
+                behavior: 'smooth'
+            });
             formCard.style.boxShadow = '0 0 0 3px var(--accent)';
-            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+            setTimeout(() => {
+                formCard.style.boxShadow = '';
+            }, 2000);
 
             mostrarToast('Editando tópico: ' + topico.titulo, 'info');
         }
@@ -4825,7 +4848,9 @@
             $('estudosFormModo').textContent = '📝 Registrar Sessão';
             mostrarFormulario('sessao');
 
-            document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.form-card').scrollIntoView({
+                behavior: 'smooth'
+            });
         }
 
         function salvarSessao(e) {
@@ -4885,7 +4910,7 @@
             if (!sessao) return;
 
             const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
-            const area = areasEstudo.find(a => a.id === topico?.areaId);
+            const area = areasEstudo.find(a => a.id === topico.areaId);
 
             $('sessaoEditId').value = sessao.id;
             $('sessaoTopicoId').value = sessao.topicoId;
@@ -4894,15 +4919,25 @@
             $('sessaoNotas').value = sessao.notas || '';
             $('sessaoConcluiu').checked = sessao.concluiu || false;
 
-            const dataFormatada = new Date(sessao.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const dataFormatada = new Date(sessao.data).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Sessão de ' + dataFormatada + '</span></div>';
             mostrarFormulario('sessao');
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
-            formCard.scrollIntoView({ behavior: 'smooth' });
+            formCard.scrollIntoView({
+                behavior: 'smooth'
+            });
             formCard.style.boxShadow = '0 0 0 3px var(--accent)';
-            setTimeout(() => { formCard.style.boxShadow = ''; }, 2000);
+            setTimeout(() => {
+                formCard.style.boxShadow = '';
+            }, 2000);
 
             mostrarToast('Editando sessão de estudo', 'info');
         }
@@ -4963,8 +4998,8 @@
         // RENDERIZAÇÃO
         function renderizarEstudos() {
             const tabAtiva = document.querySelector('#viewAreas').style.display !== 'none' ? 'areas' :
-                            document.querySelector('#viewTopicos').style.display !== 'none' ? 'topicos' :
-                            document.querySelector('#viewSessoes').style.display !== 'none' ? 'sessoes' : 'progresso';
+                document.querySelector('#viewTopicos').style.display !== 'none' ? 'topicos' :
+                document.querySelector('#viewSessoes').style.display !== 'none' ? 'sessoes' : 'progresso';
 
             if (tabAtiva === 'areas') {
                 renderizarAreas();
@@ -4980,7 +5015,7 @@
         }
 
         function renderizarAreas() {
-            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
+            const busca = $('buscaEstudos').value.toLowerCase() || '';
             const container = $('listaAreas');
 
             let areasFiltradas = areasEstudo.filter(a => a.status === 'ativo');
@@ -5041,10 +5076,10 @@
         }
 
         function renderizarTopicos() {
-            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
-            const filtroStatus = $('filtroStatusEstudos')?.value || '';
-            const filtroPrioridade = $('filtroPrioridadeEstudos')?.value || '';
-            const filtroArea = $('filtroAreaEstudos')?.value || '';
+            const busca = $('buscaEstudos').value.toLowerCase() || '';
+            const filtroStatus = $('filtroStatusEstudos').value || '';
+            const filtroPrioridade = $('filtroPrioridadeEstudos').value || '';
+            const filtroArea = $('filtroAreaEstudos').value || '';
             const container = $('listaTopicos');
 
             let topicosFiltrados = [...topicosEstudo];
@@ -5071,7 +5106,11 @@
             }
 
             // Ordenar por prioridade e data
-            const prioridadeOrdem = { 'Alta': 0, 'Média': 1, 'Baixa': 2 };
+            const prioridadeOrdem = {
+                'Alta': 0,
+                'Média': 1,
+                'Baixa': 2
+            };
             topicosFiltrados.sort((a, b) => {
                 const prioA = prioridadeOrdem[a.prioridade] || 999;
                 const prioB = prioridadeOrdem[b.prioridade] || 999;
@@ -5171,7 +5210,12 @@
                 const concluidos = topicos.filter(t => t.status === 'Concluído').length;
                 const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
 
-                return { area, topicos: topicos.length, concluidos, progresso };
+                return {
+                    area,
+                    topicos: topicos.length,
+                    concluidos,
+                    progresso
+                };
             });
 
             container.innerHTML = `
@@ -5233,20 +5277,34 @@
 
                             const maxTempo = Math.max(...tempoPorArea.map(item => item.tempo), 1);
 
-                            return tempoPorArea.map(item => `
-                                <div style="margin-bottom: 16px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <span style="font-size: 20px;">${item.area.icone || '📚'}</span>
-                                            <span style="font-weight: 600; font-size: 14px;">${esc(item.area.nome)}</span>
-                                        </div>
-                                        <span style="font-size: 13px; color: var(--text-secondary);">${item.horasArea}h ${item.minutosArea}m</span>
-                                    </div>
-                                    <div style="background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;">
-                                        <div style="background: ${item.area.cor}; height: 100%; width: ${Math.round((item.tempo / maxTempo) * 100)}%; transition: width 0.3s;"></div>
-                                    </div>
-                                </div>
-                            `).join('') || '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>';
+                            return tempoPorArea.map(item => ` <
+                div style = "margin-bottom: 16px;" >
+                <
+                div style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;" >
+                <
+                div style = "display: flex; align-items: center; gap: 8px;" >
+                <
+                span style = "font-size: 20px;" > $ {
+                    item.area.icone || '📚'
+                } < /span> <
+            span style = "font-weight: 600; font-size: 14px;" > $ {
+                esc(item.area.nome)
+            } < /span> < /
+            div > <
+                span style = "font-size: 13px; color: var(--text-secondary);" > $ {
+                    item.horasArea
+                }
+            h $ {
+                item.minutosArea
+            }
+            m < /span> < /
+            div > <
+                div style = "background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;" >
+                <
+                div style = "background: ${item.area.cor}; height: 100%; width: ${Math.round((item.tempo / maxTempo) * 100)}%; transition: width 0.3s;" > < /div> < /
+            div > <
+                /div>
+            `).join('') || '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>';
                         })()}
                     </div>
                 </div>
@@ -5266,26 +5324,49 @@
                             const minutos = Math.floor((sessao.duracao % 3600) / 60);
                             const tipoIcon = sessao.tipoSessao === 'revisao' ? '🔄' : '📚';
 
-                            return `
-                                <div style="background: var(--surface); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid ${area?.cor || '#3b82f6'};">
-                                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                                        <div style="flex: 1;">
-                                            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px;">
-                                                <span style="font-size: 16px;">${area?.icone || '📚'}</span>
-                                                <span style="font-size: 13px; font-weight: 600;">${esc(topico?.titulo || 'Tópico removido')}</span>
-                                                ${sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">✓</span>' : ''}
-                                            </div>
-                                            <div style="display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary);">
-                                                <span>${tipoIcon}</span>
-                                                <span>${dataFormatada}</span>
-                                                <span>•</span>
-                                                <span>${horas}h ${minutos}m</span>
-                                            </div>
-                                        </div>
-                                        <button class="btn-icon" onclick="editarSessao('${sessao.id}')" title="Editar">✏️</button>
-                                    </div>
-                                </div>
-                            `;
+                            return ` <
+            div style = "background: var(--surface); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid ${area?.cor || '#3b82f6'};" >
+                <
+                div style = "display: flex; justify-content: space-between; align-items: start;" >
+                <
+                div style = "flex: 1;" >
+                <
+                div style = "display: flex; gap: 8px; align-items: center; margin-bottom: 4px;" >
+                <
+                span style = "font-size: 16px;" > $ {
+                    area.icone || '📚'
+                } < /span> <
+            span style = "font-size: 13px; font-weight: 600;" > $ {
+                esc(topico.titulo || 'Tópico removido')
+            } < /span>
+            $ {
+                sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">✓</span>' : ''
+            } <
+            /div> <
+            div style = "display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary);" >
+                <
+                span > $ {
+                    tipoIcon
+                } < /span> <
+            span > $ {
+                dataFormatada
+            } < /span> <
+            span > • < /span> <
+            span > $ {
+                horas
+            }
+            h $ {
+                minutos
+            }
+            m < /span> < /
+            div > <
+                /div> <
+            button class = "btn-icon"
+            onclick = "editarSessao('${sessao.id}')"
+            title = "Editar" > ✏️ < /button> < /
+            div > <
+                /div>
+            `;
                         }).join('');
                     })()}
                 </div>
@@ -5293,8 +5374,8 @@
         }
 
         function renderizarSessoes() {
-            const busca = $('buscaEstudos')?.value.toLowerCase() || '';
-            const filtroArea = $('filtroAreaEstudos')?.value || '';
+            const busca = $('buscaEstudos').value.toLowerCase() || '';
+            const filtroArea = $('filtroAreaEstudos').value || '';
             const container = $('listaSessoes');
 
             let sessoesFiltradas = [...sessoesEstudo];
@@ -5303,10 +5384,10 @@
             if (busca) {
                 sessoesFiltradas = sessoesFiltradas.filter(s => {
                     const topico = topicosEstudo.find(t => t.id === s.topicoId);
-                    const area = areasEstudo.find(a => a.id === topico?.areaId);
-                    return (topico?.titulo || '').toLowerCase().includes(busca) ||
-                           (area?.nome || '').toLowerCase().includes(busca) ||
-                           (s.notas || '').toLowerCase().includes(busca);
+                    const area = areasEstudo.find(a => a.id === topico.areaId);
+                    return (topico.titulo || '').toLowerCase().includes(busca) ||
+                        (area.nome || '').toLowerCase().includes(busca) ||
+                        (s.notas || '').toLowerCase().includes(busca);
                 });
             }
 
@@ -5314,7 +5395,7 @@
             if (filtroArea) {
                 sessoesFiltradas = sessoesFiltradas.filter(s => {
                     const topico = topicosEstudo.find(t => t.id === s.topicoId);
-                    return topico?.areaId === filtroArea;
+                    return topico.areaId === filtroArea;
                 });
             }
 
@@ -5384,8 +5465,11 @@
 
                 sessoesDoDia.forEach(sessao => {
                     const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
-                    const area = areasEstudo.find(a => a.id === topico?.areaId);
-                    const hora = new Date(sessao.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const area = areasEstudo.find(a => a.id === topico.areaId);
+                    const hora = new Date(sessao.data).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
                     const horas = Math.floor(sessao.duracao / 3600);
                     const minutos = Math.floor((sessao.duracao % 3600) / 60);
 
