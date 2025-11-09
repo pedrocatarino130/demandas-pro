@@ -4819,7 +4819,7 @@
             $('areaIcone').value = area.icone || '';
             $('btnSalvarArea').textContent = '💾 Salvar Alterações';
             $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Área: ' + esc(area.nome) + '</span></div>';
-            mostrarFormulario('area');
+            mostrarFormulario('area', true);
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
@@ -4947,7 +4947,7 @@
 
             $('btnSalvarTopico').textContent = '💾 Salvar Alterações';
             $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Tópico: ' + esc(topico.titulo) + '</span></div>';
-            mostrarFormulario('topico');
+            mostrarFormulario('topico', true);
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
@@ -5110,7 +5110,7 @@
                 minute: '2-digit'
             });
             $('estudosFormModo').innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">✏️ EDITANDO</span><span>Sessão de ' + dataFormatada + '</span></div>';
-            mostrarFormulario('sessao');
+            mostrarFormulario('sessao', true);
 
             // Scroll to form e highlight
             const formCard = document.querySelector('.form-card');
@@ -5979,26 +5979,30 @@
             datalist.innerHTML = tagsEstudo.map(tag => `<option value="${esc(tag)}">`).join('');
         }
 
-        function mostrarFormulario(tipo) {
+        function mostrarFormulario(tipo, isEditing = false) {
             // Esconder todos os forms
             $('formArea').style.display = 'none';
             $('formTopico').style.display = 'none';
             $('formSessao').style.display = 'none';
 
-            // Limpar campos
+            // Mostrar o form correto e limpar campos apenas se não estiver editando
             if (tipo === 'area') {
                 $('formArea').style.display = 'block';
-                $('estudosFormModo').textContent = '➕ Nova Área';
-                $('btnSalvarArea').textContent = 'Adicionar Área';
-                $('formArea').reset();
-                $('areaEditId').value = '';
-                $('areaCor').value = '#3b82f6';
+                if (!isEditing) {
+                    $('estudosFormModo').textContent = '➕ Nova Área';
+                    $('btnSalvarArea').textContent = 'Adicionar Área';
+                    $('formArea').reset();
+                    $('areaEditId').value = '';
+                    $('areaCor').value = '#3b82f6';
+                }
             } else if (tipo === 'topico') {
                 $('formTopico').style.display = 'block';
-                $('estudosFormModo').textContent = '➕ Novo Tópico';
-                $('btnSalvarTopico').textContent = 'Adicionar Tópico';
-                $('formTopico').reset();
-                $('topicoEditId').value = '';
+                if (!isEditing) {
+                    $('estudosFormModo').textContent = '➕ Novo Tópico';
+                    $('btnSalvarTopico').textContent = 'Adicionar Tópico';
+                    $('formTopico').reset();
+                    $('topicoEditId').value = '';
+                }
                 atualizarSelectAreas();
             } else if (tipo === 'sessao') {
                 $('formSessao').style.display = 'block';
