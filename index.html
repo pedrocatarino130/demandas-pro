@@ -940,7 +940,6 @@
             background: linear-gradient(135deg, var(--success), var(--accent));
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-fill-color: transparent;
             -webkit-background-clip: text;
             background-clip: text;
         }
@@ -1924,7 +1923,7 @@
                     <div class="form-title" id="estudosFormModo">➕ Nova Área</div>
 
                     <!-- Form Área -->
-                    <form id="formArea" onsubmit="salvarArea(event)" style="display:block">
+                    <form id="formArea" style="display:block">
                         <input type="hidden" id="areaEditId">
                         <div class="form-group">
                             <label>Nome da Área *</label>
@@ -1949,7 +1948,7 @@
                     </form>
 
                     <!-- Form Tópico -->
-                    <form id="formTopico" onsubmit="salvarTopico(event)" style="display:none">
+                    <form id="formTopico" style="display:none">
                         <input type="hidden" id="topicoEditId">
                         <div class="form-group">
                             <label>Área *</label>
@@ -2000,8 +1999,8 @@
                         </div>
                     </form>
 
-                    <!-- Form Sessão -->
-                    <form id="formSessao" onsubmit="salvarSessao(event)" style="display:none">
+                    <!-- Form Sessão v2.0 -->
+                    <form id="formSessao" style="display:none">
                         <input type="hidden" id="sessaoEditId">
                         <input type="hidden" id="sessaoTopicoId">
                         <div class="form-group">
@@ -2013,8 +2012,36 @@
                             <input type="number" class="form-control" id="sessaoDuracao" value="60" min="1">
                         </div>
                         <div class="form-group">
+                            <label>Categoria</label>
+                            <select class="form-control" id="sessaoCategoria">
+                                <option value="Estudo">📚 Estudo</option>
+                                <option value="Leitura">📖 Leitura</option>
+                                <option value="Prática">💻 Prática</option>
+                                <option value="Vídeo">🎥 Vídeo</option>
+                                <option value="Exercícios">✍️ Exercícios</option>
+                                <option value="Projeto">🚀 Projeto</option>
+                                <option value="Revisão">🔄 Revisão</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Dificuldade ⭐</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="range" class="form-control" id="sessaoDificuldade" value="3" min="1" max="5" style="flex: 1;" oninput="atualizarDificuldadeLabel()">
+                                <span id="dificuldadeLabel" style="min-width: 80px; font-weight: 600; color: var(--accent);">⭐⭐⭐</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tags (separadas por vírgula)</label>
+                            <input class="form-control" id="sessaoTags" placeholder="javascript, async, importante" list="tagsDatalist">
+                            <datalist id="tagsDatalist"></datalist>
+                        </div>
+                        <div class="form-group">
                             <label>Notas (markdown)</label>
-                            <textarea class="form-control" id="sessaoNotas" placeholder="# O que aprendi&#10;&#10;- Ponto 1&#10;- Ponto 2&#10;&#10;**Importante:** ..." style="min-height: 150px"></textarea>
+                            <textarea class="form-control" id="sessaoNotas" placeholder="# O que aprendi&#10;&#10;- Ponto 1&#10;- Ponto 2&#10;&#10;**Importante:** ..." style="min-height: 120px"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Recursos/Links (um por linha)</label>
+                            <textarea class="form-control" id="sessaoRecursos" placeholder="https://developer.mozilla.org/&#10;https://javascript.info/" style="min-height: 80px"></textarea>
                         </div>
                         <div class="form-group">
                             <label>
@@ -2064,6 +2091,19 @@
                             </select>
                             <select class="form-control" id="filtroAreaEstudos" style="width:auto" onchange="renderizarEstudos()">
                                 <option value="">Todas Áreas</option>
+                            </select>
+                            <select class="form-control" id="filtroCategoriaEstudos" style="width:auto" onchange="renderizarEstudos()">
+                                <option value="">Todas Categorias</option>
+                                <option>Estudo</option>
+                                <option>Leitura</option>
+                                <option>Prática</option>
+                                <option>Vídeo</option>
+                                <option>Exercícios</option>
+                                <option>Projeto</option>
+                                <option>Revisão</option>
+                            </select>
+                            <select class="form-control" id="filtroTagEstudos" style="width:auto" onchange="renderizarEstudos()">
+                                <option value="">Todas Tags</option>
                             </select>
                             <button class="btn btn-sm btn-secondary" onclick="limparFiltrosEstudos()">Limpar</button>
                             <span class="stats" id="statsEstudos"></span>
@@ -2487,7 +2527,8 @@
         const KEY_CATEGORIAS = 'categorias_rotina_v4';
         const KEY_AVALIACOES = 'avaliacoes_diarias_v1';
         const KEY_PUSHCUT_API = 'pushcut_api_key_v1';
-        const KEY_ESTUDOS = 'estudos_dados_v1';
+        const KEY_ESTUDOS = 'estudos_dados_v2';
+        const KEY_ESTUDOS_V1 = 'estudos_dados_v1'; // Para migração
         const COLUNAS = ['A Fazer', 'Fazendo', 'Revisão', 'Bloqueado', 'Concluída'];
 
         let tarefas = [];
@@ -2509,13 +2550,14 @@
         let topicosEstudo = [];
         let sessoesEstudo = [];
         let contadorEstudos = 0;
+        let tagsEstudo = []; // Tags globais
         let configEstudos = {
             revisaoEspacada: {
                 ativo: true,
                 intervalos: [7, 15, 30]
             },
             notificacoes: true,
-            viewPadrao: 'lista'
+            viewPadrao: 'kanban'
         };
 
         const CONQUISTAS_LISTA = [{
@@ -2860,12 +2902,17 @@
         }
 
         function init() {
+            console.log('🚀 Iniciando aplicação...');
             carregarDados();
             renderizarDashboard(); // Renderizar dashboard na inicialização
             renderizarProjetos();
             renderizarRotina();
+            renderizarEstudos(); // Renderizar estudos na inicialização
+            atualizarSelectAreas(); // Atualizar selects de áreas
             setupEventos();
+            setupEventosEstudos(); // Setup dos event listeners de estudos
             verificarDarkMode();
+            console.log('✅ Aplicação inicializada!');
 
             // Event listener para busca de estudos em tempo real
             const buscaEstudos = $('buscaEstudos');
@@ -2955,6 +3002,69 @@
             }
         }
 
+        // MIGRAÇÃO DE DADOS DE ESTUDOS v1 -> v2
+        function migrarEstudosV1ParaV2() {
+            console.log('🔄 Verificando migração de estudos v1 -> v2...');
+
+            // Verificar se já existe dados em v2
+            const dadosV2 = localStorage.getItem(KEY_ESTUDOS);
+            if (dadosV2) {
+                console.log('✅ Dados v2 já existem, migração não necessária');
+                return false;
+            }
+
+            // Verificar se existe dados em v1
+            const dadosV1 = localStorage.getItem(KEY_ESTUDOS_V1);
+            if (!dadosV1) {
+                console.log('ℹ️ Nenhum dado v1 encontrado, iniciando do zero');
+                return false;
+            }
+
+            try {
+                const estudosV1 = JSON.parse(dadosV1);
+                console.log('📦 Migrando dados v1:', estudosV1);
+
+                // Migrar sessões adicionando novos campos
+                const sessoesMigradas = (estudosV1.sessoes || []).map(sessao => ({
+                    ...sessao,
+                    tags: [], // Novo campo
+                    categoria: 'Estudo', // Novo campo com valor padrão
+                    dificuldade: 3, // Novo campo com valor médio padrão
+                    recursos: [] // Novo campo
+                }));
+
+                // Criar estrutura v2
+                const estudosV2 = {
+                    areas: estudosV1.areas || [],
+                    topicos: estudosV1.topicos || [],
+                    sessoes: sessoesMigradas,
+                    contador: estudosV1.contador || 0,
+                    tags: [], // Nova coleção de tags globais
+                    configuracoes: estudosV1.configuracoes || {
+                        revisaoEspacada: {
+                            ativo: true,
+                            intervalos: [7, 15, 30]
+                        },
+                        notificacoes: true,
+                        viewPadrao: 'kanban'
+                    },
+                    versao: 2
+                };
+
+                // Salvar em v2
+                localStorage.setItem(KEY_ESTUDOS, JSON.stringify(estudosV2));
+                console.log('✅ Migração concluída com sucesso!', estudosV2);
+
+                // Manter v1 como backup
+                console.log('💾 Dados v1 mantidos como backup');
+
+                return true;
+            } catch (e) {
+                console.error('❌ Erro na migração:', e);
+                return false;
+            }
+        }
+
         function carregarDados() {
             try {
                 const dados = JSON.parse(localStorage.getItem(KEY_PROJETOS));
@@ -2975,7 +3085,7 @@
                     streak = dadosRotina.streak || 0;
                     conquistas = dadosRotina.conquistas || {};
                     diaAtual = dadosRotina.ultimoReset || new Date().toDateString();
-                    verificarResetDiario();
+                    // NÃO chamar verificarResetDiario() aqui - será chamado depois que TODOS os dados forem carregados
                 }
             } catch (e) {
                 tarefasRotina = [];
@@ -3043,22 +3153,42 @@
                 avaliacoesDiarias = [];
             }
 
-            // ESTUDOS v2.0
+            // ESTUDOS v2.0 - Executar migração primeiro
+            migrarEstudosV1ParaV2();
+
             try {
                 const dadosEstudos = JSON.parse(localStorage.getItem(KEY_ESTUDOS));
+                console.log('📚 Carregando estudos do localStorage:', dadosEstudos);
                 if (dadosEstudos) {
                     areasEstudo = dadosEstudos.areas || [];
                     topicosEstudo = dadosEstudos.topicos || [];
                     sessoesEstudo = dadosEstudos.sessoes || [];
                     contadorEstudos = dadosEstudos.contador || 0;
+                    tagsEstudo = dadosEstudos.tags || [];
                     configEstudos = dadosEstudos.configuracoes || configEstudos;
+                    console.log('✅ Estudos v2 carregados:', {
+                        areas: areasEstudo.length,
+                        topicos: topicosEstudo.length,
+                        sessoes: sessoesEstudo.length,
+                        tags: tagsEstudo.length,
+                        versao: dadosEstudos.versao || 2
+                    });
+                } else {
+                    console.log('⚠️ Nenhum dado de estudos encontrado no localStorage');
                 }
             } catch (e) {
+                console.error('❌ Erro ao carregar estudos:', e);
                 areasEstudo = [];
                 topicosEstudo = [];
                 sessoesEstudo = [];
                 contadorEstudos = 0;
+                tagsEstudo = [];
             }
+
+            // Agora que TODOS os dados foram carregados, verificar reset diário
+            // Isso garante que verificarResetDiario() não sobrescreva dados de estudos
+            console.log('🔄 Verificando reset diário APÓS carregar todos os dados...');
+            verificarResetDiario();
         }
 
         function salvarDados() {
@@ -3078,13 +3208,18 @@
             localStorage.setItem(KEY_AVALIACOES, JSON.stringify(avaliacoesDiarias));
 
             // ESTUDOS v2.0
-            localStorage.setItem(KEY_ESTUDOS, JSON.stringify({
+            const dadosEstudos = {
                 areas: areasEstudo,
                 topicos: topicosEstudo,
                 sessoes: sessoesEstudo,
                 contador: contadorEstudos,
-                configuracoes: configEstudos
-            }));
+                tags: tagsEstudo,
+                configuracoes: configEstudos,
+                versao: 2
+            };
+            console.log('💾 Salvando estudos v2 no localStorage:', dadosEstudos);
+            localStorage.setItem(KEY_ESTUDOS, JSON.stringify(dadosEstudos));
+            console.log('✅ Estudos v2 salvos com sucesso!');
         }
 
         // PROJETOS
@@ -4529,7 +4664,9 @@
                         topicos: topicosEstudo,
                         sessoes: sessoesEstudo,
                         contador: contadorEstudos,
-                        configuracoes: configEstudos
+                        tags: tagsEstudo,
+                        configuracoes: configEstudos,
+                        versao: 2
                     },
                     exportado: new Date().toISOString()
                 };
@@ -4604,6 +4741,7 @@
                         topicosEstudo = dados.estudos.topicos || [];
                         sessoesEstudo = dados.estudos.sessoes || [];
                         contadorEstudos = dados.estudos.contador || 0;
+                        tagsEstudo = dados.estudos.tags || [];
                         configEstudos = dados.estudos.configuracoes || configEstudos;
                     }
 
@@ -4625,6 +4763,7 @@
         // CRUD DE ÁREAS
         function salvarArea(e) {
             e.preventDefault();
+            console.log('🔵 salvarArea chamada');
             const nome = $('areaNome').value.trim();
             if (!nome) {
                 mostrarToast('Preencha o nome da área', 'error');
@@ -4642,11 +4781,12 @@
                         icone: $('areaIcone').value.trim(),
                         atualizadoEm: new Date().toISOString()
                     });
+                    console.log('✏️ Área atualizada:', area);
                     mostrarToast('Área atualizada!', 'success');
                 }
             } else {
                 contadorEstudos++;
-                areasEstudo.push({
+                const novaArea = {
                     id: 'AREA-' + String(contadorEstudos).padStart(4, '0'),
                     nome,
                     descricao: $('areaDescricao').value.trim(),
@@ -4654,10 +4794,14 @@
                     icone: $('areaIcone').value.trim() || '📚',
                     criadoEm: new Date().toISOString(),
                     status: 'ativo'
-                });
+                };
+                areasEstudo.push(novaArea);
+                console.log('✨ Nova área criada:', novaArea);
+                console.log('📊 Total de áreas:', areasEstudo.length);
                 mostrarToast('Área criada!', 'success');
             }
 
+            console.log('💾 Chamando salvarDados()...');
             salvarDados();
             renderizarEstudos();
             atualizarSelectAreas();
@@ -4845,6 +4989,12 @@
             $('sessaoNotas').value = '';
             $('sessaoConcluiu').checked = topico.status === 'Estudando';
 
+            // Inicializar novos campos v2.0
+            if ($('sessaoTags')) $('sessaoTags').value = (topico.tags || []).join(', ');
+            if ($('sessaoCategoria')) $('sessaoCategoria').value = 'Estudo';
+            if ($('sessaoDificuldade')) $('sessaoDificuldade').value = 3;
+            if ($('sessaoRecursos')) $('sessaoRecursos').value = '';
+
             $('estudosFormModo').textContent = '📝 Registrar Sessão';
             mostrarFormulario('sessao');
 
@@ -4860,6 +5010,14 @@
             const notas = $('sessaoNotas').value.trim();
             const concluiu = $('sessaoConcluiu').checked;
 
+            // Novos campos v2.0
+            const tagsInput = $('sessaoTags') && $('sessaoTags').value ? $('sessaoTags').value : '';
+            const tags = tagsInput.split(',').map(t => t.trim()).filter(t => t);
+            const categoria = $('sessaoCategoria') && $('sessaoCategoria').value ? $('sessaoCategoria').value : 'Estudo';
+            const dificuldade = parseInt($('sessaoDificuldade') && $('sessaoDificuldade').value ? $('sessaoDificuldade').value : '3');
+            const recursosInput = $('sessaoRecursos') && $('sessaoRecursos').value ? $('sessaoRecursos').value : '';
+            const recursos = recursosInput.split('\n').map(r => r.trim()).filter(r => r);
+
             const editId = $('sessaoEditId').value;
             if (editId) {
                 // Editando sessão existente
@@ -4869,6 +5027,10 @@
                         duracao,
                         notas,
                         concluiu,
+                        tags,
+                        categoria,
+                        dificuldade,
+                        recursos,
                         atualizadaEm: new Date().toISOString()
                     });
                     mostrarToast('Sessão atualizada! ✏️', 'success');
@@ -4883,7 +5045,11 @@
                     duracao,
                     notas,
                     tipoSessao: 'estudo',
-                    concluiu
+                    concluiu,
+                    tags,
+                    categoria,
+                    dificuldade,
+                    recursos
                 });
                 mostrarToast('Sessão registrada! 🎉', 'success');
 
@@ -4899,6 +5065,17 @@
                     }
                 }
             }
+
+            // Atualizar tags globais
+            tags.forEach(tag => {
+                if (!tagsEstudo.includes(tag)) {
+                    tagsEstudo.push(tag);
+                }
+            });
+
+            // Atualizar filtros e datalist
+            atualizarFiltroTags();
+            atualizarTagsDatalist();
 
             salvarDados();
             renderizarEstudos();
@@ -4918,6 +5095,12 @@
             $('sessaoDuracao').value = Math.round(sessao.duracao / 60); // converter de segundos para minutos
             $('sessaoNotas').value = sessao.notas || '';
             $('sessaoConcluiu').checked = sessao.concluiu || false;
+
+            // Novos campos v2.0
+            if ($('sessaoTags')) $('sessaoTags').value = (sessao.tags || []).join(', ');
+            if ($('sessaoCategoria')) $('sessaoCategoria').value = sessao.categoria || 'Estudo';
+            if ($('sessaoDificuldade')) $('sessaoDificuldade').value = sessao.dificuldade || 3;
+            if ($('sessaoRecursos')) $('sessaoRecursos').value = (sessao.recursos || []).join('\n');
 
             const dataFormatada = new Date(sessao.data).toLocaleDateString('pt-BR', {
                 day: '2-digit',
@@ -4974,7 +5157,11 @@
                 duracao: 1800, // 30min padrão
                 notas: 'Revisão agendada',
                 tipoSessao: 'revisao',
-                concluiu: true
+                concluiu: true,
+                tags: ['revisao'],
+                categoria: 'Revisão',
+                dificuldade: 3,
+                recursos: []
             });
 
             // Calcular próxima revisão
@@ -4997,9 +5184,22 @@
 
         // RENDERIZAÇÃO
         function renderizarEstudos() {
+            console.log('🎨 renderizarEstudos chamada');
+            console.log('📊 Dados atuais:', {
+                areas: areasEstudo.length,
+                topicos: topicosEstudo.length,
+                sessoes: sessoesEstudo.length
+            });
+
+            // Atualizar filtros e datalists
+            atualizarFiltroTags();
+            atualizarTagsDatalist();
+
             const tabAtiva = document.querySelector('#viewAreas').style.display !== 'none' ? 'areas' :
                 document.querySelector('#viewTopicos').style.display !== 'none' ? 'topicos' :
                 document.querySelector('#viewSessoes').style.display !== 'none' ? 'sessoes' : 'progresso';
+
+            console.log('📑 Tab ativa:', tabAtiva);
 
             if (tabAtiva === 'areas') {
                 renderizarAreas();
@@ -5015,10 +5215,16 @@
         }
 
         function renderizarAreas() {
+            console.log('📚 renderizarAreas chamada');
             const busca = $('buscaEstudos').value.toLowerCase() || '';
             const container = $('listaAreas');
 
+            console.log('🔍 Total de áreas no array:', areasEstudo.length);
+            console.log('🔍 Áreas:', areasEstudo);
+
             let areasFiltradas = areasEstudo.filter(a => a.status === 'ativo');
+
+            console.log('✅ Áreas ativas filtradas:', areasFiltradas.length);
 
             if (busca) {
                 areasFiltradas = areasFiltradas.filter(a =>
@@ -5028,19 +5234,33 @@
             }
 
             if (areasFiltradas.length === 0) {
+                console.log('⚠️ Nenhuma área para exibir');
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-secondary);">📚 Nenhuma área cadastrada.<br><br>Crie sua primeira área de estudo!</div>';
                 return;
             }
+
+            console.log('✨ Renderizando', areasFiltradas.length, 'áreas');
 
             container.innerHTML = areasFiltradas.map(area => {
                 const topicos = topicosEstudo.filter(t => t.areaId === area.id);
                 const concluidos = topicos.filter(t => t.status === 'Concluído').length;
                 const progresso = topicos.length > 0 ? Math.round((concluidos / topicos.length) * 100) : 0;
 
+                // Calcular sessões e tempo investido
+                const sessoes = sessoesEstudo.filter(s => topicos.some(t => t.id === s.topicoId));
+                const tempoTotal = sessoes.reduce((acc, s) => acc + s.duracao, 0);
+                const horas = Math.floor(tempoTotal / 3600);
+                const minutos = Math.floor((tempoTotal % 3600) / 60);
+
+                // Verificar se há revisões pendentes
+                const revisoesPendentes = topicos.filter(t => t.proximaRevisao && new Date(t.proximaRevisao) <= new Date()).length;
+
                 return `
-                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area.cor}; transition: transform 0.2s;"
+                    <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-lg); border-left: 4px solid ${area.cor}; transition: transform 0.2s; position: relative;"
                          onmouseenter="this.style.transform='translateY(-4px)'"
                          onmouseleave="this.style.transform='translateY(0)'">
+                        ${revisoesPendentes > 0 ? `<div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">🔄 ${revisoesPendentes}</div>` : ''}
+                        
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                             <div style="font-size: 32px;">${area.icone || '📚'}</div>
                             <div style="display: flex; gap: 6px;">
@@ -5061,9 +5281,23 @@
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 8px; font-size: 13px; color: var(--text-secondary); margin-top: 12px;">
-                            <span>📝 ${topicos.length} tópicos</span>
-                            <span>✅ ${concluidos} concluídos</span>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: 12px;">
+                            <div style="background: var(--border); padding: 8px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 700; font-size: 16px; color: var(--accent);">${topicos.length}</div>
+                                <div style="color: var(--text-secondary); font-size: 11px;">Tópicos</div>
+                            </div>
+                            <div style="background: var(--border); padding: 8px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 700; font-size: 16px; color: #10b981;">${concluidos}</div>
+                                <div style="color: var(--text-secondary); font-size: 11px;">Concluídos</div>
+                            </div>
+                            <div style="background: var(--border); padding: 8px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 700; font-size: 16px; color: #3b82f6;">${sessoes.length}</div>
+                                <div style="color: var(--text-secondary); font-size: 11px;">Sessões</div>
+                            </div>
+                            <div style="background: var(--border); padding: 8px; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 700; font-size: 14px; color: #f59e0b;">${horas}h ${minutos}m</div>
+                                <div style="color: var(--text-secondary); font-size: 11px;">Tempo</div>
+                            </div>
                         </div>
 
                         <div style="display: flex; gap: 8px; margin-top: 12px;">
@@ -5133,6 +5367,18 @@
                 const horas = Math.floor(tempoTotal / 3600);
                 const minutos = Math.floor((tempoTotal % 3600) / 60);
 
+                // Estatísticas adicionais
+                const dificuldadeMedia = sessoes.length > 0 && sessoes.some(s => s.dificuldade) ?
+                    sessoes.filter(s => s.dificuldade).reduce((acc, s) => acc + s.dificuldade, 0) / sessoes.filter(s => s.dificuldade).length :
+                    0;
+
+                const categorias = {};
+                sessoes.forEach(s => {
+                    const cat = s.categoria || 'Estudo';
+                    categorias[cat] = (categorias[cat] || 0) + 1;
+                });
+                const categoriaPrincipal = Object.entries(categorias).sort((a, b) => b[1] - a[1])[0];
+
                 const corStatus = {
                     'Não iniciado': '#94a3b8',
                     'Estudando': '#3b82f6',
@@ -5173,9 +5419,27 @@
                             ${topico.tags?.map(tag => `<span style="background: var(--border); color: var(--text-secondary); padding: 4px 8px; border-radius: 12px; font-size: 11px;">#${esc(tag)}</span>`).join('') || ''}
                         </div>
 
-                        <div style="display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                            <span>📚 ${sessoes.length} sessões</span>
-                            <span>⏱️ ${horas}h ${minutos}min estudados</span>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 12px;">
+                            <div style="background: var(--border); padding: 6px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 14px; font-weight: 700; color: var(--accent);">${sessoes.length}</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Sessões</div>
+                            </div>
+                            <div style="background: var(--border); padding: 6px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 14px; font-weight: 700; color: #f59e0b;">${horas}h ${minutos}m</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">Tempo</div>
+                            </div>
+                            ${dificuldadeMedia > 0 ? `
+                                <div style="background: var(--border); padding: 6px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #8b5cf6;">${'⭐'.repeat(Math.round(dificuldadeMedia))}</div>
+                                    <div style="font-size: 10px; color: var(--text-secondary);">Dificuldade</div>
+                                </div>
+                            ` : ''}
+                            ${categoriaPrincipal ? `
+                                <div style="background: var(--border); padding: 6px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #3b82f6;">${categoriaPrincipal[0]}</div>
+                                    <div style="font-size: 10px; color: var(--text-secondary);">${categoriaPrincipal[1]}x</div>
+                                </div>
+                            ` : ''}
                         </div>
 
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -5264,6 +5528,130 @@
                     </div>
 
                     <div>
+                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">📊 Estatísticas por Categoria</h3>
+                        ${sessoesEstudo.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>' : (() => {
+                            const categorias = {};
+                            sessoesEstudo.forEach(s => {
+                                const cat = s.categoria || 'Estudo';
+                                if (!categorias[cat]) {
+                                    categorias[cat] = { count: 0, tempo: 0 };
+                                }
+                                categorias[cat].count++;
+                                categorias[cat].tempo += s.duracao;
+                            });
+                            
+                            const categoriaIcons = {
+                                'Estudo': '📚',
+                                'Leitura': '📖',
+                                'Prática': '💻',
+                                'Vídeo': '🎥',
+                                'Exercícios': '✍️',
+                                'Projeto': '🚀',
+                                'Revisão': '🔄'
+                            };
+                            
+                            return Object.entries(categorias).sort((a, b) => b[1].count - a[1].count).map(([cat, data]) => {
+                                const horas = Math.floor(data.tempo / 3600);
+                                const minutos = Math.floor((data.tempo % 3600) / 60);
+                                return ` <
+                div style = "background: var(--surface); padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;" >
+                <
+                div style = "display: flex; align-items: center; gap: 8px;" >
+                <
+                span style = "font-size: 18px;" > $ {
+                    categoriaIcons[cat] || '📚'
+                } < /span> <
+            span style = "font-weight: 600; font-size: 14px;" > $ {
+                esc(cat)
+            } < /span> < /
+            div > <
+                div style = "text-align: right; font-size: 12px; color: var(--text-secondary);" >
+                <
+                div > $ {
+                    data.count
+                }
+            sessões < /div> <
+            div > $ {
+                horas
+            }
+            h $ {
+                minutos
+            }
+            m < /div> < /
+            div > <
+                /div>
+            `;
+                            }).join('');
+                        })()}
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">🏷️ Tags Mais Usadas</h3>
+                        ${tagsEstudo.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma tag registrada ainda.</p>' : (() => {
+                            const tagCount = {};
+                            sessoesEstudo.forEach(s => {
+                                (s.tags || []).forEach(tag => {
+                                    tagCount[tag] = (tagCount[tag] || 0) + 1;
+                                });
+                            });
+                            
+                            return Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([tag, count]) => ` <
+            span style = "background: var(--accent); color: white; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; display: inline-block; margin: 4px;" >
+                #$ {
+                    esc(tag)
+                } < span style = "opacity: 0.8;" > ($ {
+                    count
+                }) < /span> < /
+            span >
+                `).join('') || '<p style="color: var(--text-secondary);">Nenhuma tag usada ainda.</p>';
+                        })()}
+                    </div>
+
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">⭐ Dificuldade Média</h3>
+                        ${sessoesEstudo.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma sessão registrada ainda.</p>' : (() => {
+                            const sessoesComDificuldade = sessoesEstudo.filter(s => s.dificuldade);
+                            if (sessoesComDificuldade.length === 0) {
+                                return '<p style="color: var(--text-secondary);">Nenhuma dificuldade registrada ainda.</p>';
+                            }
+                            
+                            const mediaGeral = sessoesComDificuldade.reduce((acc, s) => acc + s.dificuldade, 0) / sessoesComDificuldade.length;
+                            const dificuldadePorArea = areasEstudo.map(area => {
+                                const topicosArea = topicosEstudo.filter(t => t.areaId === area.id);
+                                const sessoesArea = sessoesEstudo.filter(s => topicosArea.some(t => t.id === s.topicoId) && s.dificuldade);
+                                if (sessoesArea.length === 0) return null;
+                                
+                                const media = sessoesArea.reduce((acc, s) => acc + s.dificuldade, 0) / sessoesArea.length;
+                                return { area, media };
+                            }).filter(item => item !== null).sort((a, b) => b.media - a.media);
+                            
+                            return ` <
+                div style = "display: flex; flex-direction: column; gap: 12px;" >
+                <
+                div style = "background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 16px;" >
+                <
+                div style = "font-size: 32px; font-weight: 700;" >
+                $ {
+                    '⭐'.repeat(Math.round(mediaGeral))
+                } <
+                /div> <
+            div style = "font-size: 14px; opacity: 0.9;" >
+                $ {
+                    mediaGeral.toFixed(1)
+                }
+            / 5.0 < /
+            div > <
+                /div>
+
+                /
+                div >
+                `;
+                        })()}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div>
                         <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">⏱️ Tempo por Área</h3>
                         ${progressoPorArea.length === 0 ? '<p style="color: var(--text-secondary);">Nenhuma área cadastrada ainda.</p>' : (() => {
                             const tempoPorArea = areasEstudo.map(area => {
@@ -5334,10 +5722,10 @@
                 div style = "display: flex; gap: 8px; align-items: center; margin-bottom: 4px;" >
                 <
                 span style = "font-size: 16px;" > $ {
-                    area.icone || '📚'
+                    area ? .icone || '📚'
                 } < /span> <
             span style = "font-size: 13px; font-weight: 600;" > $ {
-                esc(topico.titulo || 'Tópico removido')
+                esc(topico ? .titulo || 'Tópico removido')
             } < /span>
             $ {
                 sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600;">✓</span>' : ''
@@ -5378,6 +5766,12 @@
             const filtroArea = $('filtroAreaEstudos').value || '';
             const container = $('listaSessoes');
 
+            // Preparar dados
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const amanha = new Date(hoje);
+            amanha.setDate(amanha.getDate() + 1);
+
             let sessoesFiltradas = [...sessoesEstudo];
 
             // Filtrar por busca
@@ -5385,9 +5779,11 @@
                 sessoesFiltradas = sessoesFiltradas.filter(s => {
                     const topico = topicosEstudo.find(t => t.id === s.topicoId);
                     const area = areasEstudo.find(a => a.id === topico.areaId);
-                    return (topico.titulo || '').toLowerCase().includes(busca) ||
-                        (area.nome || '').toLowerCase().includes(busca) ||
-                        (s.notas || '').toLowerCase().includes(busca);
+                    return (topico && topico.titulo || '').toLowerCase().includes(busca) ||
+                        (area && area.nome || '').toLowerCase().includes(busca) ||
+                        (s.notas || '').toLowerCase().includes(busca) ||
+                        (s.tags || []).some(tag => tag.toLowerCase().includes(busca)) ||
+                        (s.categoria || '').toLowerCase().includes(busca);
                 });
             }
 
@@ -5395,130 +5791,194 @@
             if (filtroArea) {
                 sessoesFiltradas = sessoesFiltradas.filter(s => {
                     const topico = topicosEstudo.find(t => t.id === s.topicoId);
-                    return topico.areaId === filtroArea;
+                    return topico && topico.areaId === filtroArea;
                 });
             }
 
-            // Ordenar por data (mais recente primeiro)
-            sessoesFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            if (sessoesFiltradas.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 60px; color: var(--text-secondary); background: var(--surface); border-radius: 16px;">🎯 Nenhuma sessão registrada ainda.<br><br>Registre suas sessões de estudo para acompanhar seu progresso!</div>';
-                return;
+            // Filtrar por categoria
+            const filtroCategoria = $('filtroCategoriaEstudos').value || '';
+            if (filtroCategoria) {
+                sessoesFiltradas = sessoesFiltradas.filter(s => s.categoria === filtroCategoria);
             }
 
-            // Agrupar por data
-            const sessoesPorData = {};
-            sessoesFiltradas.forEach(sessao => {
-                const data = new Date(sessao.data);
-                const dataKey = data.toLocaleDateString('pt-BR');
-                if (!sessoesPorData[dataKey]) {
-                    sessoesPorData[dataKey] = [];
-                }
-                sessoesPorData[dataKey].push(sessao);
-            });
+            // Filtrar por tag
+            const filtroTag = $('filtroTagEstudos').value || '';
+            if (filtroTag) {
+                sessoesFiltradas = sessoesFiltradas.filter(s => (s.tags || []).includes(filtroTag));
+            }
 
-            let html = `<div style="max-width: 900px; margin: 0 auto;">`;
+            // Função auxiliar para criar card de sessão
+            const criarCardSessao = (sessao) => {
+                const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
+                const area = areasEstudo.find(a => a.id === topico.areaId);
+                const horas = Math.floor(sessao.duracao / 3600);
+                const minutos = Math.floor((sessao.duracao % 3600) / 60);
 
-            // Stats rápidos
-            const totalSessoes = sessoesFiltradas.length;
-            const tempoTotal = sessoesFiltradas.reduce((acc, s) => acc + s.duracao, 0);
-            const horasTotal = Math.floor(tempoTotal / 3600);
-            const minutosTotal = Math.floor((tempoTotal % 3600) / 60);
-            const sessoesCompletas = sessoesFiltradas.filter(s => s.concluiu).length;
+                // Ícones de categoria
+                const categoriaIcons = {
+                    'Estudo': '📚',
+                    'Leitura': '📖',
+                    'Prática': '💻',
+                    'Vídeo': '🎥',
+                    'Exercícios': '✍️',
+                    'Projeto': '🚀',
+                    'Revisão': '🔄'
+                };
 
-            html += `
-                <div style="background: var(--surface); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-lg);">
-                    <h2 style="font-size: 20px; margin-bottom: 20px;">🎯 Histórico de Sessões</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;">${totalSessoes}</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Total de Sessões</div>
-                        </div>
-                        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;">${horasTotal}h ${minutosTotal}m</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Tempo Total</div>
-                        </div>
-                        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700;">${sessoesCompletas}</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Completas</div>
+                const dificuldadeStars = '⭐'.repeat(sessao.dificuldade || 3);
+
+                return `
+                    <div style="background: var(--surface); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); border-left: 4px solid ${area?.cor || '#3b82f6'}; margin-bottom: 12px; transition: transform 0.2s;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                                    <span style="font-size: 18px;">${area?.icone || '📚'}</span>
+                                    <span style="font-size: 12px; color: var(--text-secondary);">${esc(area?.nome || 'Sem área')}</span>
+                                </div>
+                                <h5 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">${esc(topico?.titulo || 'Tópico removido')}</h5>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                                    <span style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">${categoriaIcons[sessao.categoria] || '📚'} ${esc(sessao.categoria || 'Estudo')}</span>
+                                    <span style="background: var(--border); color: var(--text); padding: 3px 8px; border-radius: 10px; font-size: 10px;">⏱️ ${horas}h ${minutos}m</span>
+                                    ${sessao.dificuldade ? `<span style="background: var(--border); color: var(--text); padding: 3px 8px; border-radius: 10px; font-size: 10px;">${dificuldadeStars}</span>` : ''}
+                                </div>
+                                ${sessao.tags && sessao.tags.length > 0 ? `
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
+                                        ${sessao.tags.map(tag => `<span style="background: var(--accent); color: white; padding: 2px 6px; border-radius: 8px; font-size: 9px; font-weight: 600;">#${esc(tag)}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <button class="btn-icon" onclick="editarSessao('${sessao.id}')" title="Editar">✏️</button>
+                                <button class="btn-icon" onclick="excluirSessao('${sessao.id}')" title="Excluir">🗑️</button>
+                            </div>
                         </div>
                     </div>
+                `;
+            };
+
+            // Organizar sessões nas 4 colunas do Kanban
+            const sessoesHoje = sessoesFiltradas.filter(s => {
+                const dataSessao = new Date(s.data);
+                dataSessao.setHours(0, 0, 0, 0);
+                return dataSessao.getTime() === hoje.getTime() && s.concluiu;
+            });
+
+            const todasSessoes = sessoesFiltradas.filter(s => s.concluiu);
+            const topicosPendentes = topicosEstudo.filter(t => t.proximaRevisao && new Date(t.proximaRevisao) <= new Date());
+
+            // Construir HTML do Kanban
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 16px;">
+                    
+                    <!-- Coluna 1: Tópicos Ativos -->
+                    <div style="background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-lg);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+                            <span style="font-size: 24px;">📝</span>
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 700; margin: 0;">Tópicos Ativos</h3>
+                                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">${topicosEstudo.filter(t => t.status === 'Estudando').length} em progresso</p>
+                            </div>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${topicosEstudo.filter(t => t.status === 'Estudando').slice(0, 10).map(topico => {
+                                const area = areasEstudo.find(a => a.id === topico.areaId);
+                                const sessoes = sessoesEstudo.filter(s => s.topicoId === topico.id);
+                                return `
+                                    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer;" onclick="registrarSessaoTopico('${topico.id}')">
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                            <span style="font-size: 16px;">${area?.icone || '📚'}</span>
+                                            <span style="font-size: 11px; color: #78350f; font-weight: 600;">${esc(area?.nome || 'Sem área')}</span>
+                                        </div>
+                                        <h5 style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #78350f;">${esc(topico.titulo)}</h5>
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <span style="font-size: 10px; color: #92400e;">${sessoes.length} sessões</span>
+                                            <button style="background: #78350f; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; cursor: pointer;" onclick="event.stopPropagation(); registrarSessaoTopico('${topico.id}')">+ Registrar</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') || '<p style="text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary);">Nenhum tópico ativo</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Coluna 2: Concluídas Hoje -->
+                    <div style="background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-lg);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+                            <span style="font-size: 24px;">✅</span>
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 700; margin: 0;">Concluídas Hoje</h3>
+                                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">${sessoesHoje.length} sessões</p>
+                            </div>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${sessoesHoje.map(criarCardSessao).join('') || '<p style="text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary);">Nenhuma sessão hoje</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Coluna 3: Todas as Sessões -->
+                    <div style="background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-lg);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+                            <span style="font-size: 24px;">📚</span>
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 700; margin: 0;">Histórico</h3>
+                                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">${todasSessoes.length} sessões</p>
+                            </div>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${todasSessoes.slice(0, 20).map(criarCardSessao).join('') || '<p style="text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary);">Nenhuma sessão registrada</p>'}
+                        </div>
+                    </div>
+
+                    <!-- Coluna 4: Revisões Pendentes -->
+                    <div style="background: var(--surface); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-lg);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+                            <span style="font-size: 24px;">🔄</span>
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 700; margin: 0;">Revisões Pendentes</h3>
+                                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">${topicosPendentes.length} tópicos</p>
+                            </div>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${topicosPendentes.map(topico => {
+                                const area = areasEstudo.find(a => a.id === topico.areaId);
+                                const diasAtrasado = Math.floor((new Date() - new Date(topico.proximaRevisao)) / (1000 * 60 * 60 * 24));
+                                return `
+                                    <div style="background: linear-gradient(135deg, #fecaca, #fca5a5); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                            <span style="font-size: 16px;">${area?.icone || '📚'}</span>
+                                            <span style="font-size: 11px; color: #7f1d1d; font-weight: 600;">${esc(area?.nome || 'Sem área')}</span>
+                                        </div>
+                                        <h5 style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #7f1d1d;">${esc(topico.titulo)}</h5>
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <span style="font-size: 10px; color: #991b1b;">${diasAtrasado > 0 ? `${diasAtrasado}d atrasado` : 'Hoje'}</span>
+                                            <button style="background: #7f1d1d; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; cursor: pointer;" onclick="marcarRevisao('${topico.id}')">Revisar</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') || '<p style="text-align: center; padding: 20px; font-size: 12px; color: var(--text-secondary);">Nenhuma revisão pendente</p>'}
+                        </div>
+                    </div>
+
                 </div>
             `;
 
-            // Renderizar sessões agrupadas por data
-            Object.keys(sessoesPorData).forEach(dataKey => {
-                const sessoesDoDia = sessoesPorData[dataKey];
-                const tempoDoDia = sessoesDoDia.reduce((acc, s) => acc + s.duracao, 0);
-                const horasDia = Math.floor(tempoDoDia / 3600);
-                const minutosDia = Math.floor((tempoDoDia % 3600) / 60);
-
-                html += `
-                    <div style="margin-bottom: 32px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--border);">
-                            <h3 style="font-size: 16px; font-weight: 600; color: var(--accent);">📅 ${dataKey}</h3>
-                            <span style="font-size: 13px; color: var(--text-secondary);">${sessoesDoDia.length} sessões • ${horasDia}h ${minutosDia}m</span>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 16px;">
-                `;
-
-                sessoesDoDia.forEach(sessao => {
-                    const topico = topicosEstudo.find(t => t.id === sessao.topicoId);
-                    const area = areasEstudo.find(a => a.id === topico.areaId);
-                    const hora = new Date(sessao.data).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    const horas = Math.floor(sessao.duracao / 3600);
-                    const minutos = Math.floor((sessao.duracao % 3600) / 60);
-
-                    const tipoIcon = sessao.tipoSessao === 'revisao' ? '🔄' : '📚';
-                    const tipoLabel = sessao.tipoSessao === 'revisao' ? 'Revisão' : 'Estudo';
-                    const tipoCor = sessao.tipoSessao === 'revisao' ? '#f59e0b' : '#3b82f6';
-
-                    html += `
-                        <div style="background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); border-left: 4px solid ${area?.cor || '#3b82f6'};">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-                                        <span style="font-size: 20px;">${area?.icone || '📚'}</span>
-                                        <span style="font-size: 13px; color: var(--text-secondary);">${esc(area?.nome || 'Área desconhecida')}</span>
-                                        <span style="font-size: 13px; color: var(--text-secondary);">•</span>
-                                        <span style="font-size: 13px; color: var(--text-secondary);">${hora}</span>
-                                        ${sessao.concluiu ? '<span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">✅ CONCLUÍDO</span>' : ''}
-                                    </div>
-                                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${esc(topico?.titulo || 'Tópico removido')}</h4>
-                                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                        <span style="background: ${tipoCor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${tipoIcon} ${tipoLabel}</span>
-                                        <span style="background: var(--border); color: var(--text-secondary); padding: 4px 10px; border-radius: 12px; font-size: 11px;">⏱️ ${horas}h ${minutos}min</span>
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 4px;">
-                                    <button class="btn-icon" onclick="editarSessao('${sessao.id}')" title="Editar sessão">✏️</button>
-                                    <button class="btn-icon" onclick="excluirSessao('${sessao.id}')" title="Excluir sessão">🗑️</button>
-                                </div>
-                            </div>
-                            ${sessao.notas ? `
-                                <div style="background: var(--bg); padding: 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;">
-                                    ${esc(sessao.notas)}
-                                </div>
-                            ` : '<p style="font-size: 13px; color: var(--text-secondary); font-style: italic;">Sem notas registradas</p>'}
-                        </div>
-                    `;
-                });
-
-                html += `
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `</div>`;
             container.innerHTML = html;
         }
 
         // FUNÇÕES AUXILIARES
+        function atualizarDificuldadeLabel() {
+            const valor = $('sessaoDificuldade').value;
+            const estrelas = '⭐'.repeat(parseInt(valor));
+            const labels = ['Muito Fácil', 'Fácil', 'Médio', 'Difícil', 'Muito Difícil'];
+            $('dificuldadeLabel').textContent = estrelas + ' ' + labels[valor - 1];
+        }
+
+        function atualizarTagsDatalist() {
+            const datalist = $('tagsDatalist');
+            if (!datalist) return;
+
+            datalist.innerHTML = tagsEstudo.map(tag => `<option value="${esc(tag)}">`).join('');
+        }
+
         function mostrarFormulario(tipo) {
             // Esconder todos os forms
             $('formArea').style.display = 'none';
@@ -5542,6 +6002,8 @@
                 atualizarSelectAreas();
             } else if (tipo === 'sessao') {
                 $('formSessao').style.display = 'block';
+                atualizarTagsDatalist();
+                atualizarDificuldadeLabel();
             }
         }
 
@@ -5613,7 +6075,31 @@
             $('filtroStatusEstudos').value = '';
             $('filtroPrioridadeEstudos').value = '';
             $('filtroAreaEstudos').value = '';
+            if ($('filtroCategoriaEstudos')) $('filtroCategoriaEstudos').value = '';
+            if ($('filtroTagEstudos')) $('filtroTagEstudos').value = '';
             renderizarEstudos();
+        }
+
+        function atualizarFiltroTags() {
+            const select = $('filtroTagEstudos');
+            if (!select) return;
+
+            // Manter valor selecionado
+            const valorAtual = select.value;
+
+            // Limpar e reconstruir opções
+            select.innerHTML = '<option value="">Todas Tags</option>';
+            tagsEstudo.sort().forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = `#${tag}`;
+                select.appendChild(option);
+            });
+
+            // Restaurar valor se ainda existir
+            if (valorAtual && tagsEstudo.includes(valorAtual)) {
+                select.value = valorAtual;
+            }
         }
 
         function atualizarStatsEstudos() {
@@ -5625,6 +6111,56 @@
             const estudando = topicosEstudo.filter(t => t.status === 'Estudando').length;
 
             stats.textContent = `Total: ${total} | Estudando: ${estudando} | Concluídos: ${concluidos}`;
+        }
+
+        // SETUP DE EVENT LISTENERS PARA ESTUDOS
+        function setupEventosEstudos() {
+            console.log('🔧 Configurando event listeners de estudos...');
+
+            // Remover event listeners inline e adicionar via JavaScript
+            const formArea = $('formArea');
+            const formTopico = $('formTopico');
+            const formSessao = $('formSessao');
+
+            if (formArea) {
+                console.log('✅ Form área encontrado');
+                // Remover qualquer listener anterior
+                formArea.onsubmit = null;
+                // Adicionar novo listener
+                formArea.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('🔴 FORM ÁREA SUBMETIDO VIA EVENT LISTENER!');
+                    salvarArea(e);
+                });
+            } else {
+                console.error('❌ Form área NÃO encontrado!');
+            }
+
+            if (formTopico) {
+                console.log('✅ Form tópico encontrado');
+                formTopico.onsubmit = null;
+                formTopico.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('🔴 FORM TÓPICO SUBMETIDO VIA EVENT LISTENER!');
+                    salvarTopico(e);
+                });
+            } else {
+                console.error('❌ Form tópico NÃO encontrado!');
+            }
+
+            if (formSessao) {
+                console.log('✅ Form sessão encontrado');
+                formSessao.onsubmit = null;
+                formSessao.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('🔴 FORM SESSÃO SUBMETIDO VIA EVENT LISTENER!');
+                    salvarSessao(e);
+                });
+            } else {
+                console.error('❌ Form sessão NÃO encontrado!');
+            }
+
+            console.log('✅ Event listeners de estudos configurados!');
         }
 
         // ===== FIM DO MÓDULO DE ESTUDOS =====
@@ -5658,7 +6194,12 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        init();
+        // Garantir que o DOM está carregado antes de inicializar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 
