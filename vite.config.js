@@ -11,7 +11,9 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vendor: ['date-fns']
+                    vendor: ['date-fns'],
+                    firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
+                    idb: ['idb']
                 }
             }
         }

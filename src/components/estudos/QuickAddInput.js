@@ -5,6 +5,10 @@
  * Suporta shortcuts (Ctrl+N) e histórico de comandos
  */
 
+import {
+    firebaseCache
+} from '../../services/firebase-cache.js';
+
 class QuickAddInput {
     constructor(options = {}) {
         this.container = options.container || document.body;
@@ -12,13 +16,20 @@ class QuickAddInput {
         this.parser = options.parser || new QuickAddParser();
         this.areas = options.areas || [];
         this.tags = options.tags || [];
-        this.history = this._loadHistory();
-        
+        this.history = []; // Inicializar vazio, carregar assincronamente
+
         this.currentSuggestionIndex = -1;
         this.suggestions = [];
-        
+
         this._createInput();
         this._attachEvents();
+
+        // Carregar histórico assincronamente
+        this._loadHistory().then(history => {
+            this.history = history;
+        }).catch(err => {
+            console.warn('Erro ao carregar histórico:', err);
+        });
     }
 
     /**
@@ -40,7 +51,7 @@ class QuickAddInput {
                 <div class="quick-add-preview" id="quickAddPreview"></div>
             </div>
         `;
-        
+
         this.container.appendChild(this.wrapper);
         this.input = this.wrapper.querySelector('#quickAddInput');
         this.suggestionsEl = this.wrapper.querySelector('#quickAddSuggestions');
@@ -83,7 +94,7 @@ class QuickAddInput {
      */
     _handleInput(e) {
         const value = e.target.value;
-        
+
         if (!value) {
             this._hideSuggestions();
             this._hidePreview();
@@ -92,10 +103,10 @@ class QuickAddInput {
 
         // Parse do input
         const parsed = this.parser.parse(value);
-        
+
         // Mostrar preview
         this._showPreview(parsed);
-        
+
         // Mostrar sugestões baseadas no cursor
         this._updateSuggestions(value);
     }
@@ -155,7 +166,7 @@ class QuickAddInput {
     _updateSuggestions(value) {
         const cursorPos = this.input.selectionStart;
         const textBeforeCursor = value.substring(0, cursorPos);
-        
+
         // Detectar contexto (@ para áreas, # para tags)
         if (textBeforeCursor.endsWith('@')) {
             this.suggestions = this._getAreaSuggestions('');
@@ -202,7 +213,7 @@ class QuickAddInput {
      */
     _getAreaSuggestions(prefix) {
         const filtered = this.areas
-            .filter(area => 
+            .filter(area =>
                 area.nome.toLowerCase().startsWith(prefix) &&
                 area.status === 'ativo'
             )
@@ -220,7 +231,9 @@ class QuickAddInput {
                 type: 'new-area',
                 value: `@${prefix}`,
                 display: `➕ Criar área "${prefix}"`,
-                data: { nome: prefix }
+                data: {
+                    nome: prefix
+                }
             });
         }
 
@@ -245,7 +258,7 @@ class QuickAddInput {
         // Tags comuns
         const commonTags = ['urgente', 'importante', 'revisão', 'prática', 'teoria'];
         const common = commonTags
-            .filter(tag => 
+            .filter(tag =>
                 tag.toLowerCase().startsWith(prefix) &&
                 !this.tags.some(t => t.toLowerCase() === tag.toLowerCase())
             )
@@ -319,7 +332,7 @@ class QuickAddInput {
         if (this.suggestions.length === 0) return;
 
         this.currentSuggestionIndex += direction;
-        
+
         if (this.currentSuggestionIndex < 0) {
             this.currentSuggestionIndex = this.suggestions.length - 1;
         } else if (this.currentSuggestionIndex >= this.suggestions.length) {
@@ -335,7 +348,9 @@ class QuickAddInput {
         // Scroll para item ativo
         const activeItem = items[this.currentSuggestionIndex];
         if (activeItem) {
-            activeItem.scrollIntoView({ block: 'nearest' });
+            activeItem.scrollIntoView({
+                block: 'nearest'
+            });
         }
     }
 
@@ -348,11 +363,11 @@ class QuickAddInput {
         const suggestion = this.suggestions[index];
         const currentValue = this.input.value;
         const cursorPos = this.input.selectionStart;
-        
+
         // Encontrar onde inserir
         const textBefore = currentValue.substring(0, cursorPos);
         let insertPos = cursorPos;
-        
+
         if (textBefore.endsWith('@') || textBefore.match(/@\w*$/)) {
             const match = textBefore.match(/@\w*$/);
             if (match) {
@@ -366,9 +381,9 @@ class QuickAddInput {
         }
 
         // Inserir sugestão
-        const newValue = 
-            currentValue.substring(0, insertPos) + 
-            suggestion.value + ' ' + 
+        const newValue =
+            currentValue.substring(0, insertPos) +
+            suggestion.value + ' ' +
             currentValue.substring(cursorPos);
 
         this.input.value = newValue;
@@ -379,7 +394,9 @@ class QuickAddInput {
         );
 
         this._hideSuggestions();
-        this._handleInput({ target: this.input });
+        this._handleInput({
+            target: this.input
+        });
     }
 
     /**
@@ -411,7 +428,7 @@ class QuickAddInput {
         if (!value) return;
 
         const parsed = this.parser.parse(value);
-        
+
         if (!parsed.isValid) {
             this._showError('Título inválido');
             return;
@@ -430,19 +447,19 @@ class QuickAddInput {
     /**
      * Salva no histórico
      */
-    _saveToHistory(value) {
+    async _saveToHistory(value) {
         // Remove se já existe
         this.history = this.history.filter(h => h !== value);
-        
+
         // Adiciona no início
         this.history.unshift(value);
-        
+
         // Limita a 10 itens
         this.history = this.history.slice(0, 10);
-        
-        // Salva no localStorage
+
+        // Salva no Firebase Cache
         try {
-            localStorage.setItem('quickAddHistory', JSON.stringify(this.history));
+            await firebaseCache.set('quickAddHistory', this.history);
         } catch (e) {
             console.warn('Não foi possível salvar histórico', e);
         }
@@ -451,12 +468,34 @@ class QuickAddInput {
     /**
      * Carrega histórico
      */
-    _loadHistory() {
+    async _loadHistory() {
         try {
-            const stored = localStorage.getItem('quickAddHistory');
-            return stored ? JSON.parse(stored) : [];
+            // Tentar carregar do cache
+            let history = await firebaseCache.get('quickAddHistory');
+
+            // Fallback para localStorage (migração)
+            if (!history) {
+                try {
+                    const stored = localStorage.getItem('quickAddHistory');
+                    if (stored) {
+                        history = JSON.parse(stored);
+                        // Migrar para cache
+                        await firebaseCache.set('quickAddHistory', history);
+                    }
+                } catch (e) {
+                    // Ignorar erros
+                }
+            }
+
+            return history || [];
         } catch (e) {
-            return [];
+            // Tentar fallback síncrono do localStorage
+            try {
+                const stored = localStorage.getItem('quickAddHistory');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e2) {
+                return [];
+            }
         }
     }
 
@@ -509,12 +548,12 @@ class QuickAddInput {
 }
 
 // Export ES6
-export { QuickAddInput };
+export {
+    QuickAddInput
+};
 export default QuickAddInput;
 
 // Export para uso global (compatibilidade)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = QuickAddInput;
 }
-
-

@@ -18,6 +18,7 @@ export class TaskCard {
       isCurrent: false,
       isOverdue: false,
       isCompleted: false,
+      isPostponed: false,
       showActions: false, // Botões de editar/excluir
       ...options,
     };
@@ -50,6 +51,9 @@ export class TaskCard {
     if (this.options.isCompleted) {
       card.classList.add('task-card-completed');
     }
+    if (this.options.isPostponed) {
+      card.classList.add('task-card-postponed');
+    }
 
     const taskTime = toDate(this.task.time);
     const timeStr = taskTime ? formatTime(taskTime) : '';
@@ -78,6 +82,8 @@ export class TaskCard {
         <div class="task-card-footer">
           ${this.options.showModule ? this.renderModule() : ''}
           ${this.options.showDuration && this.task.duracao ? this.renderDuration() : ''}
+          ${this.task.recurrence && this.task.recurrence.enabled ? this.renderRecurrenceBadge() : ''}
+          ${this.options.isPostponed ? this.renderPostponedBadge() : ''}
           ${this.options.isOverdue ? this.renderOverdueBadge() : ''}
           ${this.options.showActions ? this.renderActions() : ''}
         </div>
@@ -161,6 +167,46 @@ export class TaskCard {
 
   renderDuration() {
     return `<span class="task-card-duration">⏱ ${this.task.duracao}</span>`;
+  }
+
+  renderRecurrenceBadge() {
+    const recurrence = this.task.recurrence || {};
+    const typeLabels = {
+      daily: 'Diária',
+      weekly: 'Semanal',
+      monthly: 'Mensal',
+      custom: `A cada ${recurrence.interval || 1} dia${(recurrence.interval || 1) > 1 ? 's' : ''}`
+    };
+    const label = typeLabels[recurrence.type] || 'Recorrente';
+    return `
+      <span class="task-card-recurrence-badge badge badge-info" title="Tarefa recorrente: ${label}">
+        🔄 ${label}
+      </span>
+    `;
+  }
+
+  renderPostponedBadge() {
+    const taskTime = toDate(this.task.time);
+    if (!taskTime) return '';
+    
+    const now = new Date();
+    const hoursDiff = Math.round((taskTime - now) / (1000 * 60 * 60));
+    const daysDiff = Math.floor(hoursDiff / 24);
+    
+    let label = '';
+    if (daysDiff > 0) {
+      label = `Adiada ${daysDiff} dia${daysDiff > 1 ? 's' : ''}`;
+    } else if (hoursDiff > 2) {
+      label = `Adiada ${hoursDiff}h`;
+    } else {
+      label = 'Adiada';
+    }
+    
+    return `
+      <span class="task-card-postponed-badge badge badge-warning" title="Tarefa adiada para ${formatDate(taskTime, 'dd/MM/yyyy')} às ${formatTime(taskTime)}">
+        ⏰ ${label}
+      </span>
+    `;
   }
 
   renderOverdueBadge() {

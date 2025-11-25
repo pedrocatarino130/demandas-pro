@@ -8,6 +8,7 @@ Sistema de gerenciamento pessoal focado em produtividade e uso diário.
 
 - **Node.js** 18+ e npm (ou yarn/pnpm)
 - **Git** para clonar o repositório
+- **Conta Firebase** (para persistência de dados)
 
 ### Instalação
 
@@ -18,6 +19,9 @@ cd demandas
 
 # Instalar dependências
 npm install
+
+# Configurar Firebase (ver Doc/FIREBASE_SETUP.md)
+# Criar arquivo .env.local com as credenciais do Firebase
 
 # Iniciar servidor de desenvolvimento
 npm run dev
@@ -44,7 +48,13 @@ demandas/
 ├── src/
 │   ├── main.js                    # Entry point da aplicação
 │   ├── router.js                  # Sistema de roteamento SPA
-│   ├── store.js                   # Estado global com localStorage
+│   ├── store.js                   # Estado global com Firebase Firestore
+│   ├── config/                    # Configurações
+│   │   └── firebase.js           # Configuração do Firebase
+│   ├── services/                  # Serviços
+│   │   ├── firebase-service.js   # Serviço principal do Firebase
+│   │   ├── firebase-cache.js     # Cache local (IndexedDB)
+│   │   └── firebase-sync.js      # Sincronização offline/online
 │   ├── components/                # Componentes reutilizáveis
 │   │   ├── Breadcrumb.js          # Navegação contextual
 │   │   ├── Checkbox.js             # Checkbox base
@@ -72,6 +82,7 @@ demandas/
 │   │   ├── dateUtils.js           # Funções de data
 │   │   ├── taskFilters.js         # Filtros de tarefas
 │   │   ├── estudos-store.js       # Store específico de Estudos
+│   │   └── migrate-localStorage-to-firebase.js  # Script de migração
 │   │   └── swipe-gestures.js      # Gestos touch
 │   └── styles/                    # Estilos CSS
 │       ├── variables.css          # Variáveis CSS (design system)
@@ -150,6 +161,24 @@ npm run test:e2e:ui
 npm run test:e2e:headed
 ```
 
+## 🔥 Firebase Firestore
+
+O projeto utiliza **Firebase Firestore** para persistência de dados com suporte offline-first:
+
+- **Armazenamento em nuvem** com sincronização automática
+- **Cache local** usando IndexedDB para funcionamento offline
+- **Fila de sincronização** para operações offline
+- **Migração automática** de dados do localStorage
+
+### Configuração Inicial
+
+1. Crie um projeto no [Firebase Console](https://console.firebase.google.com/)
+2. Configure o Firestore Database
+3. Obtenha as credenciais da aplicação web
+4. Crie o arquivo `.env.local` com as credenciais (veja `Doc/FIREBASE_SETUP.md`)
+
+Para instruções detalhadas, consulte: [`Doc/FIREBASE_SETUP.md`](Doc/FIREBASE_SETUP.md)
+
 ## 📋 Funcionalidades Implementadas
 
 ### Sprint 1: Base Sólida ✅
@@ -180,9 +209,15 @@ npm run test:e2e:headed
 - ✅ **Swipe Gestures Mobile**: Gestos touch para ações rápidas
 - ✅ **Views Completas**: Rotina e Projetos implementadas
 
-## 🔄 Migração v2 → v3
+## 🔄 Migrações de Dados
+
+### Migração v2 → v3
 
 O sistema possui migração automática de dados da versão 2 para versão 3.
+
+### Migração localStorage → Firebase
+
+Na primeira inicialização, o sistema migra automaticamente todos os dados do localStorage para o Firebase Firestore. Os dados originais são preservados no localStorage como backup.
 
 ### Como Funciona
 
@@ -343,7 +378,8 @@ export const routes = {
 
 - **Vanilla JS**: Sem frameworks, apenas JavaScript moderno
 - **Vite**: Build tool rápido com HMR
-- **localStorage**: Persistência local (migração futura para IndexedDB se necessário)
+- **Firebase Firestore**: Persistência em nuvem com suporte offline
+- **IndexedDB**: Cache local para funcionamento offline completo
 - **PWA Ready**: Funciona offline e pode ser instalado
 - **iOS-like Design**: Visual inspirado no iOS 17
 
@@ -351,8 +387,10 @@ export const routes = {
 
 ### Dados não persistem
 
-- Verificar se localStorage está habilitado no navegador
-- Limpar localStorage e recarregar: `localStorage.clear()`
+- Verificar se as credenciais do Firebase estão configuradas (`.env.local`)
+- Verificar as regras de segurança do Firestore no Firebase Console
+- Verificar a conexão com a internet
+- Os dados são salvos em cache local mesmo offline
 
 ### Service Worker não atualiza
 

@@ -9,6 +9,13 @@
  * - Busca em notas antigas
  */
 
+import {
+    firebaseCache
+} from '../../services/firebase-cache.js';
+import {
+    firebaseService
+} from '../../services/firebase-service.js';
+
 class NotasRapidas {
     constructor(options = {}) {
         this.container = options.container || document.body;
@@ -60,7 +67,10 @@ class NotasRapidas {
 
         this._createUI();
         this._attachEvents();
-        this._loadContent();
+        // Carregar conteúdo assincronamente
+        this._loadContent().catch(err => {
+            console.error('Erro ao carregar conteúdo:', err);
+        });
     }
 
     /**
@@ -261,7 +271,9 @@ class NotasRapidas {
     _startAutoSave() {
         this.autoSaveId = setInterval(() => {
             if (this.isDirty) {
-                this._save();
+                this._save().catch(err => {
+                    console.error('Erro no auto-save:', err);
+                });
             }
         }, this.autoSaveInterval);
     }
@@ -269,7 +281,7 @@ class NotasRapidas {
     /**
      * Salva conteúdo
      */
-    _save() {
+    async _save() {
         if (!this.isDirty) return;
 
         const data = {
@@ -278,10 +290,24 @@ class NotasRapidas {
             timestamp: new Date().toISOString()
         };
 
-        // Salvar no localStorage
+        // Salvar no Firebase Cache e Firestore
         const key = `notas_${this.topicoId || 'global'}`;
         try {
-            localStorage.setItem(key, JSON.stringify(data));
+            // Salvar no cache imediatamente
+            await firebaseCache.set(key, data);
+
+            // Salvar no Firestore (em background)
+            if (firebaseService.isAvailable()) {
+                firebaseService.setDocument('notas', key, {
+                    topicoId: this.topicoId,
+                    content: this.content,
+                    timestamp: data.timestamp,
+                    updatedAt: new Date().toISOString(),
+                }, true).catch(err => {
+                    console.warn('Erro ao salvar notas no Firestore (continuará no cache):', err);
+                });
+            }
+
             this.lastSaved = new Date();
             this.isDirty = false;
             this._updateStatus('Salvo');
@@ -295,12 +321,45 @@ class NotasRapidas {
     /**
      * Carrega conteúdo
      */
-    _loadContent() {
+    async _loadContent() {
         const key = `notas_${this.topicoId || 'global'}`;
         try {
-            const stored = localStorage.getItem(key);
-            if (stored) {
-                const data = JSON.parse(stored);
+            // Tentar carregar do cache primeiro
+            let data = await firebaseCache.get(key);
+
+            // Se não tiver no cache, tentar do Firestore
+            if (!data && firebaseService.isAvailable()) {
+                try {
+                    const doc = await firebaseService.getDocument('notas', key);
+                    if (doc) {
+                        data = {
+                            topicoId: doc.topicoId,
+                            content: doc.content,
+                            timestamp: doc.timestamp,
+                        };
+                        // Salvar no cache para próxima vez
+                        await firebaseCache.set(key, data);
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar notas do Firestore:', e);
+                }
+            }
+
+            // Fallback para localStorage (migração)
+            if (!data) {
+                try {
+                    const stored = localStorage.getItem(key);
+                    if (stored) {
+                        data = JSON.parse(stored);
+                        // Migrar para cache
+                        await firebaseCache.set(key, data);
+                    }
+                } catch (e) {
+                    // Ignorar erros de localStorage
+                }
+            }
+
+            if (data) {
                 this.content = data.content || '';
                 this.editor.value = this.content;
                 this._updatePreview();
@@ -405,16 +464,18 @@ class NotasRapidas {
     /**
      * Busca em notas
      */
-    _searchNotes(query) {
+    async _searchNotes(query) {
         const matches = [];
 
-        // Buscar em todas as notas salvas
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('notas_')) {
+        try {
+            // Buscar no cache primeiro
+            const allKeys = await firebaseCache.getAllKeys();
+            const notasKeys = allKeys.filter(key => key.startsWith('notas_'));
+
+            for (const key of notasKeys) {
                 try {
-                    const data = JSON.parse(localStorage.getItem(key));
-                    if (data.content && data.content.toLowerCase().includes(query)) {
+                    const data = await firebaseCache.get(key);
+                    if (data && data.content && data.content.toLowerCase().includes(query)) {
                         matches.push({
                             topico: key.replace('notas_', ''),
                             preview: data.content.substring(0, 100) + '...',
@@ -422,12 +483,59 @@ class NotasRapidas {
                         });
                     }
                 } catch (e) {
-                    // Ignorar erros
+                    console.warn(`Erro ao buscar nota ${key}:`, e);
                 }
             }
-        }
 
-        return matches;
+            // Também buscar no Firestore
+            if (firebaseService.isAvailable()) {
+                try {
+                    const notas = await firebaseService.getCollection('notas');
+                    for (const nota of notas) {
+                        if (nota.content && nota.content.toLowerCase().includes(query)) {
+                            // Evitar duplicatas
+                            const key = `notas_${nota.topicoId || 'global'}`;
+                            if (!matches.find(m => m.topico === (nota.topicoId || 'global'))) {
+                                matches.push({
+                                    topico: nota.topicoId || 'global',
+                                    preview: nota.content.substring(0, 100) + '...',
+                                    content: nota.content
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao buscar notas no Firestore:', e);
+                }
+            }
+
+            // Fallback para localStorage (migração)
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('notas_')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        if (data.content && data.content.toLowerCase().includes(query)) {
+                            // Evitar duplicatas
+                            if (!matches.find(m => m.topico === key.replace('notas_', ''))) {
+                                matches.push({
+                                    topico: key.replace('notas_', ''),
+                                    preview: data.content.substring(0, 100) + '...',
+                                    content: data.content
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        // Ignorar erros
+                    }
+                }
+            }
+
+            return matches;
+        } catch (e) {
+            console.error('Erro ao buscar notas:', e);
+            return [];
+        }
     }
 
     /**
@@ -435,7 +543,9 @@ class NotasRapidas {
      */
     _closeSearchModal() {
         const modal = this.wrapper.querySelector('#notasSearchModal');
-        modal.style.display = 'none';
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     /**
@@ -478,14 +588,14 @@ class NotasRapidas {
     /**
      * Define tópico
      */
-    setTopicoId(topicoId) {
+    async setTopicoId(topicoId) {
         // Salvar conteúdo atual antes de trocar
         if (this.isDirty) {
-            this._save();
+            await this._save();
         }
 
         this.topicoId = topicoId;
-        this._loadContent();
+        await this._loadContent();
     }
 
     /**
@@ -507,7 +617,9 @@ class NotasRapidas {
 }
 
 // Export ES6
-export { NotasRapidas };
+export {
+    NotasRapidas
+};
 export default NotasRapidas;
 
 // Export para uso global (compatibilidade)

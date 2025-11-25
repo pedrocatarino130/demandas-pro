@@ -1,65 +1,163 @@
 /**
  * EstudosStore - Gerenciamento de estado para módulo de Estudos
  * 
- * Gerencia áreas, tópicos e sessões com sincronização automática no localStorage
+ * Gerencia áreas, tópicos e sessões com sincronização automática no Firebase Firestore
  */
+
+import {
+    firebaseService
+} from '../services/firebase-service.js';
+import {
+    firebaseCache
+} from '../services/firebase-cache.js';
 
 class EstudosStore {
     constructor() {
-        this.storageKey = 'estudos_v3';
-        this.state = this._loadFromStorage();
-        this.subscribers = [];
-        this.revisaoEspacada = null; // Será injetado
-
-        // Migrar dados v2 se necessário
-        this._migrateFromV2();
-    }
-
-    /**
-     * Carrega dados do localStorage
-     */
-    _loadFromStorage() {
-        try {
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                const data = JSON.parse(stored);
-                return {
-                    areas: data.areas || [],
-                    topicos: data.topicos || [],
-                    contadorAreas: data.contadorAreas || 0,
-                    contadorTopicos: data.contadorTopicos || 0,
-                    versao: data.versao || 3
-                };
-            }
-        } catch (e) {
-            console.warn('Erro ao carregar dados de estudos', e);
-        }
-
-        return {
+        this.state = {
             areas: [],
             topicos: [],
             contadorAreas: 0,
             contadorTopicos: 0,
             versao: 3
         };
+        this.subscribers = [];
+        this.revisaoEspacada = null; // Será injetado
+        this.userId = 'default';
+        this.initialized = false;
+        this.listeners = [];
+        this.saveDebounce = null;
+        this.DEBOUNCE_DELAY = 300;
+
+        // Inicializar assincronamente
+        this.init();
     }
 
     /**
-     * Salva dados no localStorage
+     * Inicialização assíncrona
      */
-    _saveToStorage() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.state));
-        } catch (e) {
-            console.error('Erro ao salvar dados de estudos', e);
+    async init() {
+        // Carregar do cache primeiro
+        await firebaseCache.init();
+        const cached = await firebaseCache.get('estudos-store-state');
+        if (cached) {
+            this.state = {
+                ...this.state,
+                ...cached
+            };
+            this._notify();
         }
+
+        // Carregar do Firestore
+        await this._loadFromFirestore();
+
+        // Migrar dados v2 se necessário
+        await this._migrateFromV2();
+
+        // Configurar listeners em tempo real
+        this._setupListeners();
+
+        this.initialized = true;
+        console.log('✅ EstudosStore inicializado com Firebase');
+    }
+
+    /**
+     * Carrega dados do Firestore
+     */
+    async _loadFromFirestore() {
+        try {
+            if (!firebaseService.isAvailable()) {
+                return;
+            }
+
+            // Carregar estudos do Firestore
+            const estudos = await firebaseService.getDocument('estudos', this.userId);
+
+            if (estudos) {
+                // Estudos já incluem áreas e tópicos no store principal
+                // Mas vamos manter estrutura própria para compatibilidade
+                const areas = estudos.areasEstudo || [];
+                const topicos = estudos.topicosEstudo || [];
+
+                this.state.areas = areas;
+                this.state.topicos = topicos;
+                this.state.contadorAreas = areas.length;
+                this.state.contadorTopicos = topicos.length;
+
+                // Salvar no cache
+                await firebaseCache.set('estudos-store-state', this.state);
+                this._notify();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar estudos do Firestore:', error);
+        }
+    }
+
+    /**
+     * Salva dados no Firestore com debounce
+     */
+    _saveToFirestore() {
+        if (this.saveDebounce) {
+            clearTimeout(this.saveDebounce);
+        }
+
+        this.saveDebounce = setTimeout(async () => {
+            try {
+                // Salvar no cache imediatamente
+                await firebaseCache.set('estudos-store-state', this.state);
+
+                // Salvar no Firestore
+                if (firebaseService.isAvailable()) {
+                    await firebaseService.setDocument('estudos', this.userId, {
+                        areasEstudo: this.state.areas,
+                        topicosEstudo: this.state.topicos,
+                        contadorEstudos: this.state.contadorTopicos,
+                        updatedAt: new Date().toISOString(),
+                    }, true);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar estudos no Firestore:', error);
+            }
+        }, this.DEBOUNCE_DELAY);
+    }
+
+    /**
+     * Configura listeners em tempo real
+     */
+    _setupListeners() {
+        if (!firebaseService.isAvailable()) {
+            return;
+        }
+
+        const unsubscribe = firebaseService.subscribeToDocument('estudos', this.userId, (estudos) => {
+            if (estudos) {
+                const areas = estudos.areasEstudo || [];
+                const topicos = estudos.topicosEstudo || [];
+
+                this.state.areas = areas;
+                this.state.topicos = topicos;
+                this.state.contadorAreas = areas.length;
+                this.state.contadorTopicos = topicos.length;
+
+                // Atualizar cache
+                firebaseCache.set('estudos-store-state', this.state);
+                this._notify();
+            }
+        });
+
+        this.listeners.push(unsubscribe);
     }
 
     /**
      * Migra dados da versão 2 (se existir)
      */
-    _migrateFromV2() {
+    async _migrateFromV2() {
         try {
+            // Verificar se já migrou
+            const migrated = await firebaseCache.get('estudos-firestore-migrated');
+            if (migrated) {
+                return;
+            }
+
             const v2Key = 'estudos_v2';
             const v2Data = localStorage.getItem(v2Key);
 
@@ -99,7 +197,25 @@ class EstudosStore {
                     }));
                 }
 
-                this._saveToStorage();
+                this.state.contadorAreas = this.state.areas.length;
+                this.state.contadorTopicos = this.state.topicos.length;
+
+                // Salvar no Firestore
+                await this._saveToFirestore();
+                if (this.saveDebounce) {
+                    clearTimeout(this.saveDebounce);
+                }
+                await firebaseService.setDocument('estudos', this.userId, {
+                    areasEstudo: this.state.areas,
+                    topicosEstudo: this.state.topicos,
+                    contadorEstudos: this.state.contadorTopicos,
+                    updatedAt: new Date().toISOString(),
+                }, true);
+
+                // Marcar como migrado
+                await firebaseCache.set('estudos-firestore-migrated', true);
+                this._notify();
+
                 console.log('✅ Migração de dados v2 concluída');
             }
         } catch (e) {
@@ -160,7 +276,7 @@ class EstudosStore {
 
         this.state.areas.push(area);
         this.state.contadorAreas++;
-        this._saveToStorage();
+        this._saveToFirestore();
         this._notify();
 
         return area;
@@ -176,7 +292,7 @@ class EstudosStore {
                 ...this.state.areas[index],
                 ...updates
             };
-            this._saveToStorage();
+            this._saveToFirestore();
             this._notify();
             return this.state.areas[index];
         }
@@ -190,13 +306,14 @@ class EstudosStore {
         const index = this.state.areas.findIndex(a => a.id === id);
         if (index >= 0) {
             this.state.areas.splice(index, 1);
+            this.state.contadorAreas--;
             // Atualizar tópicos que referenciam esta área
             this.state.topicos.forEach(topico => {
                 if (topico.areaId === id) {
                     topico.areaId = null;
                 }
             });
-            this._saveToStorage();
+            this._saveToFirestore();
             this._notify();
             return true;
         }
@@ -247,7 +364,7 @@ class EstudosStore {
 
         this.state.topicos.push(topico);
         this.state.contadorTopicos++;
-        this._saveToStorage();
+        this._saveToFirestore();
         this._notify();
 
         return topico;
@@ -271,7 +388,7 @@ class EstudosStore {
             }
 
             this.state.topicos[index] = updated;
-            this._saveToStorage();
+            this._saveToFirestore();
             this._notify();
             return updated;
         }
@@ -285,7 +402,8 @@ class EstudosStore {
         const index = this.state.topicos.findIndex(t => t.id === id);
         if (index >= 0) {
             this.state.topicos.splice(index, 1);
-            this._saveToStorage();
+            this.state.contadorTopicos--;
+            this._saveToFirestore();
             this._notify();
             return true;
         }
@@ -328,7 +446,7 @@ class EstudosStore {
             topico.status = 'Estudando';
         }
 
-        this._saveToStorage();
+        this._saveToFirestore();
         this._notify();
 
         return sessao;
@@ -362,10 +480,20 @@ class EstudosStore {
             ...this.state
         };
     }
+
+    /**
+     * Limpa todos os listeners
+     */
+    destroy() {
+        this.listeners.forEach(unsubscribe => unsubscribe());
+        this.listeners = [];
+    }
 }
 
 // Export ES6
-export { EstudosStore };
+export {
+    EstudosStore
+};
 export default EstudosStore;
 
 // Export para uso global (compatibilidade)
