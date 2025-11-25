@@ -16,11 +16,24 @@
 const CACHE_NAME = 'gerenciador-pedro-v3.0';
 const CACHE_VERSION = '1.0.0';
 
+// Detectar base path dinamicamente
+const getBasePath = () => {
+    // Tentar detectar o base path do service worker
+    const swPath = self.location.pathname;
+    // Se o service worker está em /demandas-pro/service-worker.js, o base path é /demandas-pro/
+    if (swPath.includes('/demandas-pro/')) {
+        return '/demandas-pro/';
+    }
+    return '/';
+};
+
+const BASE_PATH = getBasePath();
+
 // Assets para cache na instalação
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json'
+    BASE_PATH === '/' ? '/' : BASE_PATH,
+    BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html',
+    BASE_PATH === '/' ? '/manifest.json' : BASE_PATH + 'manifest.json'
 ];
 
 /**
@@ -132,7 +145,8 @@ async function cacheFirst(request) {
         console.error('[SW] Network failed:', error);
         // Retornar página offline se for HTML
         if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
-            const offlinePage = await cache.match('/index.html');
+            const offlinePagePath = BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html';
+            const offlinePage = await cache.match(offlinePagePath);
             if (offlinePage) return offlinePage;
         }
         throw error;
@@ -163,7 +177,8 @@ async function networkFirst(request) {
         }
         
         // Retornar página offline
-        const offlinePage = await cache.match('/index.html');
+        const offlinePagePath = BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html';
+        const offlinePage = await cache.match(offlinePagePath);
         return offlinePage || new Response('Offline', { status: 503 });
     }
 }
@@ -318,7 +333,8 @@ self.addEventListener('message', (event) => {
  */
 async function checkForUpdate() {
     try {
-        const response = await fetch('/manifest.json', { cache: 'no-store' });
+        const manifestPath = BASE_PATH === '/' ? '/manifest.json' : BASE_PATH + 'manifest.json';
+        const response = await fetch(manifestPath, { cache: 'no-store' });
         const manifest = await response.json();
         
         if (manifest.version !== CACHE_VERSION) {

@@ -20,9 +20,21 @@ export default defineConfig({
             }
         },
         // Copiar service worker para dist
-        copyPublicDir: true
+        copyPublicDir: true,
+        // Garantir que os módulos ES sejam tratados corretamente
+        commonjsOptions: {
+            include: [/node_modules/]
+        }
     },
     publicDir: 'public',
+    resolve: {
+        // Garantir resolução correta de módulos
+        dedupe: ['firebase']
+    },
+    optimizeDeps: {
+        // Incluir Firebase nas dependências otimizadas
+        include: ['firebase/app', 'firebase/firestore', 'firebase/auth']
+    },
     server: {
         port: 3000,
         open: true

@@ -23,9 +23,11 @@ function registerServiceWorker() {
             ? import.meta.env.BASE_URL 
             : './';
         // Garantir que o caminho está correto (service-worker.js está em public/)
-        const swPath = baseUrl === './' || baseUrl === '/' 
+        // Remover barra final se existir e adicionar service-worker.js
+        const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const swPath = normalizedBase === './' || normalizedBase === '/' 
             ? './service-worker.js' 
-            : baseUrl + 'service-worker.js';
+            : normalizedBase + '/service-worker.js';
         navigator.serviceWorker.register(swPath)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);
