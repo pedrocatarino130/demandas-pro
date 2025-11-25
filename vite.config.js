@@ -3,7 +3,9 @@ import {
 } from 'vite';
 
 export default defineConfig({
-    base: './',
+    // Base path pode ser configurado via variável de ambiente
+    // Para GitHub Pages em subdiretório, use: BASE_URL=/demandas-pro/ npm run build
+    base: process.env.BASE_URL || './',
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
@@ -16,8 +18,11 @@ export default defineConfig({
                     idb: ['idb']
                 }
             }
-        }
+        },
+        // Copiar service worker para dist
+        copyPublicDir: true
     },
+    publicDir: 'public',
     server: {
         port: 3000,
         open: true

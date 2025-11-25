@@ -41,6 +41,51 @@ npm run preview
 
 O build será gerado na pasta `dist/`, pronta para deploy.
 
+### Deploy no GitHub Pages
+
+**⚠️ IMPORTANTE**: O projeto precisa ser buildado antes de ser servido. Não tente servir os arquivos fonte diretamente.
+
+#### Opção 1: Deploy Manual
+
+1. **Build do projeto**:
+   ```bash
+   # Para GitHub Pages em subdiretório (ex: /demandas-pro/)
+   BASE_URL=/demandas-pro/ npm run build
+   
+   # Para GitHub Pages na raiz
+   npm run build
+   ```
+
+2. **Copiar conteúdo de `dist/` para a branch `gh-pages`** ou configurar GitHub Pages para servir da pasta `dist/`
+
+3. **Configurar GitHub Pages** no repositório para servir da branch `gh-pages` ou da pasta `dist/`
+
+#### Opção 2: GitHub Actions (Recomendado)
+
+Crie `.github/workflows/deploy.yml`:
+```yaml
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: BASE_URL=/demandas-pro/ npm run build
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+```
+
+**Nota**: Substitua `/demandas-pro/` pelo caminho correto do seu repositório no GitHub Pages.
+
 ## 📁 Estrutura do Projeto
 
 ```

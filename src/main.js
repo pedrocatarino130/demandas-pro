@@ -18,7 +18,12 @@ import {
 // Service Worker
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
+        // Usar caminho relativo ao base path
+        const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) 
+            ? import.meta.env.BASE_URL 
+            : './';
+        const swPath = baseUrl + 'service-worker.js';
+        navigator.serviceWorker.register(swPath)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);
                 

@@ -8,9 +8,65 @@ class Router {
         this.routes = routes;
         this.container = document.getElementById(containerId);
         this.currentView = null;
-        this.currentPath = window.location.pathname;
+        // Normalizar path removendo base path (ex: /demandas-pro/)
+        this.basePath = this.detectBasePath();
+        this.currentPath = this.normalizePath(window.location.pathname);
         this.subscribers = [];
         this.init();
+    }
+
+    /**
+     * Detecta o base path do projeto (ex: /demandas-pro/)
+     */
+    detectBasePath() {
+        // Primeiro, tentar usar import.meta.env.BASE_URL (definido pelo Vite)
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) {
+            const base = import.meta.env.BASE_URL;
+            // Garantir que termina com /
+            return base.endsWith('/') ? base : base + '/';
+        }
+        
+        // Caso contrário, detectar pelo caminho atual
+        const path = window.location.pathname;
+        
+        // Verificar se está em um subdiretório conhecido (ex: /demandas-pro/)
+        if (path.startsWith('/demandas-pro/')) {
+            return '/demandas-pro/';
+        }
+        
+        // Se o path tem mais de um segmento e não é uma rota conhecida, pode ser base path
+        const segments = path.split('/').filter(p => p);
+        if (segments.length > 0) {
+            const firstSegment = segments[0];
+            // Se o primeiro segmento não corresponde a nenhuma rota conhecida, pode ser base path
+            const knownRoutes = ['', 'projetos', 'estudos', 'rotina', 'terapeutico'];
+            if (!knownRoutes.includes(firstSegment) && path.startsWith('/' + firstSegment + '/')) {
+                return '/' + firstSegment + '/';
+            }
+        }
+        
+        return '/';
+    }
+
+    /**
+     * Normaliza o path removendo o base path
+     */
+    normalizePath(path) {
+        if (!path) return '/';
+        
+        // Se não há base path ou é a raiz, retornar normalizado
+        if (!this.basePath || this.basePath === '/') {
+            return path === '' ? '/' : path;
+        }
+        
+        // Remove o base path do início do path
+        if (path.startsWith(this.basePath)) {
+            const normalized = path.slice(this.basePath.length - 1); // -1 para manter a barra inicial
+            return normalized || '/';
+        }
+        
+        // Se o path não começa com base path, pode já estar normalizado
+        return path || '/';
     }
 
     /**
@@ -19,7 +75,7 @@ class Router {
     init() {
         // Escutar mudanças no histórico do browser
         window.addEventListener('popstate', (e) => {
-            const path = window.location.pathname;
+            const path = this.normalizePath(window.location.pathname);
             this.handleRoute(path, false);
             this.notifySubscribers(path);
         });
@@ -42,12 +98,19 @@ class Router {
      * Navega para uma rota
      */
     navigate(path, pushState = true) {
+        // Normalizar path para navegação interna
+        const normalizedPath = this.normalizePath(path);
+        // Para pushState, usar o path completo com base path
+        const fullPath = this.basePath && this.basePath !== '/' 
+            ? this.basePath.slice(0, -1) + normalizedPath // Remove a barra final do basePath
+            : normalizedPath;
+        
         if (pushState) {
-            window.history.pushState({}, '', path);
+            window.history.pushState({}, '', fullPath);
         }
-        this.handleRoute(path, pushState);
+        this.handleRoute(normalizedPath, pushState);
         // Notificar subscribers
-        this.notifySubscribers(path);
+        this.notifySubscribers(normalizedPath);
     }
 
     /**
@@ -82,7 +145,8 @@ class Router {
      * Processa a rota atual
      */
     async handleRoute(path, pushState = true) {
-        // Normalizar path
+        // Normalizar path (já deveria estar normalizado, mas garantir)
+        path = this.normalizePath(path);
         path = path === '' ? '/' : path;
 
         // Encontrar rota correspondente
