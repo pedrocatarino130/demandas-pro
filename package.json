@@ -1,0 +1,26 @@
+{
+    "name": "gerenciador-pedro-v3",
+    "version": "3.0.0",
+    "type": "module",
+    "description": "Gerenciador pessoal v3.0 - Base Sólida",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint src --ext js",
+        "format": "prettier --write \"src/**/*.{js,css}\"",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:e2e:headed": "playwright test --headed"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0",
+        "eslint": "^8.50.0",
+        "prettier": "^3.0.0",
+        "eslint-config-prettier": "^9.0.0",
+        "@playwright/test": "^1.40.0"
+    },
+    "dependencies": {
+        "date-fns": "^2.30.0"
+    }
+}

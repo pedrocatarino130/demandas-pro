@@ -1,0 +1,116 @@
+:root {
+    /* Colors - Primary */
+    --color-primary: #007AFF;
+    --color-primary-hover: #0051D5;
+    --color-primary-light: #E3F2FD;
+
+    /* Colors - Status */
+    --color-success: #34C759;
+    --color-success-hover: #30D158;
+    --color-danger: #FF3B30;
+    --color-danger-hover: #FF2D20;
+    --color-warning: #FF9500;
+    --color-warning-hover: #FF8800;
+
+    /* Colors - Neutral */
+    --color-text-primary: #1D1D1F;
+    --color-text-secondary: #6E6E73;
+    --color-text-muted: #86868B;
+    --color-border: #D2D2D7;
+    --color-background: #F5F5F7;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #FAFAFA;
+
+    /* Spacing System (4px base) */
+    --spacing-unit: 4px;
+    --spacing-xs: calc(var(--spacing-unit) * 1);
+    /* 4px */
+    --spacing-sm: calc(var(--spacing-unit) * 2);
+    /* 8px */
+    --spacing-md: calc(var(--spacing-unit) * 4);
+    /* 16px */
+    --spacing-lg: calc(var(--spacing-unit) * 6);
+    /* 24px */
+    --spacing-xl: calc(var(--spacing-unit) * 8);
+    /* 32px */
+    --spacing-2xl: calc(var(--spacing-unit) * 12);
+    /* 48px */
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-default: 12px;
+    --radius-large: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-base: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-2xl: 24px;
+    --font-size-3xl: 30px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.2);
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+    --transition-slow: 350ms ease;
+
+    /* Z-index layers */
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+
+    /* Breakpoints (for JS use) */
+    --breakpoint-mobile: 768px;
+    --breakpoint-tablet: 1024px;
+    --breakpoint-desktop: 1280px;
+    --breakpoint-desktop-large: 1920px;
+
+    /* iPhone specific breakpoints */
+    --breakpoint-iphone-se: 375px;
+    --breakpoint-iphone-standard: 390px;
+    --breakpoint-iphone-max: 430px;
+}
+
+/* Dark Mode Variables (preparation) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text-primary: #F5F5F7;
+        --color-text-secondary: #A1A1A6;
+        --color-text-muted: #6E6E73;
+        --color-border: #424245;
+        --color-background: #1D1D1F;
+        --color-surface: #2C2C2E;
+        --color-surface-hover: #3A3A3C;
+    }
+}
+
+/* Dark Mode Class (manual toggle) */
+.dark-mode {
+    --color-text-primary: #F5F5F7;
+    --color-text-secondary: #A1A1A6;
+    --color-text-muted: #6E6E73;
+    --color-border: #424245;
+    --color-background: #1D1D1F;
+    --color-surface: #2C2C2E;
+    --color-surface-hover: #3A3A3C;
+}
