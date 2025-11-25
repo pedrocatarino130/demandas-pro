@@ -14,10 +14,6 @@ import './components/estudos/NotasRapidas.js';
 import './utils/estudos-store.js';
 import './views/EstudosView.js';
 
-// Importar estilos
-import './styles/variables.css';
-import './styles/estudos.css';
-
 // Inicializar quando DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     // Verificar se já existe container de estudos

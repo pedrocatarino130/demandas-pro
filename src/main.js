@@ -2,22 +2,6 @@
  * Entry Point da Aplicação
  */
 
-import './styles/variables.css';
-import './styles/reset.css';
-import './styles/components.css';
-import './styles/mobile.css';
-import './styles/sidebar.css';
-import './styles/breadcrumb.css';
-import './styles/task-card.css';
-import './styles/home.css';
-import './styles/checkbox.css';
-import './styles/toast.css';
-import './styles/estudos.css';
-import './styles/rotina.css';
-import './styles/projetos.css';
-import './styles/app.css';
-import './styles/responsive.css';
-
 import {
     initRouter
 } from './router.js';
