@@ -1,0 +1,100 @@
+/* Mobile Touch-Friendly Styles */
+
+/* Ensure minimum touch target size (44x44px - Apple HIG) */
+button,
+.btn,
+a[role="button"],
+input[type="checkbox"],
+input[type="radio"] {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Spacing between interactive elements */
+.interactive-group>*+* {
+    margin-left: var(--spacing-md);
+}
+
+/* Prevent text size adjustment on iOS */
+input,
+textarea,
+select {
+    font-size: var(--font-size-base);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Safe areas for iPhone X+ */
+@supports (padding: max(0px)) {
+    .safe-area-top {
+        padding-top: max(var(--spacing-md), env(safe-area-inset-top));
+    }
+
+    .safe-area-bottom {
+        padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+    }
+
+    .safe-area-left {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    }
+
+    .safe-area-right {
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    }
+
+    /* Aplicar safe areas automaticamente em elementos principais */
+    body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+
+    /* Header com safe area */
+    .app-header {
+        padding-top: max(var(--spacing-md), env(safe-area-inset-top));
+    }
+}
+
+/* Fullscreen modals on mobile */
+@media (max-width: 767px) {
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+        margin: 0;
+        /* Safe area para modais */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* Improved touch feedback */
+@media (hover: none) and (pointer: coarse) {
+
+    button:active,
+    .btn:active,
+    a:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+}
+
+/* Prevent pull-to-refresh on overscroll */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* Better scrolling on mobile */
+.scroll-container {
+    overflow-y: auto;
+    /* -webkit-overflow-scrolling está deprecado, usando scroll-behavior smooth */
+    scroll-behavior: smooth;
+}

@@ -1,0 +1,656 @@
+/* Rotina View Styles */
+
+.rotina-view {
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Desktop: ajustar quando sidebar está fixa */
+@media (min-width: 1024px) {
+  .rotina-view {
+    padding: var(--spacing-xl) var(--spacing-lg);
+    max-width: 1400px;
+  }
+}
+
+.rotina-header {
+  margin-bottom: var(--spacing-2xl);
+  width: 100%;
+}
+
+.rotina-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.rotina-header-controls {
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.rotina-header-controls .btn {
+  margin: 0;
+}
+
+/* Busca e Ordenação */
+.rotina-search-sort {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rotina-search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.rotina-search-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  transition: all var(--transition-base);
+  box-sizing: border-box;
+}
+
+.rotina-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.rotina-search-input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.rotina-sort-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.rotina-sort-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  min-width: 120px;
+}
+
+.rotina-sort-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.rotina-sort-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotina-sort-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.rotina-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+  /* Espaço para scrollbar quando necessário */
+  scrollbar-width: none;
+  /* Firefox - esconde scrollbar */
+  -ms-overflow-style: none;
+  /* IE/Edge - esconde scrollbar */
+}
+
+.rotina-filters::-webkit-scrollbar {
+  display: none;
+  /* Chrome/Safari - esconde scrollbar */
+}
+
+/* Mostrar scrollbar apenas em desktop se necessário */
+@media (min-width: 768px) {
+  .rotina-filters {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+.filter-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-default);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-family);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
+  /* Touch target mínimo */
+  touch-action: manipulation;
+}
+
+.filter-btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.filter-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.filter-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-default);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-family);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.filter-select:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.rotina-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.rotina-section-postponed {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
+  border-radius: var(--radius-default);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.rotina-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.rotina-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.rotina-section-count {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.rotina-section-badge {
+  margin-left: auto;
+}
+
+.rotina-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.rotina-tasks-completed .rotina-task-item {
+  opacity: 0.7;
+}
+
+.rotina-task-item {
+  animation: fadeIn 0.3s ease-in;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.rotina-task-item:hover {
+  transform: translateY(-2px);
+}
+
+.rotina-task-postponed {
+  position: relative;
+}
+
+.rotina-task-postponed::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  z-index: 1;
+}
+
+.rotina-tasks-postponed {
+  gap: var(--spacing-md);
+}
+
+.rotina-tasks-postponed .rotina-task-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-left: 4px solid #f59e0b;
+  padding-left: var(--spacing-sm);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rotina-empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-text-secondary);
+}
+
+.rotina-empty-text {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.badge-info {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.task-card-recurrence-badge {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.task-card-postponed-badge {
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  font-weight: var(--font-weight-semibold);
+}
+
+.task-card-postponed {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%);
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .rotina-view {
+    padding: var(--spacing-md);
+    /* Safe area para iPhone X+ */
+    padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+    padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+  }
+
+  .rotina-header {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .rotina-title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+    line-height: var(--line-height-tight);
+  }
+
+  .rotina-filters {
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
+    /* Scroll horizontal em mobile */
+    overflow-x: auto;
+    padding-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-btn {
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 44px;
+    min-width: auto;
+  }
+
+  .rotina-section {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .rotina-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .rotina-section-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .rotina-section-count {
+    font-size: var(--font-size-xs);
+  }
+
+  .rotina-section-badge {
+    margin-left: 0;
+  }
+
+  .rotina-tasks-list {
+    gap: var(--spacing-sm);
+  }
+
+  .rotina-task-item .task-card {
+    padding: var(--spacing-md);
+  }
+
+  .rotina-empty-state {
+    padding: var(--spacing-xl);
+  }
+
+  .rotina-empty-text {
+    font-size: var(--font-size-base);
+  }
+
+  .rotina-search-sort {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .rotina-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rotina-sort-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rotina-sort-select {
+    flex: 1;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .rotina-view {
+    padding: var(--spacing-lg);
+  }
+
+  .rotina-filters {
+    flex-wrap: wrap;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .rotina-view {
+    padding: var(--spacing-xl) var(--spacing-lg);
+  }
+
+  .rotina-filters {
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+}
+
+/* ============================================
+   MODAL DE TAREFA DE ROTINA
+   ============================================ */
+
+.rotina-task-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.rotina-task-modal-content {
+    background: var(--color-surface);
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+}
+
+.rotina-task-modal-title {
+    margin: 0 0 20px 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.rotina-task-form-group {
+    margin-bottom: 16px;
+}
+
+.rotina-task-form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+}
+
+.rotina-task-form-input,
+.rotina-task-form-select,
+.rotina-task-form-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    box-sizing: border-box;
+}
+
+.rotina-task-form-input:focus,
+.rotina-task-form-select:focus,
+.rotina-task-form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.rotina-task-form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.rotina-task-time-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.rotina-task-time-input {
+    flex: 1;
+}
+
+.rotina-task-time-separator {
+    align-self: center;
+    color: var(--color-text-secondary);
+}
+
+.rotina-task-modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.rotina-task-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    border: none;
+}
+
+.rotina-task-btn-cancel {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+}
+
+.rotina-task-btn-cancel:hover {
+    background: var(--color-surface-hover);
+}
+
+.rotina-task-btn-save {
+    background: var(--color-primary);
+    color: white;
+}
+
+.rotina-task-btn-save:hover {
+    background: var(--color-primary-hover);
+}
+
+/* Melhorias no modal */
+.rotina-task-modal {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-in;
+}
+
+.rotina-task-modal-content {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para checkbox de repetição */
+.rotina-task-form-group label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+}
+
+.rotina-task-form-group input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Indicador visual para tarefas recorrentes */
+.rotina-task-item[data-recurring="true"] .task-card::before {
+    content: "🔄";
+    position: absolute;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    opacity: 0.7;
+}
+

@@ -1,0 +1,11 @@
+# Resultados de testes
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Screenshots e vídeos
+**/screenshots/
+**/videos/
+**/*-snapshots/
+
+

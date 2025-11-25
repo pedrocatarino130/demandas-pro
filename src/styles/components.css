@@ -1,0 +1,327 @@
+/* Base Component Styles */
+
+/* Container */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-default);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    /* Touch target */
+    gap: var(--spacing-sm);
+    border: none;
+    box-sizing: border-box;
+}
+
+/* Responsive buttons */
+@media (max-width: 767px) {
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+        min-height: 44px;
+        font-size: var(--font-size-base);
+        touch-action: manipulation;
+        /* Melhora resposta touch */
+    }
+
+    /* Botões full-width em mobile apenas quando necessário */
+    .btn-full {
+        width: 100%;
+    }
+
+    .btn-secondary {
+        width: auto;
+    }
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.btn-success {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+/* Cards */
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-large);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Inputs */
+.input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-default);
+    font-size: var(--font-size-base);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    transition: all var(--transition-base);
+    box-sizing: border-box;
+}
+
+.input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+    outline: none;
+}
+
+/* Responsive inputs */
+@media (max-width: 767px) {
+    .input {
+        font-size: 16px; /* Previne zoom automático no iOS */
+        padding: var(--spacing-md);
+        min-height: 44px; /* Touch target */
+    }
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+}
+
+.badge-danger {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.badge-success {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.badge-warning {
+    background-color: var(--color-warning);
+    color: white;
+}
+
+.badge-secondary {
+    background-color: var(--color-text-secondary);
+    color: #FFF8E7;
+    font-weight: var(--font-weight-semibold);
+}
+
+.badge-muted {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    border: 1px solid var(--color-border);
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-sm {
+    gap: var(--spacing-sm);
+}
+
+.gap-md {
+    gap: var(--spacing-md);
+}
+
+.gap-lg {
+    gap: var(--spacing-lg);
+}
+
+/* Confirm Modal */
+.confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.confirm-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+}
+
+.confirm-modal-content {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.confirm-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.confirm-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1f2937);
+}
+
+.confirm-modal-body {
+  padding: 24px;
+}
+
+.confirm-modal-message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.confirm-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirm-modal-footer .btn {
+  min-width: 80px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.confirm-modal-footer .btn-secondary {
+  background: var(--color-danger, #ef4444);
+  color: white;
+}
+
+.confirm-modal-footer .btn-secondary:hover {
+  background: var(--color-danger-dark, #dc2626);
+}
+
+.confirm-modal-footer .btn-primary {
+  background: var(--color-primary, #3b82f6);
+  color: white;
+}
+
+.confirm-modal-footer .btn-primary:hover {
+  background: var(--color-primary-dark, #2563eb);
+}

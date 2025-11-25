@@ -1,0 +1,95 @@
+/* App Layout Styles */
+
+.app-header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--spacing-md) var(--spacing-lg);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.app-header-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.app-breadcrumb {
+  margin-top: var(--spacing-sm);
+}
+
+.view-container {
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.view-container h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Layout com sidebar */
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  .app-header {
+    position: fixed;
+    top: 0;
+    left: 280px;
+    right: 0;
+    z-index: var(--z-sticky);
+    height: auto;
+  }
+
+  #app {
+    margin-left: 280px;
+    margin-top: 0;
+    padding-top: 100px; /* Compensar altura do header fixo */
+    width: calc(100% - 280px);
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop Small: Sidebar menor */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .app-header {
+    left: 240px;
+  }
+
+  #app {
+    margin-left: 240px;
+    padding-top: 100px;
+    width: calc(100% - 240px);
+  }
+}
+
+@media (max-width: 1023px) {
+  #app {
+    margin-top: 0;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .app-header {
+    position: sticky;
+    left: 0;
+    right: 0;
+  }
+}
+
