@@ -65,6 +65,11 @@ class Router {
             return normalized || '/';
         }
         
+        // Se o path é exatamente o base path (sem barra final), retornar '/'
+        if (path === this.basePath.slice(0, -1)) {
+            return '/';
+        }
+        
         // Se o path não começa com base path, pode já estar normalizado
         return path || '/';
     }
@@ -154,8 +159,20 @@ class Router {
 
         if (!route) {
             console.warn(`Rota não encontrada: ${path}`);
-            this.navigate('/', false);
-            return;
+            // Se o path normalizado for vazio ou apenas '/', tentar a rota raiz
+            if (path === '/' || path === '') {
+                path = '/';
+                const rootRoute = this.findRoute('/');
+                if (rootRoute) {
+                    route = rootRoute;
+                } else {
+                    console.error('Rota raiz não encontrada');
+                    return;
+                }
+            } else {
+                this.navigate('/', false);
+                return;
+            }
         }
 
         this.currentPath = path;

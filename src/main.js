@@ -22,7 +22,10 @@ function registerServiceWorker() {
         const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) 
             ? import.meta.env.BASE_URL 
             : './';
-        const swPath = baseUrl + 'service-worker.js';
+        // Garantir que o caminho está correto (service-worker.js está em public/)
+        const swPath = baseUrl === './' || baseUrl === '/' 
+            ? './service-worker.js' 
+            : baseUrl + 'service-worker.js';
         navigator.serviceWorker.register(swPath)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);
