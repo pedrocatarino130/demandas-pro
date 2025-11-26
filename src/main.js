@@ -18,16 +18,9 @@ import {
 // Service Worker
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        // Usar caminho relativo ao base path
-        const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) 
-            ? import.meta.env.BASE_URL 
-            : './';
-        // Garantir que o caminho está correto (service-worker.js está em public/)
-        // Remover barra final se existir e adicionar service-worker.js
-        const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        const swPath = normalizedBase === './' || normalizedBase === '/' 
-            ? './service-worker.js' 
-            : normalizedBase + '/service-worker.js';
+        // O Vite já resolve o caminho correto com base no BASE_URL
+        // Usar caminho absoluto que o Vite irá processar
+        const swPath = '/service-worker.js';
         navigator.serviceWorker.register(swPath)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);

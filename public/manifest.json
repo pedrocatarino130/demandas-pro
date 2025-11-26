@@ -2,17 +2,18 @@
     "name": "Gerenciador Pedro",
     "short_name": "Gerenciador",
     "description": "Sistema de gerenciamento pessoal",
-    "start_url": "./",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#007AFF",
     "icons": [{
-            "src": "./icon-192.png",
+            "src": "/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "./icon-512.png",
+            "src": "/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
