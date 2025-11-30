@@ -12,9 +12,6 @@
 import {
     firebaseCache
 } from '../../services/firebase-cache.js';
-import {
-    firebaseService
-} from '../../services/firebase-service.js';
 
 class NotasRapidas {
     constructor(options = {}) {
@@ -290,23 +287,11 @@ class NotasRapidas {
             timestamp: new Date().toISOString()
         };
 
-        // Salvar no Firebase Cache e Firestore
+        // Salvar apenas localmente (cache)
         const key = `notas_${this.topicoId || 'global'}`;
         try {
-            // Salvar no cache imediatamente
+            // Salvar no cache local
             await firebaseCache.set(key, data);
-
-            // Salvar no Firestore (em background)
-            if (firebaseService.isAvailable()) {
-                firebaseService.setDocument('notas', key, {
-                    topicoId: this.topicoId,
-                    content: this.content,
-                    timestamp: data.timestamp,
-                    updatedAt: new Date().toISOString(),
-                }, true).catch(err => {
-                    console.warn('Erro ao salvar notas no Firestore (continuará no cache):', err);
-                });
-            }
 
             this.lastSaved = new Date();
             this.isDirty = false;
@@ -326,24 +311,6 @@ class NotasRapidas {
         try {
             // Tentar carregar do cache primeiro
             let data = await firebaseCache.get(key);
-
-            // Se não tiver no cache, tentar do Firestore
-            if (!data && firebaseService.isAvailable()) {
-                try {
-                    const doc = await firebaseService.getDocument('notas', key);
-                    if (doc) {
-                        data = {
-                            topicoId: doc.topicoId,
-                            content: doc.content,
-                            timestamp: doc.timestamp,
-                        };
-                        // Salvar no cache para próxima vez
-                        await firebaseCache.set(key, data);
-                    }
-                } catch (e) {
-                    console.warn('Erro ao carregar notas do Firestore:', e);
-                }
-            }
 
             // Fallback para localStorage (migração)
             if (!data) {
@@ -484,28 +451,6 @@ class NotasRapidas {
                     }
                 } catch (e) {
                     console.warn(`Erro ao buscar nota ${key}:`, e);
-                }
-            }
-
-            // Também buscar no Firestore
-            if (firebaseService.isAvailable()) {
-                try {
-                    const notas = await firebaseService.getCollection('notas');
-                    for (const nota of notas) {
-                        if (nota.content && nota.content.toLowerCase().includes(query)) {
-                            // Evitar duplicatas
-                            const key = `notas_${nota.topicoId || 'global'}`;
-                            if (!matches.find(m => m.topico === (nota.topicoId || 'global'))) {
-                                matches.push({
-                                    topico: nota.topicoId || 'global',
-                                    preview: nota.content.substring(0, 100) + '...',
-                                    content: nota.content
-                                });
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Erro ao buscar notas no Firestore:', e);
                 }
             }
 

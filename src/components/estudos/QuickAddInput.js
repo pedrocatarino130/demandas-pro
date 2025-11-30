@@ -457,7 +457,7 @@ class QuickAddInput {
         // Limita a 10 itens
         this.history = this.history.slice(0, 10);
 
-        // Salva no Firebase Cache
+        // Salva no cache local
         try {
             await firebaseCache.set('quickAddHistory', this.history);
         } catch (e) {

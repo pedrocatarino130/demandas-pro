@@ -64,7 +64,6 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     vendor: ['date-fns'],
-                    firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
                     idb: ['idb']
                 }
             }
@@ -80,11 +79,9 @@ export default defineConfig({
     plugins: [manifestPlugin()],
     resolve: {
         // Garantir resolução correta de módulos
-        dedupe: ['firebase']
     },
     optimizeDeps: {
-        // Incluir Firebase nas dependências otimizadas
-        include: ['firebase/app', 'firebase/firestore', 'firebase/auth']
+        // Dependências otimizadas
     },
     server: {
         port: 3000,

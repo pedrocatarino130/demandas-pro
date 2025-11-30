@@ -1,6 +1,6 @@
 /**
  * Sistema de Estado Global
- * Gerencia estado centralizado com sincronização automática ao Firebase Firestore
+ * Gerencia estado centralizado com armazenamento local (IndexedDB/localStorage)
  */
 
 import {
@@ -29,7 +29,7 @@ class Store {
     }
 
     /**
-     * Inicialização assíncrona do Firebase
+     * Inicialização assíncrona - apenas local
      */
     async init() {
         // Inicializar cache
@@ -45,17 +45,11 @@ class Store {
             this.notify();
         }
 
-        // Tentar carregar do Firestore
-        await this.loadFromFirestore();
-
-        // Executar migração completa do localStorage para Firestore
-        this.runMigration();
-
-        // Configurar listeners em tempo real
-        this.setupRealtimeListeners();
+        // Carregar dados antigos do localStorage (migração)
+        await this.migrateFromV2();
 
         this.initialized = true;
-        console.log('✅ Store inicializado com Firebase');
+        console.log('✅ Store inicializado (modo local)');
     }
 
     /**
@@ -126,95 +120,16 @@ class Store {
     }
 
     /**
-     * Carrega estado do Firestore
+     * Método removido - não carrega mais do Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     async loadFromFirestore() {
-        try {
-            if (!firebaseService.isAvailable()) {
-                console.warn('Firestore não disponível, usando cache apenas');
-                return;
-            }
-
-            // Carregar dados de diferentes coleções
-            const [tarefas, rotina, categorias, estudos, config] = await Promise.all([
-                firebaseService.getCollection('tarefas'),
-                firebaseService.getDocument('rotina', this.userId),
-                firebaseService.getCollection('categorias'),
-                firebaseService.getDocument('estudos', this.userId),
-                firebaseService.getDocument('config', this.userId),
-            ]);
-
-            // Montar estado a partir dos dados do Firestore
-            const newState = {
-                ...this.getDefaultState(),
-            };
-
-            // Tarefas (projetos e home)
-            if (Array.isArray(tarefas)) {
-                tarefas.forEach(task => {
-                    if (task.tipo === 'projeto') {
-                        newState.tarefas.push(task);
-                    } else if (task.tipo === 'home') {
-                        newState.tarefasHome.push(task);
-                    }
-                });
-                newState.contador = newState.tarefas.length;
-                newState.contadorHome = newState.tarefasHome.length;
-            }
-
-            // Rotina
-            if (rotina) {
-                newState.tarefasRotina = rotina.tarefasRotina || [];
-                newState.contadorRotina = rotina.contadorRotina || 0;
-                newState.historico = rotina.historico || [];
-            }
-
-            // Categorias
-            if (Array.isArray(categorias)) {
-                newState.categorias = categorias;
-            }
-
-            // Estudos
-            if (estudos) {
-                newState.areasEstudo = estudos.areasEstudo || [];
-                newState.topicosEstudo = estudos.topicosEstudo || [];
-                newState.sessoesEstudo = estudos.sessoesEstudo || [];
-                newState.contadorEstudos = estudos.contadorEstudos || 0;
-                newState.tagsEstudo = estudos.tagsEstudo || [];
-                if (estudos.configEstudos) {
-                    newState.configEstudos = {
-                        ...newState.configEstudos,
-                        ...estudos.configEstudos
-                    };
-                }
-            }
-
-            // Config
-            if (config) {
-                newState.streak = config.streak || 0;
-                newState.conquistas = config.conquistas || {};
-                newState.avaliacoesDiarias = config.avaliacoesDiarias || [];
-                newState.darkMode = config.darkMode || false;
-                newState.filtroStatus = config.filtroStatus || null;
-                if (config.diaAtual) {
-                    newState.diaAtual = config.diaAtual;
-                }
-                if (config.ultimaAtualizacao) {
-                    newState.ultimaAtualizacao = config.ultimaAtualizacao;
-                }
-            }
-
-            // Atualizar estado
-            this.state = newState;
-            await firebaseCache.set('store-state', newState);
-            this.notify();
-        } catch (error) {
-            console.error('Erro ao carregar estado do Firestore:', error);
-        }
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
-     * Salva estado no Firestore com debounce
+     * Salva estado localmente com debounce
      */
     saveToFirestore() {
         if (this.saveDebounce) {
@@ -228,223 +143,39 @@ class Store {
                     ultimaAtualizacao: new Date().toISOString(),
                 };
 
-                // Salvar no cache imediatamente
+                // Salvar no cache local
                 await firebaseCache.set('store-state', stateToSave);
-
-                // Organizar dados em coleções do Firestore
-                if (firebaseService.isAvailable()) {
-                    await this._saveCollectionsToFirestore(stateToSave);
-                }
             } catch (error) {
-                console.error('Erro ao salvar estado no Firestore:', error);
+                console.error('Erro ao salvar estado:', error);
             }
         }, this.DEBOUNCE_DELAY);
     }
 
     /**
-     * Salva estado organizado em coleções do Firestore
+     * Método removido - não salva mais no Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     async _saveCollectionsToFirestore(state) {
-        try {
-            const batch = [];
-
-            // Tarefas (projetos e home)
-            const allTarefas = [
-                ...state.tarefas.map(t => ({
-                    ...t,
-                    tipo: 'projeto'
-                })),
-                ...state.tarefasHome.map(t => ({
-                    ...t,
-                    tipo: 'home'
-                }))
-            ];
-
-            // Limpar tarefas antigas e salvar novas
-            // Nota: Em produção, seria melhor atualizar apenas os documentos modificados
-            for (const tarefa of allTarefas) {
-                if (tarefa.id) {
-                    batch.push({
-                        type: 'set',
-                        collection: 'tarefas',
-                        docId: tarefa.id,
-                        data: tarefa,
-                        merge: true,
-                    });
-                }
-            }
-
-            // Rotina
-            batch.push({
-                type: 'set',
-                collection: 'rotina',
-                docId: this.userId,
-                data: {
-                    tarefasRotina: state.tarefasRotina,
-                    contadorRotina: state.contadorRotina,
-                    historico: state.historico,
-                    updatedAt: new Date().toISOString(),
-                },
-                merge: true,
-            });
-
-            // Categorias
-            for (const categoria of state.categorias) {
-                if (categoria.id) {
-                    batch.push({
-                        type: 'set',
-                        collection: 'categorias',
-                        docId: categoria.id,
-                        data: categoria,
-                        merge: true,
-                    });
-                }
-            }
-
-            // Estudos
-            batch.push({
-                type: 'set',
-                collection: 'estudos',
-                docId: this.userId,
-                data: {
-                    areasEstudo: state.areasEstudo,
-                    topicosEstudo: state.topicosEstudo,
-                    sessoesEstudo: state.sessoesEstudo,
-                    contadorEstudos: state.contadorEstudos,
-                    tagsEstudo: state.tagsEstudo,
-                    configEstudos: state.configEstudos,
-                    updatedAt: new Date().toISOString(),
-                },
-                merge: true,
-            });
-
-            // Config
-            batch.push({
-                type: 'set',
-                collection: 'config',
-                docId: this.userId,
-                data: {
-                    streak: state.streak,
-                    conquistas: state.conquistas,
-                    avaliacoesDiarias: state.avaliacoesDiarias,
-                    darkMode: state.darkMode,
-                    filtroStatus: state.filtroStatus,
-                    diaAtual: state.diaAtual,
-                    ultimaAtualizacao: state.ultimaAtualizacao,
-                    updatedAt: new Date().toISOString(),
-                },
-                merge: true,
-            });
-
-            // Executar batch write
-            if (batch.length > 0) {
-                await firebaseService.batchWrite(batch);
-            }
-        } catch (error) {
-            console.error('Erro ao salvar coleções no Firestore:', error);
-            throw error;
-        }
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
-     * Configura listeners em tempo real do Firestore
+     * Método removido - não configura mais listeners do Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     setupRealtimeListeners() {
-        if (!firebaseService.isAvailable()) {
-            return;
-        }
-
-        // Listener para tarefas
-        const unsubscribeTarefas = firebaseService.subscribeToCollection('tarefas', (tarefas) => {
-            const projetos = tarefas.filter(t => t.tipo === 'projeto');
-            const home = tarefas.filter(t => t.tipo === 'home');
-
-            this.state.tarefas = projetos;
-            this.state.tarefasHome = home;
-            this.state.contador = projetos.length;
-            this.state.contadorHome = home.length;
-            this.notify();
-        });
-        this.listeners.push(unsubscribeTarefas);
-
-        // Listener para rotina
-        const unsubscribeRotina = firebaseService.subscribeToDocument('rotina', this.userId, (rotina) => {
-            if (rotina) {
-                this.state.tarefasRotina = rotina.tarefasRotina || [];
-                this.state.contadorRotina = rotina.contadorRotina || 0;
-                this.state.historico = rotina.historico || [];
-                this.notify();
-            }
-        });
-        this.listeners.push(unsubscribeRotina);
-
-        // Listener para categorias
-        const unsubscribeCategorias = firebaseService.subscribeToCollection('categorias', (categorias) => {
-            this.state.categorias = categorias;
-            this.notify();
-        });
-        this.listeners.push(unsubscribeCategorias);
-
-        // Listener para estudos
-        const unsubscribeEstudos = firebaseService.subscribeToDocument('estudos', this.userId, (estudos) => {
-            if (estudos) {
-                this.state.areasEstudo = estudos.areasEstudo || [];
-                this.state.topicosEstudo = estudos.topicosEstudo || [];
-                this.state.sessoesEstudo = estudos.sessoesEstudo || [];
-                this.state.contadorEstudos = estudos.contadorEstudos || 0;
-                this.state.tagsEstudo = estudos.tagsEstudo || [];
-                if (estudos.configEstudos) {
-                    this.state.configEstudos = {
-                        ...this.state.configEstudos,
-                        ...estudos.configEstudos
-                    };
-                }
-                this.notify();
-            }
-        });
-        this.listeners.push(unsubscribeEstudos);
-
-        // Listener para config
-        const unsubscribeConfig = firebaseService.subscribeToDocument('config', this.userId, (config) => {
-            if (config) {
-                this.state.streak = config.streak || 0;
-                this.state.conquistas = config.conquistas || {};
-                this.state.avaliacoesDiarias = config.avaliacoesDiarias || [];
-                this.state.darkMode = config.darkMode || false;
-                this.state.filtroStatus = config.filtroStatus || null;
-                if (config.diaAtual) {
-                    this.state.diaAtual = config.diaAtual;
-                }
-                if (config.ultimaAtualizacao) {
-                    this.state.ultimaAtualizacao = config.ultimaAtualizacao;
-                }
-                this.notify();
-            }
-        });
-        this.listeners.push(unsubscribeConfig);
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
-     * Executa migração completa do localStorage para Firestore
+     * Método removido - não migra mais para Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     async runMigration() {
-        try {
-            // Importar script de migração dinamicamente
-            const {
-                migrateLocalStorageToFirebase,
-                createBackup
-            } = await import('./utils/migrate-localStorage-to-firebase.js');
-
-            // Criar backup primeiro
-            await createBackup();
-
-            // Executar migração
-            await migrateLocalStorageToFirebase();
-        } catch (error) {
-            console.error('Erro ao executar migração:', error);
-            // Continuar com migração v2 se disponível
-            this.migrateFromV2();
-        }
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
@@ -561,21 +292,25 @@ class Store {
                 }
             }
 
-            // Se houver dados migrados, salvar no Firestore
+            // Se houver dados migrados, salvar localmente
             if (hasData) {
                 await this.saveToFirestore();
                 // Forçar salvamento imediato
                 if (this.saveDebounce) {
                     clearTimeout(this.saveDebounce);
                 }
-                await this._saveCollectionsToFirestore(this.state);
+                const stateToSave = {
+                    ...this.state,
+                    ultimaAtualizacao: new Date().toISOString(),
+                };
+                await firebaseCache.set('store-state', stateToSave);
             }
 
             // Marcar como migrado
             await firebaseCache.set('firestore-migrated', true);
 
             if (hasData) {
-                console.log('✅ Migração v2/v3 → Firestore concluída');
+                console.log('✅ Migração v2/v3 concluída');
                 this.notify();
             }
         } catch (error) {
@@ -710,9 +445,6 @@ class Store {
                 ultimaAtualizacao: new Date().toISOString(),
             };
             await firebaseCache.set('store-state', stateToSave);
-            if (firebaseService.isAvailable()) {
-                await this._saveCollectionsToFirestore(stateToSave);
-            }
         } catch (error) {
             console.error('Erro ao forçar salvamento:', error);
         }

@@ -1,6 +1,6 @@
 /**
  * Gerenciamento de Cache Local usando IndexedDB
- * Cache híbrido para suporte offline e performance
+ * Cache local para armazenamento persistente de dados da aplicação
  */
 
 import { openDB } from 'idb';
@@ -25,7 +25,7 @@ async function openDatabase() {
 /**
  * Classe para gerenciar cache local
  */
-class FirebaseCache {
+class LocalCache {
     constructor() {
         this.db = null;
         this.initialized = false;
@@ -140,7 +140,7 @@ class FirebaseCache {
     }
 }
 
-// Exportar instância singleton
-export const firebaseCache = new FirebaseCache();
+// Exportar instância singleton (mantém nome firebaseCache para compatibilidade)
+export const firebaseCache = new LocalCache();
 export default firebaseCache;
 

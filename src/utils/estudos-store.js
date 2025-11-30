@@ -1,7 +1,7 @@
 /**
  * EstudosStore - Gerenciamento de estado para módulo de Estudos
  * 
- * Gerencia áreas, tópicos e sessões com sincronização automática no Firebase Firestore
+ * Gerencia áreas, tópicos e sessões com armazenamento local
  */
 
 import {
@@ -47,49 +47,20 @@ class EstudosStore {
             this._notify();
         }
 
-        // Carregar do Firestore
-        await this._loadFromFirestore();
-
         // Migrar dados v2 se necessário
         await this._migrateFromV2();
 
-        // Configurar listeners em tempo real
-        this._setupListeners();
-
         this.initialized = true;
-        console.log('✅ EstudosStore inicializado com Firebase');
+        console.log('✅ EstudosStore inicializado (modo local)');
     }
 
     /**
-     * Carrega dados do Firestore
+     * Método removido - não carrega mais do Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     async _loadFromFirestore() {
-        try {
-            if (!firebaseService.isAvailable()) {
-                return;
-            }
-
-            // Carregar estudos do Firestore
-            const estudos = await firebaseService.getDocument('estudos', this.userId);
-
-            if (estudos) {
-                // Estudos já incluem áreas e tópicos no store principal
-                // Mas vamos manter estrutura própria para compatibilidade
-                const areas = estudos.areasEstudo || [];
-                const topicos = estudos.topicosEstudo || [];
-
-                this.state.areas = areas;
-                this.state.topicos = topicos;
-                this.state.contadorAreas = areas.length;
-                this.state.contadorTopicos = topicos.length;
-
-                // Salvar no cache
-                await firebaseCache.set('estudos-store-state', this.state);
-                this._notify();
-            }
-        } catch (error) {
-            console.error('Erro ao carregar estudos do Firestore:', error);
-        }
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
@@ -105,15 +76,7 @@ class EstudosStore {
                 // Salvar no cache imediatamente
                 await firebaseCache.set('estudos-store-state', this.state);
 
-                // Salvar no Firestore
-                if (firebaseService.isAvailable()) {
-                    await firebaseService.setDocument('estudos', this.userId, {
-                        areasEstudo: this.state.areas,
-                        topicosEstudo: this.state.topicos,
-                        contadorEstudos: this.state.contadorTopicos,
-                        updatedAt: new Date().toISOString(),
-                    }, true);
-                }
+                // Salvar apenas localmente (já salvo no cache acima)
             } catch (error) {
                 console.error('Erro ao salvar estudos no Firestore:', error);
             }
@@ -121,30 +84,12 @@ class EstudosStore {
     }
 
     /**
-     * Configura listeners em tempo real
+     * Método removido - não configura mais listeners do Firestore
+     * Mantido apenas para compatibilidade (não faz nada)
      */
     _setupListeners() {
-        if (!firebaseService.isAvailable()) {
-            return;
-        }
-
-        const unsubscribe = firebaseService.subscribeToDocument('estudos', this.userId, (estudos) => {
-            if (estudos) {
-                const areas = estudos.areasEstudo || [];
-                const topicos = estudos.topicosEstudo || [];
-
-                this.state.areas = areas;
-                this.state.topicos = topicos;
-                this.state.contadorAreas = areas.length;
-                this.state.contadorTopicos = topicos.length;
-
-                // Atualizar cache
-                firebaseCache.set('estudos-store-state', this.state);
-                this._notify();
-            }
-        });
-
-        this.listeners.push(unsubscribe);
+        // Não faz nada - sistema agora é 100% local
+        return;
     }
 
     /**
@@ -200,17 +145,12 @@ class EstudosStore {
                 this.state.contadorAreas = this.state.areas.length;
                 this.state.contadorTopicos = this.state.topicos.length;
 
-                // Salvar no Firestore
+                // Salvar localmente
                 await this._saveToFirestore();
                 if (this.saveDebounce) {
                     clearTimeout(this.saveDebounce);
                 }
-                await firebaseService.setDocument('estudos', this.userId, {
-                    areasEstudo: this.state.areas,
-                    topicosEstudo: this.state.topicos,
-                    contadorEstudos: this.state.contadorTopicos,
-                    updatedAt: new Date().toISOString(),
-                }, true);
+                await firebaseCache.set('estudos-store-state', this.state);
 
                 // Marcar como migrado
                 await firebaseCache.set('estudos-firestore-migrated', true);
