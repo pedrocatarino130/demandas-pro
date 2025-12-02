@@ -14,9 +14,35 @@ import {
 import {
     Breadcrumb
 } from './components/Breadcrumb.js';
+import {
+    firebaseSyncNotifications
+} from './services/firebase-sync-notifications.js';
+import './utils/firebase-diagnostics.js'; // Diagnóstico automático em desenvolvimento
+import './utils/firebase-check-env.js'; // Verificação de variáveis de ambiente
 
 // Service Worker
 function registerServiceWorker() {
+    // Desabilitar Service Worker em desenvolvimento (Vite precisa processar arquivos diretamente)
+    // O Vite sempre roda em localhost em desenvolvimento
+    const isDev =
+        import.meta.env.DEV ||
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+
+    if (isDev) {
+        // Desregistrar Service Workers existentes em dev
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister().then(() => {
+                        console.log('[SW] Service Worker desabilitado em desenvolvimento');
+                    });
+                });
+            });
+        }
+        return;
+    }
+
     if ('serviceWorker' in navigator) {
         // O Vite já resolve o caminho correto com base no BASE_URL
         // Usar caminho absoluto que o Vite irá processar
@@ -24,12 +50,12 @@ function registerServiceWorker() {
         navigator.serviceWorker.register(swPath)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);
-                
+
                 // Verificar atualizações periodicamente
                 setInterval(() => {
                     registration.update();
                 }, 60000); // A cada 1 minuto
-                
+
                 // Escutar atualizações
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
@@ -38,7 +64,9 @@ function registerServiceWorker() {
                             // Nova versão disponível
                             if (confirm('Nova versão disponível! Atualizar agora?')) {
                                 if (registration.waiting) {
-                                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                                    registration.waiting.postMessage({
+                                        type: 'SKIP_WAITING'
+                                    });
                                     window.location.reload();
                                 }
                             }
@@ -59,7 +87,7 @@ function setupOfflineIndicator() {
     indicator.className = 'offline-indicator hidden';
     indicator.innerHTML = '📴 Sem conexão';
     document.body.appendChild(indicator);
-    
+
     // CSS para o indicador
     const style = document.createElement('style');
     style.textContent = `
@@ -87,20 +115,20 @@ function setupOfflineIndicator() {
         }
     `;
     document.head.appendChild(style);
-    
+
     // Escutar eventos online/offline
     window.addEventListener('online', () => {
         indicator.classList.remove('show');
         indicator.textContent = '✅ Conectado';
         setTimeout(() => indicator.classList.add('hidden'), 2000);
     });
-    
+
     window.addEventListener('offline', () => {
         indicator.classList.add('show');
         indicator.classList.remove('hidden');
         indicator.textContent = '📴 Sem conexão';
     });
-    
+
     // Verificar status inicial
     if (!navigator.onLine) {
         indicator.classList.add('show');
@@ -111,10 +139,13 @@ function setupOfflineIndicator() {
 function init() {
     // Registrar service worker
     registerServiceWorker();
-    
+
     // Configurar indicador offline
     setupOfflineIndicator();
-    
+
+    // Inicializar notificações de sincronização Firebase
+    firebaseSyncNotifications.start();
+
     // Inicializar router
     const router = initRouter('app');
 

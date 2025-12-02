@@ -29,9 +29,12 @@ class Store {
     }
 
     /**
-     * Inicialização assíncrona - apenas local
+     * Inicialização assíncrona - local + Firebase quando disponível
      */
     async init() {
+        if (this.initializing) return;
+        this.initializing = true;
+
         // Inicializar cache
         await firebaseCache.init();
 
@@ -48,8 +51,26 @@ class Store {
         // Carregar dados antigos do localStorage (migração)
         await this.migrateFromV2();
 
+        // Se Firebase está disponível, carregar e configurar sincronização
+        if (firebaseService.isAvailable()) {
+            try {
+                // Carregar do Firestore (pode sobrescrever dados locais se mais recentes)
+                await this.loadFromFirestore();
+                
+                // Configurar listeners real-time
+                this.setupRealtimeListeners();
+                
+                console.log('✅ Store inicializado (modo Firebase + local)');
+            } catch (error) {
+                console.error('⚠️ Erro ao inicializar Firebase no Store:', error);
+                console.log('✅ Store inicializado (modo local apenas)');
+            }
+        } else {
+            console.log('✅ Store inicializado (modo local)');
+        }
+
         this.initialized = true;
-        console.log('✅ Store inicializado (modo local)');
+        this.initializing = false;
     }
 
     /**
@@ -120,16 +141,76 @@ class Store {
     }
 
     /**
-     * Método removido - não carrega mais do Firestore
-     * Mantido apenas para compatibilidade (não faz nada)
+     * Carrega estado do Firestore
+     * Sobrescreve dados locais se mais recentes (last-write-wins)
      */
     async loadFromFirestore() {
-        // Não faz nada - sistema agora é 100% local
-        return;
+        if (!firebaseService.isAvailable()) return;
+
+        try {
+            // Mapeamento de coleções do Firestore para chaves do estado
+            const collections = [
+                { collection: 'tarefas', stateKey: 'tarefas' },
+                { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
+                { collection: 'historico', stateKey: 'historico' },
+                { collection: 'categorias', stateKey: 'categorias' },
+                { collection: 'areasEstudo', stateKey: 'areasEstudo' },
+                { collection: 'topicosEstudo', stateKey: 'topicosEstudo' },
+                { collection: 'sessoesEstudo', stateKey: 'sessoesEstudo' },
+                { collection: 'tagsEstudo', stateKey: 'tagsEstudo' },
+                { collection: 'avaliacoesDiarias', stateKey: 'avaliacoesDiarias' }
+            ];
+
+            const updates = {};
+
+            // Carregar cada coleção do Firestore
+            for (const { collection, stateKey } of collections) {
+                try {
+                    const docs = await firebaseService.getCollection(
+                        collection,
+                        [],
+                        '_lastModified',
+                        'desc'
+                    );
+                    
+                    if (docs && docs.length > 0) {
+                        updates[stateKey] = docs;
+                    }
+                } catch (error) {
+                    console.warn(`Erro ao carregar coleção ${collection}:`, error);
+                }
+            }
+
+            // Carregar configurações
+            try {
+                const config = await firebaseService.getDocument('configEstudos', 'default');
+                if (config) {
+                    updates.configEstudos = config;
+                }
+            } catch (error) {
+                console.warn('Erro ao carregar configEstudos:', error);
+            }
+
+            // Atualizar estado apenas se houver dados do Firestore
+            if (Object.keys(updates).length > 0) {
+                this.state = {
+                    ...this.state,
+                    ...updates
+                };
+                
+                // Salvar no cache local também
+                await firebaseCache.set('store-state', this.state);
+                
+                console.log('✅ Dados carregados do Firestore');
+                this.notify();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar do Firestore:', error);
+        }
     }
 
     /**
-     * Salva estado localmente com debounce
+     * Salva estado localmente e sincroniza com Firestore (se disponível)
      */
     saveToFirestore() {
         if (this.saveDebounce) {
@@ -143,8 +224,13 @@ class Store {
                     ultimaAtualizacao: new Date().toISOString(),
                 };
 
-                // Salvar no cache local
+                // Sempre salvar no cache local primeiro (offline-first)
                 await firebaseCache.set('store-state', stateToSave);
+
+                // Se Firebase está disponível, sincronizar também
+                if (firebaseService.isAvailable()) {
+                    await this._saveCollectionsToFirestore(stateToSave);
+                }
             } catch (error) {
                 console.error('Erro ao salvar estado:', error);
             }
@@ -152,21 +238,148 @@ class Store {
     }
 
     /**
-     * Método removido - não salva mais no Firestore
-     * Mantido apenas para compatibilidade (não faz nada)
+     * Salva coleções no Firestore
+     * Usa firebaseSync para garantir sincronização offline/online
      */
     async _saveCollectionsToFirestore(state) {
-        // Não faz nada - sistema agora é 100% local
-        return;
+        if (!firebaseService.isAvailable()) return;
+
+        try {
+            // Mapeamento de chaves do estado para coleções do Firestore
+            const collections = [
+                { stateKey: 'tarefas', collection: 'tarefas' },
+                { stateKey: 'tarefasRotina', collection: 'tarefasRotina' },
+                { stateKey: 'historico', collection: 'historico' },
+                { stateKey: 'categorias', collection: 'categorias' },
+                { stateKey: 'areasEstudo', collection: 'areasEstudo' },
+                { stateKey: 'topicosEstudo', collection: 'topicosEstudo' },
+                { stateKey: 'sessoesEstudo', collection: 'sessoesEstudo' },
+                { stateKey: 'tagsEstudo', collection: 'tagsEstudo' },
+                { stateKey: 'avaliacoesDiarias', collection: 'avaliacoesDiarias' }
+            ];
+
+            const operations = [];
+
+            // Preparar operações para cada coleção
+            for (const { stateKey, collection } of collections) {
+                const items = state[stateKey];
+                if (!Array.isArray(items)) continue;
+
+                // Para cada item, criar operação de sincronização
+                items.forEach(item => {
+                    if (item && item.id) {
+                        operations.push({
+                            type: 'UPDATE', // UPDATE faz merge, CREATE não
+                            collection: collection,
+                            docId: item.id,
+                            data: item
+                        });
+                    }
+                });
+            }
+
+            // Salvar configurações
+            if (state.configEstudos) {
+                operations.push({
+                    type: 'UPDATE',
+                    collection: 'configEstudos',
+                    docId: 'default',
+                    data: state.configEstudos
+                });
+            }
+
+            // Se há operações, adicionar à fila de sincronização
+            if (operations.length > 0) {
+                // Usar batch write se online, senão adicionar à fila
+                if (firebaseSync.getOnlineStatus()) {
+                    try {
+                        // Tentar sincronizar imediatamente se online
+                        await firebaseService.batchWrite(operations);
+                    } catch (error) {
+                        console.warn('Erro ao sincronizar imediatamente, adicionando à fila:', error);
+                        // Se falhar, adicionar à fila para retry
+                        for (const op of operations) {
+                            await firebaseSync.addToQueue(op);
+                        }
+                    }
+                } else {
+                    // Offline: adicionar todas à fila
+                    for (const op of operations) {
+                        await firebaseSync.addToQueue(op);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao salvar coleções no Firestore:', error);
+        }
     }
 
     /**
-     * Método removido - não configura mais listeners do Firestore
-     * Mantido apenas para compatibilidade (não faz nada)
+     * Configura listeners real-time do Firestore
+     * Atualiza estado local quando há mudanças remotas
      */
     setupRealtimeListeners() {
-        // Não faz nada - sistema agora é 100% local
-        return;
+        if (!firebaseService.isAvailable()) return;
+
+        try {
+            // Limpar listeners antigos
+            this.destroy();
+
+            // Coleções principais para listeners real-time
+            const collections = [
+                { collection: 'tarefas', stateKey: 'tarefas' },
+                { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
+                { collection: 'historico', stateKey: 'historico' },
+                { collection: 'categorias', stateKey: 'categorias' },
+                { collection: 'areasEstudo', stateKey: 'areasEstudo' },
+                { collection: 'topicosEstudo', stateKey: 'topicosEstudo' },
+                { collection: 'sessoesEstudo', stateKey: 'sessoesEstudo' },
+                { collection: 'tagsEstudo', stateKey: 'tagsEstudo' },
+                { collection: 'avaliacoesDiarias', stateKey: 'avaliacoesDiarias' }
+            ];
+
+            // Configurar listener para cada coleção
+            collections.forEach(({ collection, stateKey }) => {
+                const unsubscribe = firebaseService.subscribeToCollection(
+                    collection,
+                    (docs) => {
+                        // Atualizar estado quando coleção muda no Firestore
+                        if (Array.isArray(docs)) {
+                            this.state[stateKey] = docs;
+                            // Salvar no cache local também
+                            firebaseCache.set('store-state', this.state).catch(err => {
+                                console.error('Erro ao salvar no cache após atualização remota:', err);
+                            });
+                            this.notify();
+                        }
+                    },
+                    [] // Sem filtros por enquanto
+                );
+
+                this.listeners.push(unsubscribe);
+            });
+
+            // Listener para configurações
+            const configUnsubscribe = firebaseService.subscribeToDocument(
+                'configEstudos',
+                'default',
+                (doc) => {
+                    if (doc) {
+                        this.state.configEstudos = doc;
+                        firebaseCache.set('store-state', this.state).catch(err => {
+                            console.error('Erro ao salvar config no cache:', err);
+                        });
+                        this.notify();
+                    }
+                }
+            );
+
+            this.listeners.push(configUnsubscribe);
+
+            console.log('✅ Listeners real-time configurados');
+        } catch (error) {
+            console.error('Erro ao configurar listeners real-time:', error);
+        }
     }
 
     /**

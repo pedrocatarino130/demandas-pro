@@ -13,6 +13,13 @@ Welcome to the repository knowledge base. Start with the project overview, then 
 - [Security & Compliance Notes](./security.md)
 - [Tooling & Productivity Guide](./tooling.md)
 
+## Firebase Documentation
+- [Firebase Quick Start](./firebase-quick-start.md) - ⚡ Guia rápido para começar a usar
+- [Firebase Architecture](./firebase-architecture.md) - Arquitetura de sincronização e schema do Firestore
+- [Firebase Setup Guide](./firebase-setup.md) - Guia passo a passo para configurar Firebase
+- [Firebase Migration Strategy](./firebase-migration-strategy.md) - Estratégia detalhada de migração de dados
+- [Firebase Questions](./firebase-questions.md) - Questões e decisões sobre a implementação
+
 ## Repository Snapshot
 - `dados.json` — JSON data file.
 - `Doc/` — Documentation and reference materials.
