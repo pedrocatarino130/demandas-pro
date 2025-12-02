@@ -26,55 +26,54 @@ let configLoaded = false;
  * Carrega configuração do Firebase de um arquivo JSON (útil para GitHub Pages)
  */
 async function loadFirebaseConfigFromFile() {
-    if (configLoaded) return;
+    if (configLoaded) {
+        return isFirebaseConfigured();
+    }
     configLoaded = true;
 
     try {
         const configPath = buildAssetPath('firebase-config.json');
-        console.log('🔍 Tentando carregar Firebase config de:', configPath);
-        const response = await fetch(configPath);
+        console.log('🔍 Carregando Firebase config de:', configPath);
+        const response = await fetch(configPath, {
+            cache: 'no-cache' // Garantir que sempre busque a versão mais recente
+        });
         
         if (response.ok) {
             const fileConfig = await response.json();
-            console.log('📄 Arquivo firebase-config.json carregado:', fileConfig);
             
             // Verificar se o arquivo tem configuração válida
             const hasConfig = fileConfig.apiKey && 
+                              fileConfig.apiKey.trim() !== '' &&
                               fileConfig.authDomain && 
+                              fileConfig.authDomain.trim() !== '' &&
                               fileConfig.projectId && 
+                              fileConfig.projectId.trim() !== '' &&
                               fileConfig.storageBucket && 
+                              fileConfig.storageBucket.trim() !== '' &&
                               fileConfig.messagingSenderId && 
-                              fileConfig.appId;
+                              fileConfig.messagingSenderId.trim() !== '' &&
+                              fileConfig.appId &&
+                              fileConfig.appId.trim() !== '';
             
             if (hasConfig) {
-                // Mesclar configuração do arquivo apenas se as variáveis de ambiente não estiverem definidas
-                // No GitHub Pages, import.meta.env.VITE_* sempre será undefined em runtime
-                const hasEnvVars = import.meta.env.VITE_FIREBASE_API_KEY && 
-                                   import.meta.env.VITE_FIREBASE_API_KEY.trim() !== '';
-                
-                if (!hasEnvVars) {
-                    firebaseConfig = { ...firebaseConfig, ...fileConfig };
-                    console.log('✅ Configuração do Firebase carregada de firebase-config.json');
-                    return true;
-                } else {
-                    console.log('ℹ️ Variáveis de ambiente encontradas, usando-as em vez do arquivo JSON');
-                }
+                // Usar configuração do arquivo (tem prioridade sobre variáveis de ambiente em produção)
+                firebaseConfig = { ...fileConfig };
+                console.log('✅ Configuração do Firebase carregada de firebase-config.json');
+                return true;
             } else {
                 console.warn('⚠️ Arquivo firebase-config.json encontrado mas está vazio ou incompleto');
-                console.warn('   Preencha o arquivo public/firebase-config.json com suas credenciais do Firebase');
             }
         } else {
-            // Arquivo não encontrado ou erro
-            console.warn(`⚠️ Não foi possível carregar firebase-config.json (status: ${response.status})`);
-            console.warn(`   URL tentada: ${configPath}`);
+            // Arquivo não encontrado - não é erro crítico se variáveis de ambiente existirem
             if (response.status === 404) {
-                console.warn('   Arquivo não encontrado. Crie o arquivo public/firebase-config.json com suas credenciais.');
+                console.log('ℹ️ Arquivo firebase-config.json não encontrado em:', configPath);
+            } else {
+                console.warn(`⚠️ Erro ao carregar firebase-config.json (status: ${response.status})`);
             }
         }
     } catch (error) {
-        // Erro ao carregar arquivo
-        console.error('❌ Erro ao carregar firebase-config.json:', error);
-        console.error('   Detalhes:', error.message);
+        // Erro ao carregar arquivo - não é crítico se variáveis de ambiente existirem
+        console.log('ℹ️ Não foi possível carregar firebase-config.json:', error.message);
     }
     
     return false;
@@ -107,17 +106,16 @@ async function initializeFirebase() {
     }
 
     initializationPromise = (async () => {
-        // Verificar se variáveis de ambiente estão definidas
-        const hasEnvVars = import.meta.env.VITE_FIREBASE_API_KEY && 
-                          import.meta.env.VITE_FIREBASE_API_KEY.trim() !== '';
+        // SEMPRE tentar carregar do arquivo primeiro (funciona em produção e desenvolvimento)
+        const fileLoaded = await loadFirebaseConfigFromFile();
         
-        // Tentar carregar configuração do arquivo se variáveis de ambiente não estiverem definidas
-        // No GitHub Pages, sempre tentar carregar do arquivo
-        if (!hasEnvVars) {
-            console.log('🔍 Variáveis de ambiente não encontradas, tentando carregar de firebase-config.json...');
-            await loadFirebaseConfigFromFile();
-        } else {
-            console.log('✅ Usando variáveis de ambiente para configuração do Firebase');
+        // Se o arquivo não foi carregado ou não tinha config válida, verificar variáveis de ambiente
+        if (!fileLoaded) {
+            const hasEnvVars = import.meta.env.VITE_FIREBASE_API_KEY && 
+                              import.meta.env.VITE_FIREBASE_API_KEY.trim() !== '';
+            if (hasEnvVars) {
+                console.log('✅ Usando variáveis de ambiente para configuração do Firebase');
+            }
         }
 
         if (isFirebaseConfigured()) {
@@ -167,28 +165,11 @@ async function initializeFirebase() {
     return initializationPromise;
 }
 
-// Detectar se estamos em produção/GitHub Pages
-const isProduction = import.meta.env.PROD || 
-                     (typeof window !== 'undefined' && 
-                      (window.location.hostname.includes('github.io') || 
-                       window.location.hostname.includes('github.com')));
-
-// Inicializar Firebase
-// Em produção, sempre tentar carregar do arquivo JSON primeiro
-if (isProduction) {
-    // Em produção, sempre tentar carregar do arquivo
-    initializeFirebase().catch(err => {
-        console.warn('Erro ao inicializar Firebase:', err);
-    });
-} else if (isFirebaseConfigured()) {
-    // Em desenvolvimento, se já estiver configurado (variáveis de ambiente), inicializar imediatamente
-    initializeFirebase();
-} else {
-    // Em desenvolvimento sem config, tentar carregar do arquivo
-    initializeFirebase().catch(err => {
-        console.warn('Erro ao inicializar Firebase:', err);
-    });
-}
+// Inicializar Firebase imediatamente
+// Sempre tentará carregar do arquivo JSON primeiro, depois variáveis de ambiente
+initializeFirebase().catch(err => {
+    console.error('Erro crítico ao inicializar Firebase:', err);
+});
 
 // Exportar instâncias (podem ser null até inicialização completa)
 export { app, db, auth };

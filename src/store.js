@@ -44,8 +44,9 @@ class Store {
         // Tentar inicializar Firebase (pode carregar config do arquivo)
         try {
             await initializeFirebase();
-            // Aguardar um pouco para garantir que Firebase foi inicializado
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Aguardar um pouco mais para garantir que Firebase foi completamente inicializado
+            // Isso é necessário porque o carregamento do arquivo JSON é assíncrono
+            await new Promise(resolve => setTimeout(resolve, 300));
         } catch (error) {
             console.warn('⚠️ Erro ao inicializar Firebase:', error);
         }
