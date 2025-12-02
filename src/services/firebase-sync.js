@@ -115,7 +115,15 @@ class FirebaseSync {
      * Processa fila de sincronização
      */
     async sync() {
+        const maxBatchSize = 10; // evita travar em filas muito grandes
+
         if (!firebaseService.isAvailable() || !this.getOnlineStatus()) {
+            if (!firebaseService.isAvailable()) {
+                console.warn('⚠️ Sync pausado: serviço Firebase indisponível');
+            }
+            if (!this.getOnlineStatus()) {
+                console.log('📴 Sync aguardando conexão...');
+            }
             return;
         }
 
@@ -125,15 +133,18 @@ class FirebaseSync {
         }
 
         if (this.queue.length === 0) {
+            console.log('✅ Fila vazia - nada para sincronizar');
+            this.notifyListeners();
             return;
         }
 
         this.syncInProgress = true;
         this.notifyListeners();
 
-        console.log(`🔄 Iniciando sincronização: ${this.queue.length} operações`);
+        const opsCount = Math.min(this.queue.length, maxBatchSize);
+        console.log(`🔄 Sincronizando lote: ${opsCount}/${this.queue.length} operações`);
 
-        const operationsToSync = [...this.queue];
+        const operationsToSync = [...this.queue.slice(0, maxBatchSize)];
         const successful = [];
         const failed = [];
 
@@ -155,12 +166,14 @@ class FirebaseSync {
         }
 
         // Remover operações bem-sucedidas da fila
-        this.queue = this.queue.filter(item => !successful.includes(item.id));
-        
+        if (successful.length > 0) {
+            this.queue = this.queue.filter(item => !successful.includes(item.id));
+        }
+
         // Remover operações que falharam após máximo de tentativas
-        const beforeFailedCount = this.queue.length;
-        this.queue = this.queue.filter(item => item.status !== 'FAILED');
-        const removedFailedCount = beforeFailedCount - this.queue.length;
+        if (failed.length > 0) {
+            this.queue = this.queue.filter(item => !failed.includes(item.id));
+        }
 
         await this.saveQueue();
         this.syncInProgress = false;
@@ -168,17 +181,22 @@ class FirebaseSync {
         // Notificar resultado
         const syncedCount = successful.length;
         if (syncedCount > 0) {
-            console.log(`✅ Sincronização concluída: ${syncedCount} operações`);
+            console.log(`✅ Lote sincronizado: ${syncedCount} operações`);
             this.notifyListeners({ synced: syncedCount });
         }
 
-        if (removedFailedCount > 0) {
-            console.warn(`⚠️ ${removedFailedCount} operações falharam após ${MAX_RETRIES} tentativas`);
+        if (failed.length > 0) {
+            console.warn(`⚠️ ${failed.length} operações falharam após ${MAX_RETRIES} tentativas`);
+            this.notifyListeners({ failed: failed.length });
         }
 
-        // Se ainda há operações pendentes, agendar retry
+        // Se ainda há operações pendentes, agendar próximo lote imediatamente (se online)
         if (this.queue.length > 0) {
-            this._scheduleRetry();
+            console.log(`⏳ Restam ${this.queue.length} operações.`);
+            const delay = this.getOnlineStatus() ? 250 : RETRY_DELAY;
+            this._scheduleRetry(delay);
+        } else {
+            console.log('🎉 Todas as operações foram sincronizadas');
         }
     }
 
@@ -210,18 +228,24 @@ class FirebaseSync {
     /**
      * Agenda retry para operações pendentes
      */
-    _scheduleRetry() {
+    _scheduleRetry(delay = RETRY_DELAY) {
         if (this.retryTimeout) {
             clearTimeout(this.retryTimeout);
         }
 
         this.retryTimeout = setTimeout(() => {
-            if (this.getOnlineStatus() && this.queue.length > 0) {
+            if (this.queue.length === 0) {
+                return;
+            }
+
+            if (this.getOnlineStatus()) {
                 this.sync().catch(error => {
                     console.error('Erro no retry de sincronização:', error);
                 });
+            } else {
+                console.log('⏳ Aguardando voltar online para continuar sincronização');
             }
-        }, RETRY_DELAY);
+        }, Math.max(0, delay));
     }
 
     /**

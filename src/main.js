@@ -17,6 +17,9 @@ import {
 import {
     firebaseSyncNotifications
 } from './services/firebase-sync-notifications.js';
+import {
+    SyncStatusWidget
+} from './components/SyncStatusWidget.js';
 import './utils/firebase-diagnostics.js'; // Diagnóstico automático em desenvolvimento
 import './utils/firebase-check-env.js'; // Verificação de variáveis de ambiente
 
@@ -145,6 +148,10 @@ function init() {
 
     // Inicializar notificações de sincronização Firebase
     firebaseSyncNotifications.start();
+
+    // Mostrar widget persistente de status de sincronização
+    const syncStatusWidget = new SyncStatusWidget();
+    syncStatusWidget.mount();
 
     // Inicializar router
     const router = initRouter('app');

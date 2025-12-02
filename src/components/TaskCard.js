@@ -25,6 +25,7 @@ export class TaskCard {
             onToggleStatus: null,
             onEdit: null,
             onDelete: null,
+            onInjectToHome: null, // Callback para injetar tarefa no Home
             ...options,
         };
     }
@@ -287,6 +288,23 @@ export class TaskCard {
                 }
             });
             actions.appendChild(deleteBtn);
+
+            // Botão de Adicionar ao Home - apenas se callback for fornecido
+            // Usa event delegation (não adiciona listener direto pois HTML é serializado)
+            if (this.options.onInjectToHome) {
+                const injectBtn = document.createElement('button');
+                injectBtn.className = 'task-card-action-button inject';
+                injectBtn.setAttribute('data-action', 'inject-to-home');
+                injectBtn.setAttribute('data-task-id', taskId);
+                injectBtn.setAttribute('title', 'Adicionar ao Home');
+                injectBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                `;
+                actions.appendChild(injectBtn);
+            }
 
             metaInfo.appendChild(actions);
         }

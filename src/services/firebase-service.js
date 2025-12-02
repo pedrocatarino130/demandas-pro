@@ -54,7 +54,14 @@ class FirebaseService {
      */
     _getCollectionPath(collectionName) {
         if (!this.isAvailable()) return null;
-        return collection(this.db, 'users', USER_ID, collectionName);
+
+        const safeCollection = this._normalizePathSegment(collectionName);
+        if (!safeCollection) {
+            console.warn('⚠️ Nome de coleção inválido para Firebase:', collectionName);
+            return null;
+        }
+
+        return collection(this.db, 'users', USER_ID, safeCollection);
     }
 
     /**
@@ -65,7 +72,37 @@ class FirebaseService {
      */
     _getDocRef(collectionName, docId) {
         if (!this.isAvailable()) return null;
-        return doc(this.db, 'users', USER_ID, collectionName, docId);
+
+        const safeCollection = this._normalizePathSegment(collectionName);
+        const safeDocId = this._normalizePathSegment(docId);
+
+        if (!safeCollection || !safeDocId) {
+            console.warn('⚠️ Referência inválida para Firebase:', { collectionName, docId });
+            return null;
+        }
+
+        return doc(this.db, 'users', USER_ID, safeCollection, safeDocId);
+    }
+
+    /**
+     * Normaliza segmentos de path para strings válidas
+     * @param {string|number} value
+     * @returns {string|null}
+     */
+    _normalizePathSegment(value) {
+        if (value === undefined || value === null) return null;
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed.length > 0 ? trimmed : null;
+        }
+        if (typeof value === 'number' || typeof value === 'bigint') {
+            return String(value);
+        }
+        if (typeof value === 'object' && typeof value.toString === 'function') {
+            const converted = value.toString().trim();
+            return converted.length > 0 ? converted : null;
+        }
+        return null;
     }
 
     /**
@@ -89,6 +126,17 @@ class FirebaseService {
             }
             return null;
         } catch (error) {
+            // Se estiver offline, retornar null silenciosamente (não é erro crítico)
+            if (error.code === 'unavailable' || 
+                error.message?.includes('offline') || 
+                error.message?.includes('Failed to get document because the client is offline')) {
+                // Log apenas em modo debug, não como erro crítico
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`Cliente offline - não foi possível buscar documento ${collectionName}/${docId}`);
+                }
+                return null;
+            }
+            // Para outros erros, logar e lançar
             console.error(`Erro ao buscar documento ${collectionName}/${docId}:`, error);
             throw error;
         }
@@ -139,6 +187,17 @@ class FirebaseService {
 
             return results;
         } catch (error) {
+            // Se estiver offline, retornar array vazio silenciosamente (não é erro crítico)
+            if (error.code === 'unavailable' || 
+                error.message?.includes('offline') || 
+                error.message?.includes('Failed to get document because the client is offline')) {
+                // Log apenas em modo debug, não como erro crítico
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`Cliente offline - não foi possível buscar coleção ${collectionName}`);
+                }
+                return [];
+            }
+            // Para outros erros, logar e lançar
             console.error(`Erro ao buscar coleção ${collectionName}:`, error);
             throw error;
         }

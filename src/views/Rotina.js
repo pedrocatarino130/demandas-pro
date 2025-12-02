@@ -267,7 +267,8 @@ class RotinaView {
               showActions: true,
               isCurrent: false,
               isOverdue: overdueTasks.some(t => (t.id || t.contador) === (task.id || task.contador)),
-              isPostponed: isPostponed
+              isPostponed: isPostponed,
+              onInjectToHome: (t) => this.handleInjectToHome(t)
             });
             const cardHtml = taskCard.render().outerHTML;
             const isRecurring = task.recurrence && task.recurrence.enabled;
@@ -379,7 +380,7 @@ class RotinaView {
         };
         document.addEventListener('change', this.eventHandlers.checkboxChange);
 
-        // Botões de ação nos cards (editar/excluir) - usar event delegation
+        // Botões de ação nos cards (editar/excluir/inject) - usar event delegation
         this.eventHandlers.actionClick = (e) => {
             const actionBtn = e.target.closest('[data-action]');
             if (!actionBtn) return;
@@ -391,6 +392,15 @@ class RotinaView {
                 this.handleTaskEdit(taskId);
             } else if (action === 'delete' && taskId) {
                 this.handleTaskDelete(taskId);
+            } else if (action === 'inject-to-home' && taskId) {
+                // Buscar tarefa pelo ID
+                const state = store.getState();
+                const task = state.tarefasRotina.find(t => (t.id || t.contador) == taskId);
+                if (task) {
+                    this.handleInjectToHome(task);
+                } else {
+                    toast.error('Tarefa não encontrada');
+                }
             }
         };
         document.addEventListener('click', this.eventHandlers.actionClick);
@@ -603,7 +613,7 @@ class RotinaView {
         });
     }
 
-    async handleTaskDelete(taskId) {
+    async     handleTaskDelete(taskId) {
         const state = store.getState();
         const task = state.tarefasRotina.find(t => (t.id || t.contador) == taskId);
 
@@ -619,6 +629,46 @@ class RotinaView {
             store.removeItem('tarefasRotina', (t) => (t.id || t.contador) == taskId);
             toast.success('Tarefa excluída com sucesso');
             this.update();
+        }
+    }
+
+    handleInjectToHome(task) {
+        if (!task) {
+            toast.error('Tarefa não encontrada');
+            return;
+        }
+
+        try {
+            const state = store.getState();
+            const newId = (state.contadorHome || 0) + 1;
+
+            // Converter tarefa de rotina para tarefa do Home
+            // Não copiar campos de recorrência (recurrence)
+            const homeTask = {
+                id: newId,
+                contador: newId,
+                titulo: task.titulo || task.nome || 'Nova Tarefa',
+                descricao: task.descricao || '',
+                prioridade: task.prioridade || 'media',
+                responsavel: task.responsavel || '',
+                tags: Array.isArray(task.tags) ? [...task.tags] : [],
+                status: 'todo',
+                completed: false,
+                time: task.time || new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+            };
+
+            // Adicionar ao Home
+            store.addItem('tarefasHome', homeTask);
+            store.setState({ contadorHome: newId });
+
+            // Feedback visual
+            toast.success(`"${homeTask.titulo}" adicionada ao Home!`, {
+                duration: 3000,
+            });
+        } catch (error) {
+            console.error('Erro ao injetar tarefa no Home:', error);
+            toast.error('Erro ao adicionar tarefa ao Home');
         }
     }
 

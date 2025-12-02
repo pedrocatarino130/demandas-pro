@@ -263,6 +263,10 @@
     color: var(--color-priority-high);
 }
 
+.task-card-action-button.inject {
+    color: var(--color-neon-green);
+}
+
 .task-card-action-button svg {
     width: 16px;
     height: 16px;
