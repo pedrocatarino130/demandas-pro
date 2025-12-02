@@ -1,4 +1,4 @@
-import{_ as h}from"./index-7ypPvpma.js";import"./idb-Dob3nYDb.js";class v{constructor(t,o){this.container=t,this.store=o,this.quickAdd=null,this.kanban=null,this.pomodoro=null,this.notas=null,this.revisaoEspacada=null,this.currentTopico=null,this._init()}async _init(){this.revisaoEspacada=new RevisaoEspacada,this.store.setRevisaoEspacada(this.revisaoEspacada),this._createStructure(),this._initQuickAdd(),this._initKanban(),this._setupEventListeners(),this.store.subscribe(()=>this._updateView()),this._updateView()}_createStructure(){this.container.innerHTML=`
+import{_ as h}from"./index-JMGHwSEN.js";import"./idb-Dob3nYDb.js";class v{constructor(t,o){this.container=t,this.store=o,this.quickAdd=null,this.kanban=null,this.pomodoro=null,this.notas=null,this.revisaoEspacada=null,this.currentTopico=null,this._init()}async _init(){this.revisaoEspacada=new RevisaoEspacada,this.store.setRevisaoEspacada(this.revisaoEspacada),this._createStructure(),this._initQuickAdd(),this._initKanban(),this._setupEventListeners(),this.store.subscribe(()=>this._updateView()),this._updateView()}_createStructure(){this.container.innerHTML=`
             <div class="estudos-view">
                 <div class="estudos-hero">
                     <div class="estudos-hero-glow"></div>
@@ -80,4 +80,4 @@ import{_ as h}from"./index-7ypPvpma.js";import"./idb-Dob3nYDb.js";class v{constr
             z-index: 10000;
             animation: slideIn 0.3s ease;
         `,document.body.appendChild(o),setTimeout(()=>{o.style.animation="slideOut 0.3s ease",setTimeout(()=>o.parentNode&&o.parentNode.removeChild(o),300)},3e3)}destroy(){var t,o;(t=this.quickAdd)!=null&&t.destroy&&this.quickAdd.destroy(),(o=this.kanban)!=null&&o.destroy&&this.kanban.destroy(),this.container.innerHTML=""}}typeof module<"u"&&module.exports&&(module.exports=v);export{v as EstudosView,v as default};
-//# sourceMappingURL=EstudosView-DosPlo-2.js.map
+//# sourceMappingURL=EstudosView-BdeVndZm.js.map
