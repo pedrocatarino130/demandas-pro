@@ -98,7 +98,9 @@ class ProjetosView {
     if (!container) return;
 
     const state = store.getState();
-    const tasks = this.filterTasks(state.tarefas || []);
+    // Garantir que tarefas seja sempre um array
+    const tarefas = Array.isArray(state.tarefas) ? state.tarefas : [];
+    const tasks = this.filterTasks(tarefas);
     const columns = this.groupByStatus(tasks);
 
     this.updateProgress(tasks);
@@ -156,10 +158,17 @@ class ProjetosView {
   }
 
   filterTasks(tasks) {
-    const filtered = tasks.filter((t) => !t.arquivado);
+    // Garantir que tasks seja sempre um array
+    if (!Array.isArray(tasks)) {
+      console.warn('filterTasks recebeu um valor que não é array:', tasks);
+      return [];
+    }
+    
+    const filtered = tasks.filter((t) => t && !t.arquivado);
     if (!this.searchQuery) return filtered;
     const q = this.searchQuery.toLowerCase();
     return filtered.filter((task) => {
+      if (!task) return false;
       const title = (task.titulo || task.nome || '').toLowerCase();
       const desc = (task.descricao || '').toLowerCase();
       const resp = (task.responsavel || '').toLowerCase();
@@ -169,6 +178,12 @@ class ProjetosView {
   }
 
   groupByStatus(tasks) {
+    // Garantir que tasks seja sempre um array
+    if (!Array.isArray(tasks)) {
+      console.warn('groupByStatus recebeu um valor que não é array:', tasks);
+      tasks = [];
+    }
+
     const columns = [
       { id: 'todo', title: 'A Fazer', color: '#03a9f4' },
       { id: 'doing', title: 'Fazendo', color: '#cf30aa' },
@@ -178,6 +193,7 @@ class ProjetosView {
     const map = new Map(columns.map((c) => [c.id, []]));
 
     tasks.forEach((task) => {
+      if (!task) return; // Ignorar tarefas inválidas
       const status = (task.status || 'todo').toLowerCase();
       if (map.has(status)) {
         map.get(status).push(task);
@@ -193,8 +209,13 @@ class ProjetosView {
   }
 
   updateProgress(tasks) {
+    // Garantir que tasks seja sempre um array
+    if (!Array.isArray(tasks)) {
+      tasks = [];
+    }
+    
     const total = tasks.length;
-    const done = tasks.filter((t) => this.isDone(t)).length;
+    const done = tasks.filter((t) => t && this.isDone(t)).length;
     const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
     const valueEl = document.getElementById('projetos-progress-value');
@@ -269,7 +290,7 @@ class ProjetosView {
   taskExists(taskId) {
     const state = store.getState();
     const tasks = Array.isArray(state.tarefas) ? state.tarefas : [];
-    return tasks.some((t) => this.compareIds(this.getTaskId(t), taskId));
+    return tasks.some((t) => t && this.compareIds(this.getTaskId(t), taskId));
   }
 
   getTaskId(task) {

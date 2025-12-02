@@ -12,6 +12,9 @@ import {
 import {
     firebaseSync
 } from './services/firebase-sync.js';
+import {
+    initializeFirebase
+} from './config/firebase.js';
 
 class Store {
     constructor() {
@@ -37,6 +40,15 @@ class Store {
 
         // Inicializar cache
         await firebaseCache.init();
+
+        // Tentar inicializar Firebase (pode carregar config do arquivo)
+        try {
+            await initializeFirebase();
+            // Aguardar um pouco para garantir que Firebase foi inicializado
+            await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (error) {
+            console.warn('⚠️ Erro ao inicializar Firebase:', error);
+        }
 
         // Carregar estado do cache primeiro (para mostrar algo imediatamente)
         const cachedState = await this.loadFromCache();
@@ -129,10 +141,22 @@ class Store {
         try {
             const cached = await firebaseCache.get('store-state');
             if (cached && typeof cached === 'object') {
-                return {
+                const state = {
                     ...this.getDefaultState(),
                     ...cached
                 };
+                
+                // Garantir que arrays sejam sempre arrays válidos
+                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
+                                  'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
+                
+                arrayKeys.forEach(key => {
+                    if (!Array.isArray(state[key])) {
+                        state[key] = [];
+                    }
+                });
+                
+                return state;
             }
         } catch (error) {
             console.warn('Erro ao carregar estado do cache:', error);
@@ -197,6 +221,16 @@ class Store {
                     ...this.state,
                     ...updates
                 };
+                
+                // Garantir que arrays sejam sempre arrays válidos
+                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
+                                  'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
+                
+                arrayKeys.forEach(key => {
+                    if (!Array.isArray(this.state[key])) {
+                        this.state[key] = [];
+                    }
+                });
                 
                 // Salvar no cache local também
                 await firebaseCache.set('store-state', this.state);
@@ -418,10 +452,13 @@ class Store {
             const projetos = localStorage.getItem(KEY_PROJETOS);
             if (projetos) {
                 try {
-                    this.state.tarefas = JSON.parse(projetos);
+                    const parsed = JSON.parse(projetos);
+                    // Garantir que seja um array
+                    this.state.tarefas = Array.isArray(parsed) ? parsed : [];
                     hasData = true;
                 } catch (e) {
                     console.warn('Erro ao migrar projetos:', e);
+                    this.state.tarefas = [];
                 }
             }
 
@@ -569,11 +606,22 @@ class Store {
 
     /**
      * Retorna estado atual
+     * Garante que arrays sejam sempre arrays válidos
      */
     getState() {
-        return {
-            ...this.state
-        };
+        const state = { ...this.state };
+        
+        // Garantir que arrays sejam sempre arrays válidos
+        const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
+                          'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
+        
+        arrayKeys.forEach(key => {
+            if (!Array.isArray(state[key])) {
+                state[key] = [];
+            }
+        });
+        
+        return state;
     }
 
     /**
@@ -615,6 +663,11 @@ class Store {
             this.setState({
                 [key]: [...current, item]
             });
+        } else {
+            // Se não for array, inicializar como array
+            this.setState({
+                [key]: [item]
+            });
         }
     }
 
@@ -626,6 +679,11 @@ class Store {
         if (Array.isArray(current)) {
             this.setState({
                 [key]: current.filter((item) => !predicate(item))
+            });
+        } else {
+            // Se não for array, inicializar como array vazio
+            this.setState({
+                [key]: []
             });
         }
     }
@@ -641,6 +699,12 @@ class Store {
                     ...item,
                     ...updates
                 } : item)),
+            });
+        } else {
+            // Se não for array, não fazer nada (ou inicializar como array vazio)
+            console.warn(`Tentativa de atualizar item em ${key} que não é um array`);
+            this.setState({
+                [key]: []
             });
         }
     }
