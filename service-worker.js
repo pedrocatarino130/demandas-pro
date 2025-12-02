@@ -41,19 +41,19 @@ const STATIC_ASSETS = [
  */
 self.addEventListener('install', (event) => {
     console.log('[SW] Installing service worker...');
-    
+
     event.waitUntil(
         caches.open(`${CACHE_NAME}-${CACHE_VERSION}`)
-            .then((cache) => {
-                console.log('[SW] Caching static assets');
-                return cache.addAll(STATIC_ASSETS).catch(err => {
-                    console.warn('[SW] Some assets failed to cache:', err);
-                });
-            })
-            .then(() => self.skipWaiting()) // Ativar imediatamente
-            .catch((error) => {
-                console.error('[SW] Cache failed:', error);
-            })
+        .then((cache) => {
+            console.log('[SW] Caching static assets');
+            return cache.addAll(STATIC_ASSETS).catch(err => {
+                console.warn('[SW] Some assets failed to cache:', err);
+            });
+        })
+        .then(() => self.skipWaiting()) // Ativar imediatamente
+        .catch((error) => {
+            console.error('[SW] Cache failed:', error);
+        })
     );
 });
 
@@ -62,23 +62,23 @@ self.addEventListener('install', (event) => {
  */
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating service worker...');
-    
+
     event.waitUntil(
         caches.keys()
-            .then((cacheNames) => {
-                return Promise.all(
-                    cacheNames
-                        .filter((cacheName) => {
-                            return cacheName.startsWith(CACHE_NAME) && 
-                                   cacheName !== `${CACHE_NAME}-${CACHE_VERSION}`;
-                        })
-                        .map((cacheName) => {
-                            console.log('[SW] Deleting old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        })
-                );
-            })
-            .then(() => self.clients.claim()) // Controlar todas as páginas
+        .then((cacheNames) => {
+            return Promise.all(
+                cacheNames
+                .filter((cacheName) => {
+                    return cacheName.startsWith(CACHE_NAME) &&
+                        cacheName !== `${CACHE_NAME}-${CACHE_VERSION}`;
+                })
+                .map((cacheName) => {
+                    console.log('[SW] Deleting old cache:', cacheName);
+                    return caches.delete(cacheName);
+                })
+            );
+        })
+        .then(() => self.clients.claim()) // Controlar todas as páginas
     );
 });
 
@@ -86,26 +86,42 @@ self.addEventListener('activate', (event) => {
  * Estratégia de cache: Cache First para assets estáticos
  */
 self.addEventListener('fetch', (event) => {
-    const { request } = event;
+    const {
+        request
+    } = event;
     const url = new URL(request.url);
-    
+
     // Ignorar requisições não-GET e cross-origin
     if (request.method !== 'GET' || url.origin !== self.location.origin) {
         return;
     }
-    
+
+    // IMPORTANTE: Ignorar requisições do Vite dev server e arquivos fonte
+    // Esses arquivos são processados pelo Vite e não podem ser acessados diretamente
+    if (url.pathname.startsWith('/src/') ||
+        url.pathname.startsWith('/@') ||
+        url.pathname.startsWith('/node_modules/') ||
+        url.pathname.includes('/__vite') ||
+        url.pathname === '/client' ||
+        url.pathname.includes('websocket') ||
+        url.pathname.includes('hmr') ||
+        url.hostname === 'localhost' && url.pathname.includes('.css') && url.pathname.includes('/src/')) {
+        // Não interceptar - deixar passar direto para o Vite processar
+        return;
+    }
+
     // Estratégia Cache First para assets estáticos
     if (isStaticAsset(request.url)) {
         event.respondWith(cacheFirst(request));
         return;
     }
-    
+
     // Estratégia Network First para páginas HTML
     if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
         event.respondWith(networkFirst(request));
         return;
     }
-    
+
     // Estratégia Network First para APIs
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(networkFirstWithFallback(request));
@@ -117,6 +133,14 @@ self.addEventListener('fetch', (event) => {
  * Verifica se é um asset estático
  */
 function isStaticAsset(url) {
+    // Não processar arquivos fonte do Vite
+    if (url.includes('/src/') ||
+        url.includes('/@') ||
+        url.includes('/node_modules/') ||
+        url.includes('/__vite')) {
+        return false;
+    }
+
     const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2'];
     return staticExtensions.some(ext => url.includes(ext));
 }
@@ -125,30 +149,32 @@ function isStaticAsset(url) {
  * Estratégia Cache First: busca no cache primeiro, depois na rede
  */
 async function cacheFirst(request) {
-    const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
-    const cached = await cache.match(request);
-    
-    if (cached) {
-        return cached;
-    }
-    
     try {
-        const networkResponse = await fetch(request);
-        
-        // Cache apenas se resposta válida
-        if (networkResponse.ok) {
-            cache.put(request, networkResponse.clone());
+        const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
+        const cached = await cache.match(request);
+
+        if (cached) {
+            return cached;
         }
-        
-        return networkResponse;
+
+        try {
+            const networkResponse = await fetch(request);
+
+            // Cache apenas se resposta válida
+            if (networkResponse && networkResponse.ok) {
+                cache.put(request, networkResponse.clone()).catch(err => {
+                    // Ignorar erros de cache silenciosamente
+                });
+            }
+
+            return networkResponse;
+        } catch (networkError) {
+            // Se falhou na rede e não tem no cache, lançar erro
+            // Mas não logar para não poluir o console em dev
+            throw networkError;
+        }
     } catch (error) {
-        console.error('[SW] Network failed:', error);
-        // Retornar página offline se for HTML
-        if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
-            const offlinePagePath = BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html';
-            const offlinePage = await cache.match(offlinePagePath);
-            if (offlinePage) return offlinePage;
-        }
+        // Em caso de erro, apenas relançar sem logar (evitar spam no console)
         throw error;
     }
 }
@@ -159,27 +185,29 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
-        
+
         // Atualizar cache se resposta válida
         if (networkResponse.ok) {
             const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
             cache.put(request, networkResponse.clone());
         }
-        
+
         return networkResponse;
     } catch (error) {
         console.log('[SW] Network failed, trying cache...');
         const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
         const cached = await cache.match(request);
-        
+
         if (cached) {
             return cached;
         }
-        
+
         // Retornar página offline
         const offlinePagePath = BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html';
         const offlinePage = await cache.match(offlinePagePath);
-        return offlinePage || new Response('Offline', { status: 503 });
+        return offlinePage || new Response('Offline', {
+            status: 503
+        });
     }
 }
 
@@ -192,12 +220,12 @@ async function networkFirstWithFallback(request) {
         return networkResponse;
     } catch (error) {
         console.log('[SW] API offline, checking localStorage...');
-        
+
         // Fallback: Tentar recuperar dados do localStorage baseado no endpoint
         try {
             const url = new URL(request.url);
             const endpoint = url.pathname;
-            
+
             // Mapear endpoints para chaves do localStorage
             const endpointMap = {
                 '/api/tarefas': 'gerenciador_v3_state',
@@ -205,7 +233,7 @@ async function networkFirstWithFallback(request) {
                 '/api/estudos': 'estudos_v3',
                 '/api/estado': 'gerenciador_v3_state'
             };
-            
+
             // Encontrar chave correspondente
             let storageKey = null;
             for (const [pattern, key] of Object.entries(endpointMap)) {
@@ -214,30 +242,37 @@ async function networkFirstWithFallback(request) {
                     break;
                 }
             }
-            
+
             // Se não encontrou mapeamento específico, tentar chave padrão
             if (!storageKey) {
                 storageKey = 'gerenciador_v3_state';
             }
-            
+
             // Recuperar dados do localStorage
             // Nota: Service Worker não tem acesso direto ao localStorage, 
             // mas pode usar IndexedDB ou receber dados via postMessage
             // Por enquanto, retornamos indicador de offline com sugestão
-            return new Response(JSON.stringify({ 
+            return new Response(JSON.stringify({
                 error: 'Offline',
                 message: 'Dados disponíveis localmente. A aplicação funcionará offline.',
                 offline: true,
                 storageKey: storageKey
             }), {
                 status: 503,
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
         } catch (fallbackError) {
             console.error('[SW] Fallback failed:', fallbackError);
-            return new Response(JSON.stringify({ error: 'Offline', offline: true }), {
+            return new Response(JSON.stringify({
+                error: 'Offline',
+                offline: true
+            }), {
                 status: 503,
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
         }
     }
@@ -248,7 +283,7 @@ async function networkFirstWithFallback(request) {
  */
 self.addEventListener('sync', (event) => {
     console.log('[SW] Background sync:', event.tag);
-    
+
     if (event.tag === 'sync-data') {
         event.waitUntil(syncData());
     }
@@ -260,17 +295,19 @@ self.addEventListener('sync', (event) => {
 async function syncData() {
     try {
         console.log('[SW] Syncing data...');
-        
+
         // Notificar clientes para sincronizar dados
-        const clients = await self.clients.matchAll({ includeUncontrolled: true });
-        
+        const clients = await self.clients.matchAll({
+            includeUncontrolled: true
+        });
+
         clients.forEach(client => {
             client.postMessage({
                 type: 'SYNC_REQUEST',
                 message: 'Sincronizando dados com servidor...'
             });
         });
-        
+
         // Se houver backend no futuro, implementar aqui:
         // 
         // 1. Recuperar dados pendentes do IndexedDB/localStorage
@@ -298,14 +335,16 @@ async function syncData() {
         //         synced: pendingData.length
         //     });
         // });
-        
+
         console.log('[SW] Sync request sent to clients');
-        
+
     } catch (error) {
         console.error('[SW] Sync failed:', error);
-        
+
         // Notificar erro aos clientes
-        const clients = await self.clients.matchAll({ includeUncontrolled: true });
+        const clients = await self.clients.matchAll({
+            includeUncontrolled: true
+        });
         clients.forEach(client => {
             client.postMessage({
                 type: 'SYNC_ERROR',
@@ -322,7 +361,7 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
-    
+
     if (event.data && event.data.type === 'CHECK_UPDATE') {
         checkForUpdate();
     }
@@ -334,9 +373,11 @@ self.addEventListener('message', (event) => {
 async function checkForUpdate() {
     try {
         const manifestPath = BASE_PATH === '/' ? '/manifest.json' : BASE_PATH + 'manifest.json';
-        const response = await fetch(manifestPath, { cache: 'no-store' });
+        const response = await fetch(manifestPath, {
+            cache: 'no-store'
+        });
         const manifest = await response.json();
-        
+
         if (manifest.version !== CACHE_VERSION) {
             // Notificar cliente sobre atualização
             const clients = await self.clients.matchAll();
@@ -351,4 +392,3 @@ async function checkForUpdate() {
         console.error('[SW] Update check failed:', error);
     }
 }
-
