@@ -1,0 +1,251 @@
+/* ComplexSearch Styles - Cyberpunk Design */
+
+.complex-search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 42rem; /* 672px */
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Glow Effect */
+.complex-search-glow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(30px);
+  opacity: 0.2;
+  max-height: 130px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.complex-search-glow-gradient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  background: var(--conic-gradient-search-outer);
+  transition: transform var(--duration-slower) var(--ease-default);
+}
+
+.complex-search-wrapper.focused .complex-search-glow-gradient {
+  transform: translate(-50%, -50%) rotate(420deg);
+}
+
+/* Main Border Animation */
+.complex-search-border-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-cyberpunk-md);
+  overflow: hidden;
+  padding: 1px;
+  z-index: 1;
+}
+
+.complex-search-border-outer-gradient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: var(--conic-gradient-search-inner);
+  transition: transform var(--duration-slower) var(--ease-default);
+  opacity: 0.7;
+}
+
+.complex-search-wrapper:hover .complex-search-border-outer-gradient {
+  transform: translate(-50%, -50%) rotate(263deg);
+}
+
+.complex-search-wrapper.focused .complex-search-border-outer-gradient {
+  transform: translate(-50%, -50%) rotate(443deg);
+}
+
+.complex-search-border-inner-bg {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-primary);
+  border-radius: 11px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Inner Border Animation */
+.complex-search-border-inner {
+  position: absolute;
+  inset: 3px;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 1px;
+  z-index: 2;
+}
+
+.complex-search-border-inner-gradient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: var(--conic-gradient-search-border);
+  transition: transform var(--duration-slower) var(--ease-default);
+}
+
+.complex-search-wrapper:hover .complex-search-border-inner-gradient {
+  transform: translate(-50%, -50%) rotate(250deg);
+}
+
+.complex-search-wrapper.focused .complex-search-border-inner-gradient {
+  transform: translate(-50%, -50%) rotate(430deg);
+}
+
+.complex-search-input-bg {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-input);
+  border-radius: 9px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Input Container */
+.complex-search-input-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--spacing-md);
+}
+
+/* Search Icon */
+.complex-search-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-gray-500);
+  margin-right: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+/* Input Field */
+.complex-search-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary-cyberpunk);
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  font-family: var(--font-family);
+}
+
+.complex-search-input::placeholder {
+  color: var(--color-text-gray-600);
+}
+
+/* Filter Button */
+.complex-search-filter-btn {
+  position: absolute;
+  right: var(--spacing-xs);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-cyberpunk-sm);
+  overflow: hidden;
+  background: var(--gradient-filter-btn);
+  border: 1px solid var(--color-border-white-5);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-default);
+  z-index: 20;
+}
+
+.complex-search-filter-btn:hover {
+  filter: brightness(1.25);
+}
+
+.complex-search-filter-btn-border {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+}
+
+.complex-search-filter-btn-border-gradient {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background: var(--conic-gradient-filter-btn);
+  animation: borderRotate var(--duration-spin) linear infinite;
+}
+
+.complex-search-filter-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-gray-400);
+  position: relative;
+  z-index: 10;
+}
+
+/* Decorative Element */
+.complex-search-decorative {
+  position: absolute;
+  top: var(--spacing-md);
+  left: 4rem;
+  width: 32px;
+  height: 20px;
+  background: var(--color-neon-pink);
+  filter: blur(16px);
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-default);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.complex-search-wrapper:hover .complex-search-decorative {
+  opacity: 0.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .complex-search-wrapper {
+    height: 52px;
+    max-width: 100%;
+  }
+
+  .complex-search-input {
+    font-size: var(--font-size-base);
+  }
+
+  .complex-search-filter-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .complex-search-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .complex-search-filter-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+

@@ -1,6 +1,6 @@
 /**
  * Componente TaskCard
- * Card de tarefa para exibição no dashboard
+ * Card de tarefa para exibição no dashboard - Cyberpunk Design
  */
 
 import {
@@ -9,236 +9,289 @@ import {
     getDaysOverdue,
     toDate
 } from '../utils/dateUtils.js';
-import {
-    applyIOSStyles
-} from './ios-cards.js';
-import {
-    createIOSCheckbox,
-    applyIOSCheckboxStyles
-} from './ios-checkbox.js';
+import { createNeonCheckbox } from './NeonCheckbox.js';
 
 export class TaskCard {
     constructor(task, options = {}) {
         this.task = task;
         this.options = {
             showCheckbox: true,
-            showModule: true,
             showPriority: true,
-            showDuration: true,
+            showActions: true, // Botões de editar/excluir no hover
             isCurrent: false,
             isOverdue: false,
             isCompleted: false,
             isPostponed: false,
-            showActions: false, // Botões de editar/excluir
+            onToggleStatus: null,
+            onEdit: null,
+            onDelete: null,
             ...options,
         };
     }
 
     render() {
         const card = document.createElement('div');
-        card.className = 'task-card ios-card';
+        card.className = 'task-card';
 
-        // Aplicar estilos iOS
-        applyIOSStyles();
-
-        // Mapear prioridade para formato iOS
-        const priorityMap = {
-            'urgente': 'urgent',
-            'alta': 'high',
-            'media': 'medium',
-            'média': 'medium',
-            'baixa': 'low'
-        };
-        const iosPriority = priorityMap[(this.task.prioridade || 'media').toLowerCase()] || 'medium';
-        card.setAttribute('data-priority', iosPriority);
-
+        // Status classes
         if (this.options.isCurrent) {
             card.classList.add('task-card-current');
         }
         if (this.options.isOverdue) {
             card.classList.add('task-card-overdue');
         }
-        if (this.options.isCompleted) {
-            card.classList.add('task-card-completed');
+        if (this.options.isCompleted || this.task.completed) {
+            card.classList.add('task-card-completed', 'done');
         }
         if (this.options.isPostponed) {
             card.classList.add('task-card-postponed');
         }
 
-        const taskTime = toDate(this.task.time);
-        const timeStr = taskTime ? formatTime(taskTime) : '';
-        const dateStr = taskTime ? formatDate(taskTime, 'dd/MM') : '';
+        const isDone = this.options.isCompleted || this.task.completed;
 
-        card.innerHTML = '';
+        // Top Graphic Area
+        const topArea = this.renderTopArea(isDone);
+        card.appendChild(topArea);
 
-        // Adicionar checkbox se necessário
-        if (this.options.showCheckbox) {
-            const checkboxWrapper = this.renderCheckbox();
-            card.appendChild(checkboxWrapper);
-        }
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'task-card-content';
-        contentDiv.innerHTML = `
-        <div class="task-card-header">
-          <div class="task-card-time">
-            ${timeStr ? `<span class="task-card-time-value">${timeStr}</span>` : ''}
-            ${dateStr ? `<span class="task-card-time-date">${dateStr}</span>` : ''}
-          </div>
-          ${this.options.showPriority ? this.renderPriority() : ''}
-        </div>
-        <h3 class="task-card-title">${this.escapeHtml(this.task.titulo || this.task.nome || 'Sem título')}</h3>
-        ${this.task.descricao ? `<p class="task-card-description">${this.escapeHtml(this.task.descricao)}</p>` : ''}
-        <div class="task-card-footer">
-          ${this.options.showModule ? this.renderModule() : ''}
-          ${this.options.showDuration && this.task.duracao ? this.renderDuration() : ''}
-          ${this.task.recurrence && this.task.recurrence.enabled ? this.renderRecurrenceBadge() : ''}
-          ${this.options.isPostponed ? this.renderPostponedBadge() : ''}
-          ${this.options.isOverdue ? this.renderOverdueBadge() : ''}
-          ${this.options.showActions ? this.renderActions() : ''}
-        </div>
-      `;
-
-        card.appendChild(contentDiv);
+        // Content Area
+        const contentArea = this.renderContentArea(isDone);
+        card.appendChild(contentArea);
 
         return card;
     }
 
-    renderCheckbox() {
-        // Aplicar estilos iOS uma vez
-        applyIOSCheckboxStyles();
+    renderTopArea(isDone) {
+        const topArea = document.createElement('div');
+        topArea.className = `task-card-top ${isDone ? 'done' : ''}`;
 
-        // Mapear prioridade
+        // Priority Badge (Top Right)
+        if (this.options.showPriority) {
+            const priorityBadge = this.renderPriorityBadge();
+            topArea.appendChild(priorityBadge);
+        }
+
+        // Icon
+        const iconWrapper = document.createElement('div');
+        iconWrapper.className = 'task-card-icon-wrapper';
+        
+        if (isDone) {
+            iconWrapper.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+        } else {
+            iconWrapper.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+            `;
+        }
+        
+        topArea.appendChild(iconWrapper);
+
+        return topArea;
+    }
+
+    renderPriorityBadge() {
+        const badgeContainer = document.createElement('div');
+        badgeContainer.className = 'task-card-priority-badge';
+
+        const priority = (this.task.prioridade || 'media').toLowerCase();
         const priorityMap = {
-            'urgente': 'urgent',
+            'urgente': 'high',
             'alta': 'high',
             'media': 'medium',
             'média': 'medium',
             'baixa': 'low'
         };
-        const priority = priorityMap[(this.task.prioridade || 'media').toLowerCase()] || 'medium';
+        const priorityClass = priorityMap[priority] || 'medium';
 
-        // Criar checkbox iOS
-        const checkboxEl = createIOSCheckbox({
-            id: `task-checkbox-${this.task.id || this.task.contador}`,
-            label: 'Concluir tarefa',
-            checked: this.task.completed || false,
-            priority: priority,
-            onChange: (checked) => {
-                // O evento será tratado pelo listener no Home.js
-                const event = new Event('change', {
-                    bubbles: true
-                });
-                const input = checkboxEl.querySelector('input');
-                if (input) {
-                    input.dispatchEvent(event);
-                }
-            }
-        });
-
-        // Adicionar data-task-id ao input
-        const input = checkboxEl.querySelector('input');
-        if (input) {
-            input.className = 'task-checkbox ios-checkbox-input';
-            input.setAttribute('data-task-id', this.task.id || this.task.contador);
-        }
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'task-card-checkbox';
-        wrapper.appendChild(checkboxEl);
-
-        return wrapper;
-    }
-
-    renderPriority() {
-        const priority = (this.task.prioridade || 'media').toLowerCase();
         const priorityLabels = {
-            urgente: 'Urgente',
-            alta: 'Alta',
-            media: 'Média',
-            baixa: 'Baixa',
+            'urgente': 'Alta',
+            'alta': 'Alta',
+            'media': 'Média',
+            'média': 'Média',
+            'baixa': 'Baixa'
         };
-        const priorityColors = {
-            urgente: 'danger',
-            alta: 'warning',
-            media: 'secondary',
-            baixa: 'muted',
-        };
+        const label = priorityLabels[priority] || 'Média';
 
-        return `
-      <span class="task-card-priority badge badge-${priorityColors[priority] || 'secondary'}">
-        ${priorityLabels[priority] || priority}
-      </span>
-    `;
+        const badge = document.createElement('span');
+        badge.className = `priority-badge ${priorityClass}`;
+        badge.textContent = label;
+
+        badgeContainer.appendChild(badge);
+        return badgeContainer;
     }
 
-    renderModule() {
-        const module = this.task.modulo || this.task.area || 'Geral';
-        return `<span class="task-card-module">${this.escapeHtml(module)}</span>`;
-    }
+    renderContentArea(isDone) {
+        const contentArea = document.createElement('div');
+        contentArea.className = 'task-card-content';
 
-    renderDuration() {
-        return `<span class="task-card-duration">⏱ ${this.task.duracao}</span>`;
-    }
+        // Header with Title and Checkbox
+        const header = document.createElement('div');
+        header.className = 'task-card-header';
 
-    renderRecurrenceBadge() {
-        const recurrence = this.task.recurrence || {};
-        const typeLabels = {
-            daily: 'Diária',
-            weekly: 'Semanal',
-            monthly: 'Mensal',
-            custom: `A cada ${recurrence.interval || 1} dia${(recurrence.interval || 1) > 1 ? 's' : ''}`
-        };
-        const label = typeLabels[recurrence.type] || 'Recorrente';
-        return `
-      <span class="task-card-recurrence-badge badge badge-info" title="Tarefa recorrente: ${label}">
-        🔄 ${label}
-      </span>
-    `;
-    }
+        const titleWrapper = document.createElement('div');
+        titleWrapper.className = 'task-card-title-wrapper';
 
-    renderPostponedBadge() {
-        const taskTime = toDate(this.task.time);
-        if (!taskTime) return '';
+        const title = document.createElement('h3');
+        title.className = 'task-card-title';
+        title.textContent = this.escapeHtml(this.task.titulo || this.task.nome || 'Sem título');
 
-        const now = new Date();
-        const hoursDiff = Math.round((taskTime - now) / (1000 * 60 * 60));
-        const daysDiff = Math.floor(hoursDiff / 24);
+        const description = document.createElement('p');
+        description.className = 'task-card-description';
+        description.textContent = this.escapeHtml(this.task.descricao || 'Sem descrição');
 
-        let label = '';
-        if (daysDiff > 0) {
-            label = `Adiada ${daysDiff} dia${daysDiff > 1 ? 's' : ''}`;
-        } else if (hoursDiff > 2) {
-            label = `Adiada ${hoursDiff}h`;
+        titleWrapper.appendChild(title);
+        titleWrapper.appendChild(description);
+
+        // Checkbox
+        if (this.options.showCheckbox) {
+            const checkboxWrapper = document.createElement('div');
+            checkboxWrapper.className = 'task-card-checkbox-wrapper';
+
+            const checkbox = createNeonCheckbox({
+                checked: isDone,
+                onChange: (checked) => {
+                    if (this.options.onToggleStatus) {
+                        this.options.onToggleStatus(this.task.id || this.task.contador, checked);
+                    }
+                }
+            });
+
+            checkboxWrapper.appendChild(checkbox);
+            header.appendChild(titleWrapper);
+            header.appendChild(checkboxWrapper);
         } else {
-            label = 'Adiada';
+            header.appendChild(titleWrapper);
         }
 
-        return `
-      <span class="task-card-postponed-badge badge badge-warning" title="Tarefa adiada para ${formatDate(taskTime, 'dd/MM/yyyy')} às ${formatTime(taskTime)}">
-        ⏰ ${label}
-      </span>
-    `;
+        contentArea.appendChild(header);
+
+        // Tags
+        const tagsContainer = this.renderTags();
+        contentArea.appendChild(tagsContainer);
+
+        // Meta Info
+        const metaInfo = this.renderMetaInfo();
+        contentArea.appendChild(metaInfo);
+
+        return contentArea;
     }
 
-    renderOverdueBadge() {
-        const taskDate = toDate(this.task.time || this.task.deadline);
-        const days = getDaysOverdue(taskDate);
-        return `
-      <span class="task-card-overdue-badge badge badge-danger">
-        ${days} ${days === 1 ? 'dia' : 'dias'} atrasado
-      </span>
-    `;
+    renderTags() {
+        const tagsContainer = document.createElement('div');
+        tagsContainer.className = 'task-card-tags';
+
+        const tags = this.task.tags || [];
+        
+        if (tags.length > 0) {
+            tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'task-card-tag';
+                tagElement.textContent = `#${tag.trim()}`;
+                tagsContainer.appendChild(tagElement);
+            });
+        } else {
+            const emptyTag = document.createElement('span');
+            emptyTag.className = 'task-card-tags-empty';
+            emptyTag.textContent = 'Sem tags';
+            tagsContainer.appendChild(emptyTag);
+        }
+
+        return tagsContainer;
     }
 
-    renderActions() {
-        const taskId = this.task.id || this.task.contador;
-        return `
-      <div class="task-card-actions">
-        <button class="btn-icon-small" data-action="edit" data-task-id="${taskId}" title="Editar">✏️</button>
-        <button class="btn-icon-small" data-action="delete" data-task-id="${taskId}" title="Excluir">🗑️</button>
-      </div>
-    `;
+    renderMetaInfo() {
+        const metaInfo = document.createElement('div');
+        metaInfo.className = 'task-card-meta';
+
+        const metaLeft = document.createElement('div');
+        metaLeft.className = 'task-card-meta-left';
+
+        const taskTime = toDate(this.task.time);
+        if (taskTime) {
+            const dateItem = document.createElement('div');
+            dateItem.className = 'task-card-meta-item';
+            dateItem.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>${formatDate(taskTime, 'dd/MM/yyyy')}</span>
+            `;
+            metaLeft.appendChild(dateItem);
+        }
+
+        if (this.task.responsavel) {
+            const assigneeItem = document.createElement('div');
+            assigneeItem.className = 'task-card-meta-item';
+            assigneeItem.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="task-card-meta-assignee">${this.escapeHtml(this.task.responsavel)}</span>
+            `;
+            metaLeft.appendChild(assigneeItem);
+        }
+
+        metaInfo.appendChild(metaLeft);
+
+        // Actions (Edit/Delete) - Only visible on hover
+        if (this.options.showActions) {
+            const actions = document.createElement('div');
+            actions.className = 'task-card-actions';
+
+            const taskId = this.task.id || this.task.contador;
+
+            // Botão de Editar - sempre criar quando showActions for true
+            const editBtn = document.createElement('button');
+            editBtn.className = 'task-card-action-button edit';
+            editBtn.setAttribute('data-action', 'edit');
+            editBtn.setAttribute('data-task-id', taskId);
+            editBtn.setAttribute('title', 'Editar');
+            editBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            `;
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.options.onEdit) {
+                    this.options.onEdit(this.task);
+                }
+            });
+            actions.appendChild(editBtn);
+
+            // Botão de Excluir - sempre criar quando showActions for true
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'task-card-action-button delete';
+            deleteBtn.setAttribute('data-action', 'delete');
+            deleteBtn.setAttribute('data-task-id', taskId);
+            deleteBtn.setAttribute('title', 'Excluir');
+            deleteBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+            `;
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.options.onDelete) {
+                    this.options.onDelete(this.task.id || this.task.contador);
+                }
+            });
+            actions.appendChild(deleteBtn);
+
+            metaInfo.appendChild(actions);
+        }
+
+        return metaInfo;
     }
 
     escapeHtml(text) {

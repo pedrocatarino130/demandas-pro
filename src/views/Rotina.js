@@ -91,69 +91,88 @@ class RotinaView {
             pendingTasks = pendingTasks.filter(t => !postponedIds.has(t.id || t.contador));
         }
 
+        const total = filteredTasks.length;
+        const done = completedTasks.length;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
         return `
-      <div class="rotina-view">
-        <div class="rotina-header">
-          <h1 class="rotina-title">📅 Minha Rotina</h1>
-          <div class="rotina-header-controls">
-            <button class="btn btn-primary" id="btnAddRotina" title="Adicionar nova tarefa de rotina">➕ Nova Tarefa</button>
-          </div>
-          
-          <div class="rotina-search-sort">
+      <div class="home-view home-view-redesign rotina-view-redesign">
+        <div class="home-top-cards">
+          <section class="home-welcome-card">
+            <h2 class="home-welcome-title">Fluxo de Rotina</h2>
+            <p class="home-welcome-message">
+              Mantenha o foco nas tarefas do dia e conclua com estilo.
+            </p>
+            <div class="home-cta">
+              <button class="btn btn-primary" id="btnAddRotina" title="Adicionar nova tarefa de rotina">Nova Tarefa</button>
+            </div>
+          </section>
+
+          <section class="home-productivity-card">
+            <div class="home-productivity-value">${pct}%</div>
+            <div class="home-productivity-label">Progresso</div>
+            <div class="home-productivity-bar">
+              <div class="home-productivity-bar-fill" style="width: ${pct}%"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="home-section-header">
+          <h1 class="home-section-title">Minha Rotina</h1>
+          <div class="home-search">
             <div class="rotina-search">
               <input 
                 type="text" 
                 id="rotina-search-input" 
                 class="rotina-search-input" 
-                placeholder="🔍 Buscar tarefas..."
+                placeholder="Buscar tarefas..."
                 value="${this.escapeHtml(this.searchQuery)}"
               />
             </div>
-            <div class="rotina-sort-controls">
-              <select id="rotina-sort-by" class="rotina-sort-select">
-                <option value="time" ${this.sortBy === 'time' ? 'selected' : ''}>Data/Hora</option>
-                <option value="priority" ${this.sortBy === 'priority' ? 'selected' : ''}>Prioridade</option>
-                <option value="title" ${this.sortBy === 'title' ? 'selected' : ''}>Título</option>
-              </select>
-              <button 
-                id="rotina-sort-order" 
-                class="rotina-sort-btn" 
-                title="Alternar ordem"
-                data-order="${this.sortOrder}"
-              >
-                ${this.sortOrder === 'asc' ? '↑' : '↓'}
-              </button>
-            </div>
-          </div>
-          
-          <div class="rotina-filters">
-            <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" 
-                    data-filter="all">Todas</button>
-            <button class="filter-btn ${this.currentFilter === 'today' ? 'active' : ''}" 
-                    data-filter="today">Hoje</button>
-            <button class="filter-btn ${this.currentFilter === 'overdue' ? 'active' : ''}" 
-                    data-filter="overdue">Atrasadas</button>
-            <button class="filter-btn ${this.currentFilter === 'completed' ? 'active' : ''}" 
-                    data-filter="completed">Concluídas</button>
-            <button class="filter-btn ${this.currentFilter === 'postponed' ? 'active' : ''}" 
-                    data-filter="postponed">📅 Adiadas</button>
-            <select id="rotina-priority-filter" class="filter-select">
-              <option value="all" ${this.priorityFilter === 'all' ? 'selected' : ''}>Todas Prioridades</option>
-              <option value="urgente" ${this.priorityFilter === 'urgente' ? 'selected' : ''}>Urgente</option>
-              <option value="alta" ${this.priorityFilter === 'alta' ? 'selected' : ''}>Alta</option>
-              <option value="media" ${this.priorityFilter === 'media' ? 'selected' : ''}>Média</option>
-              <option value="baixa" ${this.priorityFilter === 'baixa' ? 'selected' : ''}>Baixa</option>
-            </select>
           </div>
         </div>
 
-        ${postponedTasks.length > 0 ? this.renderTasksSection('📅 Adiadas', postponedTasks, false, true) : ''}
+        <div class="rotina-search-sort">
+          <div class="rotina-sort-controls">
+            <select id="rotina-sort-by" class="rotina-sort-select">
+              <option value="time" ${this.sortBy === 'time' ? 'selected' : ''}>Data/Hora</option>
+              <option value="priority" ${this.sortBy === 'priority' ? 'selected' : ''}>Prioridade</option>
+              <option value="title" ${this.sortBy === 'title' ? 'selected' : ''}>Título</option>
+            </select>
+            <button 
+              id="rotina-sort-order" 
+              class="rotina-sort-btn" 
+              title="Alternar ordem"
+              data-order="${this.sortOrder}"
+            >
+              ${this.sortOrder === 'asc' ? '↑' : '↓'}
+            </button>
+          </div>
+        </div>
+        
+        <div class="rotina-filters">
+          <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">Todas</button>
+          <button class="filter-btn ${this.currentFilter === 'today' ? 'active' : ''}" data-filter="today">Hoje</button>
+          <button class="filter-btn ${this.currentFilter === 'overdue' ? 'active' : ''}" data-filter="overdue">Atrasadas</button>
+          <button class="filter-btn ${this.currentFilter === 'completed' ? 'active' : ''}" data-filter="completed">Concluídas</button>
+          <button class="filter-btn ${this.currentFilter === 'postponed' ? 'active' : ''}" data-filter="postponed">⏰ Adiadas</button>
+          <select id="rotina-priority-filter" class="filter-select">
+            <option value="all" ${this.priorityFilter === 'all' ? 'selected' : ''}>Todas Prioridades</option>
+            <option value="urgente" ${this.priorityFilter === 'urgente' ? 'selected' : ''}>Urgente</option>
+            <option value="alta" ${this.priorityFilter === 'alta' ? 'selected' : ''}>Alta</option>
+            <option value="media" ${this.priorityFilter === 'media' ? 'selected' : ''}>Média</option>
+            <option value="baixa" ${this.priorityFilter === 'baixa' ? 'selected' : ''}>Baixa</option>
+          </select>
+        </div>
+
+        ${postponedTasks.length > 0 ? this.renderTasksSection('⏰ Adiadas', postponedTasks, false, true) : ''}
         ${pendingTasks.length > 0 ? this.renderTasksSection('Pendentes', pendingTasks, false) : ''}
         ${completedTasks.length > 0 ? this.renderTasksSection('Concluídas', completedTasks, true) : ''}
         
         ${filteredTasks.length === 0 ? this.renderEmptyState() : ''}
       </div>
     `;
+
     }
 
     filterTasks(tasks) {
@@ -233,9 +252,9 @@ class RotinaView {
         <div class="rotina-section-header">
           <h2 class="rotina-section-title">${title}</h2>
           <span class="rotina-section-count">${tasks.length}</span>
-          ${isPostponed ? 
+          ${isPostponed ?  
             `<span class="rotina-section-badge badge badge-info" title="Tarefas adiadas para mais de 2 horas no futuro">⏰ Adiadas</span>` : ''}
-          ${overdueTasks.length > 0 && !isCompleted && !isPostponed ? 
+          ${overdueTasks.length > 0 && !isCompleted && !isPostponed ?  
             `<span class="rotina-section-badge badge badge-danger">${overdueTasks.length} atrasadas</span>` : ''}
         </div>
         <div class="rotina-tasks-list ${isCompleted ? 'rotina-tasks-completed' : ''} ${isPostponed ? 'rotina-tasks-postponed' : ''}">
@@ -413,7 +432,7 @@ class RotinaView {
         setTimeout(() => {
             const taskItems = document.querySelectorAll('.rotina-task-item .task-card');
             taskItems.forEach((card) => {
-                const taskId = card.closest('.rotina-task-item')?.getAttribute('data-task-id');
+                const taskId = card.closest('.rotina-task-item').getAttribute('data-task-id');
                 if (taskId) {
                     setupSwipeGestures(card, {
                         onSwipeLeft: createCompleteTaskHandler(taskId, (id) => {
@@ -594,7 +613,7 @@ class RotinaView {
         }
 
         const taskTitle = task.titulo || task.nome || 'Tarefa';
-        const confirmed = await confirmAction(`Tem certeza que deseja excluir "${taskTitle}"?`);
+        const confirmed = await confirmAction(`Tem certeza que deseja excluir "${taskTitle}"`);
         
         if (confirmed) {
             store.removeItem('tarefasRotina', (t) => (t.id || t.contador) == taskId);
@@ -743,7 +762,7 @@ class RotinaView {
 
             const recurrenceEnabled = modal.querySelector('#rotina-recurrence-enabled').checked;
             const recurrenceType = modal.querySelector('#rotina-recurrence-type').value;
-            const recurrenceInterval = parseInt(modal.querySelector('#rotina-recurrence-interval')?.value) || 1;
+            const recurrenceInterval = parseInt(modal.querySelector('#rotina-recurrence-interval').value) || 1;
 
             const taskData = {
                 titulo: titulo,
@@ -804,3 +823,4 @@ export default function renderRotina() {
         },
     };
 }
+

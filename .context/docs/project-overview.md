@@ -13,9 +13,10 @@ This project, named "demandas," is a web-based application designed to manage an
   - .html (2 files)
 
 ## File Structure & Code Organization
-- `Doc/` — Contains project documentation, including guides, notes, and reference materials for developers and contributors.
+- `docs/` — Contains project documentation, including guides, notes, and reference materials for developers and contributors.
 - `SAVES/` — Stores saved states, backups, or archived versions of data, configurations, or outputs from development sprints or testing sessions.
 - `public/` — Holds static assets for the web application, such as images, fonts, and other files served directly to the browser without processing.
+- `re-desing/` — Dedicated to redesign efforts, including updated components, prototypes, or iterative improvements to the user interface and architecture.
 - `sprint2/` — Dedicated to code, components, and features developed during Sprint 2 of the project, organizing iterative progress.
 - `sprint3/` — Contains code, components, and features from Sprint 3, reflecting ongoing development and refinements.
 - `src/` — TypeScript source files and CLI entrypoints.
@@ -54,7 +55,7 @@ The project leverages Node.js as the runtime environment, with JavaScript as the
 3. Review [Development Workflow](./development-workflow.md) for day-to-day tasks.
 
 ## Next Steps
-Position the product as an agile web tool for demand management, with key stakeholders including developers (for sprints), product owners (for features in `sprint2/` and `sprint3/`), and end-users (for UI in `public/`). External resources: Refer to GitHub repo issues for roadmap; no product specs linked yet—suggest adding a `docs/product-specs.md`. For collaboration, see sprint directories for progress tracking.
+Position the product as an agile web tool for demand management, with key stakeholders including developers (for sprints), product owners (for features in `sprint2/`, `sprint3/`, and `re-desing/`), and end-users (for UI in `public/`). External resources: Refer to GitHub repo issues for roadmap; no product specs linked yet—suggest adding a `docs/product-specs.md`. For collaboration, see sprint directories for progress tracking.
 
 <!-- agent-readonly:guidance -->
 ## AI Update Checklist

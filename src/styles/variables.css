@@ -90,29 +90,150 @@
     --breakpoint-iphone-standard: 390px;
     --breakpoint-iphone-max: 430px;
 
-    /* Cyberpunk Theme Colors */
+    /* ============================================
+       CYBERPUNK DESIGN SYSTEM TOKENS
+       Extracted from re-desing/ prototype
+       ============================================ */
+    
+    /* Neon Colors */
     --color-neon-pink: #cf30aa;
+    --color-neon-pink-alt: #f441a5;
     --color-neon-blue: #03a9f4;
     --color-neon-green: #00ff88;
     --color-neon-cyan: #00ffcc;
+    --color-neon-purple: #402fb5;
+    --color-neon-purple-light: #a099d8;
+    --color-neon-purple-dark: #3d3a4f;
     
-    /* Cyberpunk Backgrounds */
+    /* Background Colors */
     --color-bg-primary: #0f0f10;
     --color-bg-card: #1a1a1c;
     --color-bg-secondary: #161329;
+    --color-bg-secondary-alt: #1d1b4b;
     --color-bg-input: #010201;
+    --color-bg-modal: #272727;
+    --color-bg-modal-input: #3a3a3a;
+    --color-bg-dark: #1c1c20;
+    --color-bg-black: #000000;
     
-    /* Cyberpunk Text Colors */
+    /* Text Colors */
     --color-text-primary-cyberpunk: #ffffff;
     --color-text-secondary-cyberpunk: #9ca3af;
     --color-text-muted-cyberpunk: #6b7280;
+    --color-text-gray-400: #9ca3af;
+    --color-text-gray-500: #6b7280;
+    --color-text-gray-600: #4b5563;
     
-    /* Cyberpunk Borders and Effects */
+    /* Border Colors */
     --color-border-default-cyberpunk: rgba(255, 255, 255, 0.05);
     --color-border-hover-cyberpunk: rgba(255, 255, 255, 0.1);
+    --color-border-white-5: rgba(255, 255, 255, 0.05);
+    --color-border-white-10: rgba(255, 255, 255, 0.1);
+    --color-border-gray-600: #4b5563;
+    --color-border-gray-800: #1f2937;
+    --color-border-dark: #333333;
+    
+    /* Glow Effects */
     --color-glow-pink: rgba(207, 48, 170, 0.4);
+    --color-glow-pink-80: rgba(207, 48, 170, 0.8);
     --color-glow-blue: rgba(3, 169, 244, 0.4);
+    --color-glow-blue-80: rgba(3, 169, 244, 0.8);
     --color-glow-green: rgba(0, 255, 136, 0.3);
+    --color-glow-green-30: rgba(0, 255, 136, 0.3);
+    --color-glow-pink-alt: rgba(244, 65, 165, 0.2);
+    
+    /* Shadow Effects */
+    --shadow-glow-pink: 0 0 10px rgba(207, 48, 170, 0.8);
+    --shadow-glow-blue: 0 0 10px rgba(3, 169, 244, 0.8);
+    --shadow-glow-green: 0 0 15px rgba(0, 255, 136, 0.3);
+    --shadow-glow-blue-small: 0 0 20px rgba(3, 169, 244, 0.1);
+    --shadow-modal: 0 0 40px rgba(0, 0, 0, 0.5);
+    --shadow-xl-cyberpunk: 0 0 40px rgba(0, 0, 0, 0.5);
+    
+    /* Gradient Colors */
+    --gradient-logo: linear-gradient(to top right, #f441a5, #03a9f4);
+    --gradient-button-primary: linear-gradient(to right, #03a9f4, #f441a5);
+    --gradient-welcome-card: linear-gradient(to bottom right, #1d1b4b, #161329);
+    --gradient-task-card-done: linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.1));
+    --gradient-task-card-default: linear-gradient(to bottom right, #1c1c20, #0f0f10);
+    --gradient-filter-btn: linear-gradient(to bottom, #161329, #1d1b4b);
+    
+    /* Priority Colors */
+    --color-priority-high: #ef4444;
+    --color-priority-high-bg: rgba(239, 68, 68, 0.1);
+    --color-priority-high-border: rgba(239, 68, 68, 0.2);
+    --color-priority-medium: #fbbf24;
+    --color-priority-medium-bg: rgba(251, 191, 36, 0.1);
+    --color-priority-medium-border: rgba(251, 191, 36, 0.2);
+    --color-priority-low: #10b981;
+    --color-priority-low-bg: rgba(16, 185, 129, 0.1);
+    --color-priority-low-border: rgba(16, 185, 129, 0.2);
+    
+    /* Status Colors */
+    --color-status-urgent: #cf30aa;
+    --color-status-delayed: #f97316;
+    --color-status-future: #03a9f4;
+    --color-status-completed: #00ff88;
+    --color-status-todo: #6b7280;
+    --color-status-in-progress: #03a9f4;
+    --color-status-done: #00ff88;
+    --color-status-postponed: #f97316;
+    
+    /* Blur Effects */
+    --blur-sm: 4px;
+    --blur-md: 8px;
+    --blur-lg: 16px;
+    --blur-xl: 30px;
+    --blur-2xl: 80px;
+    --blur-3xl: 150px;
+    --blur-4xl: 180px;
+    
+    /* Backdrop Blur */
+    --backdrop-blur-sm: blur(4px);
+    --backdrop-blur-md: blur(8px);
+    --backdrop-blur-lg: blur(16px);
+    
+    /* Opacity Values */
+    --opacity-5: 0.05;
+    --opacity-10: 0.1;
+    --opacity-20: 0.2;
+    --opacity-30: 0.3;
+    --opacity-40: 0.4;
+    --opacity-50: 0.5;
+    --opacity-70: 0.7;
+    --opacity-80: 0.8;
+    --opacity-90: 0.9;
+    
+    /* Border Radius (Cyberpunk) */
+    --radius-cyberpunk-sm: 8px;
+    --radius-cyberpunk-md: 12px;
+    --radius-cyberpunk-lg: 16px;
+    --radius-cyberpunk-xl: 20px;
+    --radius-cyberpunk-2xl: 24px;
+    --radius-cyberpunk-full: 9999px;
+    
+    /* Animation Durations */
+    --duration-fast: 200ms;
+    --duration-base: 300ms;
+    --duration-slow: 500ms;
+    --duration-slower: 1000ms;
+    --duration-spin: 4s;
+    
+    /* Animation Easing */
+    --ease-default: ease;
+    --ease-in-out: ease-in-out;
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Grid Pattern */
+    --grid-pattern-size: 2rem;
+    --grid-pattern-color: #2a2a2a;
+    
+    /* Conic Gradient Colors (for animated borders) */
+    --conic-gradient-search-outer: conic-gradient(#000, #402fb5 5%, #000 38%, #000 50%, #cf30aa 60%, #000 87%);
+    --conic-gradient-search-inner: conic-gradient(rgba(0,0,0,0), #a099d8, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 50%, #dfa2da, rgba(0,0,0,0) 60%);
+    --conic-gradient-search-border: conic-gradient(#1c191c, #402fb5 5%, #1c191c 14%, #1c191c 50%, #cf30aa 60%, #1c191c 64%);
+    --conic-gradient-filter-btn: conic-gradient(rgba(0,0,0,0), #3d3a4f, rgba(0,0,0,0) 50%, #3d3a4f, rgba(0,0,0,0) 100%);
+    --conic-gradient-modal-border: conic-gradient(from 45deg, transparent 75%, #fff, transparent 100%);
 }
 
 /* Dark Mode Variables (preparation) */

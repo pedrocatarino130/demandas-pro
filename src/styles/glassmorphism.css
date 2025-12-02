@@ -1,0 +1,137 @@
+/* Glassmorphism Effects - Cyberpunk Design */
+
+/* Base Glassmorphism */
+.glass {
+  background: rgba(26, 26, 28, 0.7);
+  backdrop-filter: var(--backdrop-blur-lg);
+  -webkit-backdrop-filter: var(--backdrop-blur-lg);
+  border: 1px solid var(--color-border-white-5);
+}
+
+.glass-sm {
+  background: rgba(26, 26, 28, 0.5);
+  backdrop-filter: var(--backdrop-blur-sm);
+  -webkit-backdrop-filter: var(--backdrop-blur-sm);
+  border: 1px solid var(--color-border-white-5);
+}
+
+.glass-md {
+  background: rgba(26, 26, 28, 0.7);
+  backdrop-filter: var(--backdrop-blur-md);
+  -webkit-backdrop-filter: var(--backdrop-blur-md);
+  border: 1px solid var(--color-border-white-10);
+}
+
+.glass-lg {
+  background: rgba(26, 26, 28, 0.8);
+  backdrop-filter: var(--backdrop-blur-lg);
+  -webkit-backdrop-filter: var(--backdrop-blur-lg);
+  border: 1px solid var(--color-border-white-10);
+}
+
+/* Glassmorphism with Hover */
+.glass-hover {
+  transition: all var(--duration-base) var(--ease-default);
+}
+
+.glass-hover:hover {
+  background: rgba(26, 26, 28, 0.9);
+  border-color: var(--color-border-white-10);
+  box-shadow: var(--shadow-glow-blue-small);
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+  background: rgba(26, 26, 28, 0.7);
+  backdrop-filter: var(--backdrop-blur-lg);
+  -webkit-backdrop-filter: var(--backdrop-blur-lg);
+  border: 1px solid var(--color-border-white-5);
+  border-radius: var(--radius-cyberpunk-lg);
+  box-shadow: var(--shadow-xl-cyberpunk);
+}
+
+.glass-card:hover {
+  border-color: var(--color-border-white-10);
+  box-shadow: var(--shadow-glow-blue-small);
+}
+
+/* Glassmorphism Sidebar */
+.glass-sidebar {
+  background: var(--color-bg-secondary);
+  backdrop-filter: var(--backdrop-blur-lg);
+  -webkit-backdrop-filter: var(--backdrop-blur-lg);
+  border-right: 1px solid var(--color-border-white-5);
+  box-shadow: var(--shadow-xl-cyberpunk);
+}
+
+/* Glassmorphism Modal */
+.glass-modal {
+  background: var(--color-bg-modal);
+  backdrop-filter: var(--backdrop-blur-xl);
+  -webkit-backdrop-filter: var(--backdrop-blur-xl);
+  border: 1px solid var(--color-border-white-10);
+  box-shadow: var(--shadow-modal);
+}
+
+/* Glassmorphism Input */
+.glass-input {
+  background: var(--color-bg-input);
+  backdrop-filter: var(--backdrop-blur-sm);
+  -webkit-backdrop-filter: var(--backdrop-blur-sm);
+  border: 1px solid var(--color-border-white-5);
+  color: var(--color-text-primary-cyberpunk);
+}
+
+.glass-input:focus {
+  border-color: var(--color-neon-blue);
+  box-shadow: 0 0 0 3px var(--color-glow-blue);
+  outline: none;
+}
+
+/* Glassmorphism Button */
+.glass-button {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: var(--backdrop-blur-sm);
+  -webkit-backdrop-filter: var(--backdrop-blur-sm);
+  border: 1px solid var(--color-border-dark);
+  color: var(--color-text-primary-cyberpunk);
+  transition: all var(--duration-base) var(--ease-default);
+}
+
+.glass-button:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--color-neon-blue);
+  box-shadow: var(--shadow-glow-blue-small);
+}
+
+/* Grid Pattern Background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(var(--grid-pattern-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-pattern-color) 1px, transparent 1px);
+  background-size: var(--grid-pattern-size) var(--grid-pattern-size);
+  opacity: 0.05;
+}
+
+/* Gradient Overlays */
+.gradient-overlay-pink-blue {
+  background: linear-gradient(to top right, var(--color-neon-pink-alt), var(--color-neon-blue));
+}
+
+.gradient-overlay-cyberpunk {
+  background: linear-gradient(to bottom right, var(--color-bg-secondary-alt), var(--color-bg-secondary));
+}
+
+/* Blur Support Detection */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass,
+  .glass-sm,
+  .glass-md,
+  .glass-lg,
+  .glass-card,
+  .glass-sidebar,
+  .glass-modal {
+    background: rgba(26, 26, 28, 0.95);
+  }
+}
+

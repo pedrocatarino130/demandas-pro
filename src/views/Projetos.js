@@ -1,290 +1,293 @@
 /**
- * View Projetos
- * Gerencia projetos com Kanban 3 colunas
+ * View Projetos - Cyberpunk Kanban
+ * Redesenho inspirado no protótipo React (re-desing/)
  */
 
-import {
-    store
-} from '../store.js';
-import {
-    createKanban3Columns,
-    migrateKanbanData,
-    KANBAN_COLUMNS
-} from '../utils/kanban-3-colunas.js';
-import {
-    toast
-} from '../components/Toast.js';
-import {
-    taskEditModal
-} from '../components/TaskEditModal.js';
-import {
-    confirmAction
-} from '../components/ConfirmModal.js';
+import { store } from '../store.js';
+import { TaskCard } from '../components/TaskCard.js';
+import { ComplexSearch } from '../components/ComplexSearch.js';
+import { createNeonButton } from '../components/NeonButton.js';
+import { taskEditModal } from '../components/TaskEditModal.js';
+import { confirmAction } from '../components/ConfirmModal.js';
 
 class ProjetosView {
-    constructor() {
-        this.unsubscribe = null;
-        this.kanbanInstance = null;
-    }
+  constructor() {
+    this.unsubscribe = null;
+    this.searchQuery = '';
+  }
 
-    render() {
-        return `
-      <div class="projetos-view">
-        <div id="projetos-kanban-container"></div>
+  render() {
+    return `
+      <div class="home-view home-view-redesign projetos-view-redesign" id="projetos-view">
+        <div class="home-section-header">
+          <h1 class="home-section-title">Projetos</h1>
+          <div class="home-search" id="projetos-search"></div>
+        </div>
+
+        <div class="home-top-cards">
+          <section class="home-welcome-card">
+            <h2 class="home-welcome-title">Board de Projetos</h2>
+            <p class="home-welcome-message">
+              Organize seu fluxo em colunas e mantenha o ritmo.
+            </p>
+            <div id="projetos-cta"></div>
+          </section>
+
+          <section class="home-productivity-card">
+            <div class="home-productivity-value" id="projetos-progress-value">0%</div>
+            <div class="home-productivity-label">Progresso</div>
+            <div class="home-productivity-bar">
+              <div class="home-productivity-bar-fill" id="projetos-progress-bar" style="width: 0%"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="kanban-cyberpunk" id="projetos-kanban"></div>
       </div>
     `;
+  }
+
+  mount() {
+    this.renderSearch();
+    this.renderCTA();
+    this.renderKanban();
+
+    this.unsubscribe = store.subscribe(() => this.renderKanban());
+    return this;
+  }
+
+  destroy() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
     }
+  }
 
-    mount() {
-        const container = document.getElementById('projetos-kanban-container');
-        if (!container) return;
+  renderSearch() {
+    const container = document.getElementById('projetos-search');
+    if (!container) return;
+    container.innerHTML = '';
 
-        // Escutar mudanças no store
-        this.unsubscribe = store.subscribe(() => {
-            this.update();
+    const search = new ComplexSearch({
+      value: this.searchQuery,
+      onChange: (val) => {
+        this.searchQuery = val;
+        this.renderKanban();
+      },
+    });
+
+    container.appendChild(search.render());
+  }
+
+  renderCTA() {
+    const cta = document.getElementById('projetos-cta');
+    if (!cta) return;
+    cta.innerHTML = '';
+
+    const button = createNeonButton({
+      text: 'Nova Tarefa',
+      variant: 'primary',
+      onClick: () => this.createTask(),
+    });
+
+    cta.appendChild(button);
+  }
+
+  renderKanban() {
+    const container = document.getElementById('projetos-kanban');
+    if (!container) return;
+
+    const state = store.getState();
+    const tasks = this.filterTasks(state.tarefas || []);
+    const columns = this.groupByStatus(tasks);
+
+    this.updateProgress(tasks);
+
+    container.innerHTML = `
+      <div class="kanban-cyberpunk-grid">
+        ${columns
+          .map(
+            (col) => `
+              <div class="kanban-cyberpunk-column">
+                <div class="kanban-cyberpunk-column-header">
+                  <div class="kanban-cyberpunk-column-title">
+                    <span class="kanban-cyberpunk-dot" style="background:${col.color}"></span>
+                    <h3>${col.title}</h3>
+                  </div>
+                  <span class="kanban-cyberpunk-count">${col.tasks.length}</span>
+                </div>
+                <div class="kanban-cyberpunk-column-body" id="col-${col.id}"></div>
+              </div>
+            `
+          )
+          .join('')}
+      </div>
+    `;
+
+    // Render cards per column
+    columns.forEach((col) => {
+      const body = container.querySelector(`#col-${col.id}`);
+      if (!body) return;
+
+      if (col.tasks.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'home-empty-state';
+        empty.innerHTML = `
+          <div class="home-empty-state-icon">📂</div>
+          <p class="home-empty-state-message">Nenhuma tarefa aqui.</p>
+        `;
+        body.appendChild(empty);
+        return;
+      }
+
+      col.tasks.forEach((task) => {
+        const card = new TaskCard(task, {
+          showCheckbox: true,
+          showPriority: true,
+          showActions: true,
+          onToggleStatus: (id, checked) => this.handleToggleStatus(id, checked),
+          onEdit: (t) => this.handleEdit(t),
+          onDelete: (id) => this.handleDelete(id),
+          isCompleted: this.isDone(task),
         });
+        body.appendChild(card.render());
+      });
+    });
+  }
 
-        // Carregar tarefas e renderizar
-        this.update();
-    }
+  filterTasks(tasks) {
+    const filtered = tasks.filter((t) => !t.arquivado);
+    if (!this.searchQuery) return filtered;
+    const q = this.searchQuery.toLowerCase();
+    return filtered.filter((task) => {
+      const title = (task.titulo || task.nome || '').toLowerCase();
+      const desc = (task.descricao || '').toLowerCase();
+      const resp = (task.responsavel || '').toLowerCase();
+      const tags = Array.isArray(task.tags) ? task.tags.join(' ').toLowerCase() : '';
+      return title.includes(q) || desc.includes(q) || resp.includes(q) || tags.includes(q);
+    });
+  }
 
-    update() {
-        const state = store.getState();
-        let tasks = state.tarefas || [];
+  groupByStatus(tasks) {
+    const columns = [
+      { id: 'todo', title: 'A Fazer', color: '#03a9f4' },
+      { id: 'doing', title: 'Fazendo', color: '#cf30aa' },
+      { id: 'done', title: 'Feito', color: '#00ff88' },
+    ];
 
-        // Migrar dados se necessário
-        tasks = migrateKanbanData(tasks);
+    const map = new Map(columns.map((c) => [c.id, []]));
 
-        // Filtrar tarefas arquivadas
-        tasks = tasks.filter(t => !t.arquivado);
+    tasks.forEach((task) => {
+      const status = (task.status || 'todo').toLowerCase();
+      if (map.has(status)) {
+        map.get(status).push(task);
+      } else {
+        map.get('todo').push(task);
+      }
+    });
 
-        // Arquivar tarefas > 30 dias em "Feito" automaticamente ao renderizar
-        this.archiveOldTasks(tasks);
+    return columns.map((col) => ({
+      ...col,
+      tasks: map.get(col.id) || [],
+    }));
+  }
 
-        // Renderizar kanban
-        const container = document.getElementById('projetos-kanban-container');
-        if (container) {
-            createKanban3Columns({
-                container,
-                tasks,
-                onTaskMove: (taskId, newColumn) => {
-                    this.handleTaskMove(taskId, newColumn);
-                },
-                onTaskClick: (taskId) => {
-                    this.handleTaskEdit(taskId);
-                }
-            });
+  updateProgress(tasks) {
+    const total = tasks.length;
+    const done = tasks.filter((t) => this.isDone(t)).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-            // Configurar arquivamento após renderizar
-            this.setupArquivar(container, tasks);
-            
-            // Configurar botão de adicionar
-            this.setupAddButton(container);
-            
-            // Configurar botões de ação nos cards
-            this.setupCardActions(container);
-        }
-    }
+    const valueEl = document.getElementById('projetos-progress-value');
+    const barEl = document.getElementById('projetos-progress-bar');
 
-    handleTaskMove(taskId, newColumn) {
-        const state = store.getState();
-        const task = state.tarefas.find(t => (t.id || t.contador) == taskId);
+    if (valueEl) valueEl.textContent = `${pct}%`;
+    if (barEl) barEl.style.width = `${pct}%`;
+  }
 
-        if (!task) return;
+  isDone(task) {
+    const status = (task.status || '').toLowerCase();
+    return status === 'done' || task.completed === true;
+  }
 
-        // Atualizar status
-        store.updateItem('tarefas', (t) => (t.id || t.contador) == taskId, {
-            status: newColumn,
-            updatedAt: new Date().toISOString(),
-            dataConclusao: newColumn === 'done' ? new Date().toISOString() : task.dataConclusao
-        });
+  async handleDelete(taskId) {
+    const confirmed = await confirmAction('Deseja excluir esta tarefa?');
+    if (!confirmed) return;
+    store.removeItem('tarefas', (t) => this.compareIds(this.getTaskId(t), taskId));
+  }
 
-        toast.success(`Tarefa movida para "${KANBAN_COLUMNS[newColumn.toUpperCase()]?.title || newColumn}"`);
-    }
+  handleEdit(task) {
+    if (!task) return;
+    taskEditModal.open(task, (currentTask, updates) => this.saveTask(currentTask, updates));
+  }
 
-    handleTaskEdit(taskId) {
-        const state = store.getState();
-        const task = state.tarefas.find(t => (t.id || t.contador) == taskId);
+  handleToggleStatus(taskId, checked) {
+    store.updateItem('tarefas', (t) => this.compareIds(this.getTaskId(t), taskId), {
+      completed: checked,
+      status: checked ? 'done' : 'todo',
+      completedAt: checked ? new Date().toISOString() : null,
+    });
+  }
 
-        if (!task) {
-            toast.error('Tarefa não encontrada');
-            return;
-        }
+  createTask() {
+    const state = store.getState();
+    const newId = (state.contador || 0) + 1;
+    const defaultDate = new Date();
+    defaultDate.setHours(defaultDate.getHours() + 1);
 
-        taskEditModal.open(task, (originalTask, updates) => {
-            // Atualizar tarefa no store
-            store.updateItem('tarefas', (t) => (t.id || t.contador) == (originalTask.id || originalTask.contador), updates);
-            
-            toast.success('Tarefa atualizada com sucesso');
-            
-            // Atualizar visualização
-            this.update();
-        });
-    }
-
-    handleTaskAdd() {
-        const state = store.getState();
-        const newId = (state.contador || 0) + 1;
-        
-        const newTask = {
-            id: newId,
-            contador: newId,
-            titulo: 'Nova Tarefa',
-            descricao: '',
-            status: 'todo',
-            prioridade: 'media',
-            tags: [],
-            responsavel: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        // Abrir modal para editar a nova tarefa
-        taskEditModal.open(newTask, (originalTask, updates) => {
-            // Adicionar tarefa ao store
-            const finalTask = {
-                ...newTask,
-                ...updates
-            };
-            store.addItem('tarefas', finalTask);
-            store.setState({ contador: newId });
-            
-            toast.success('Tarefa criada com sucesso');
-            
-            // Atualizar visualização
-            this.update();
-        });
-    }
-
-    async handleTaskDelete(taskId) {
-        const state = store.getState();
-        const task = state.tarefas.find(t => (t.id || t.contador) == taskId);
-
-        if (!task) {
-            toast.error('Tarefa não encontrada');
-            return;
-        }
-
-        const taskTitle = task.titulo || task.nome || 'Tarefa';
-        const confirmed = await confirmAction(`Tem certeza que deseja excluir "${taskTitle}"?`);
-        
-        if (confirmed) {
-            store.removeItem('tarefas', (t) => (t.id || t.contador) == taskId);
-            toast.success('Tarefa excluída com sucesso');
-            this.update();
-        }
-    }
-
-    setupAddButton(container) {
-        const btnAdd = container.querySelector('#btnAddTask');
-        if (btnAdd) {
-            // Remover listeners anteriores
-            const newBtn = btnAdd.cloneNode(true);
-            btnAdd.parentNode.replaceChild(newBtn, btnAdd);
-            
-            newBtn.addEventListener('click', () => {
-                this.handleTaskAdd();
-            });
-        }
-    }
-
-    setupCardActions(container) {
-        // Event delegation para botões de ação nos cards
-        container.addEventListener('click', (e) => {
-            const actionBtn = e.target.closest('[data-action]');
-            if (!actionBtn) return;
-
-            const action = actionBtn.getAttribute('data-action');
-            const taskId = actionBtn.getAttribute('data-task-id');
-
-            if (action === 'edit' && taskId) {
-                this.handleTaskEdit(taskId);
-            } else if (action === 'delete' && taskId) {
-                this.handleTaskDelete(taskId);
-            }
-        });
-    }
-
-
-    setupArquivar(container, tasks) {
-        const btnArquivar = container.querySelector('#btnArquivar');
-        if (!btnArquivar) return;
-
-        // Remover listeners anteriores
-        const newBtn = btnArquivar.cloneNode(true);
-        btnArquivar.parentNode.replaceChild(newBtn, btnArquivar);
-
-        newBtn.addEventListener('click', () => {
-            this.archiveOldTasks(tasks, true);
-        });
-    }
-
-    archiveOldTasks(tasks, showConfirmation = false) {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        const tasksToArchive = tasks.filter(task => {
-            if (task.status !== 'done') return false;
-            const completedDate = task.dataConclusao || task.updatedAt || task.createdAt;
-            if (!completedDate) return false;
-
-            const date = new Date(completedDate);
-            return date < thirtyDaysAgo;
-        });
-
-        if (tasksToArchive.length === 0) {
-            if (showConfirmation) {
-                toast.info('Nenhuma tarefa para arquivar');
-            }
-            return;
-        }
-
-        const performArchive = () => {
-            tasksToArchive.forEach(task => {
-                store.updateItem('tarefas', (t) => (t.id || t.contador) == (task.id || task.contador), {
-                    arquivado: true,
-                    arquivadoEm: new Date().toISOString()
-                });
-            });
-
-            toast.success(`${tasksToArchive.length} tarefa(s) arquivada(s)`);
-            this.update();
-        };
-
-        if (showConfirmation) {
-            confirmAction(`Arquivar ${tasksToArchive.length} tarefas concluídas há mais de 30 dias?`).then((confirmed) => {
-                if (confirmed) {
-                    performArchive();
-                }
-            });
-        } else {
-            // Arquivo silencioso na renderização inicial
-            performArchive();
-        }
-    }
-
-    destroy() {
-        if (this.unsubscribe) {
-            this.unsubscribe();
-        }
-    }
-}
-
-/**
- * Função de renderização para o router
- */
-function renderProjetos() {
-    const view = new ProjetosView();
-
-    return {
-        render: () => view.render(),
-        mount: () => {
-            setTimeout(() => {
-                view.mount();
-            }, 0);
-            return view;
-        },
+    const task = {
+      id: newId,
+      contador: newId,
+      titulo: 'Nova Tarefa',
+      descricao: '',
+      prioridade: 'media',
+      responsavel: '',
+      tags: [],
+      status: 'todo',
+      completed: false,
+      time: defaultDate.toISOString(),
     };
+
+    taskEditModal.open(task, (currentTask, updates) => this.saveTask(currentTask, updates));
+  }
+
+  saveTask(task, updates) {
+    const taskId = this.getTaskId(task);
+    const updated = { ...task, ...updates };
+    const exists = this.taskExists(taskId);
+
+    if (exists) {
+      store.updateItem('tarefas', (t) => this.compareIds(this.getTaskId(t), taskId), updated);
+    } else {
+      store.addItem('tarefas', updated);
+      const currentCounter = store.getState().contador || 0;
+      const numericId = Number(taskId);
+      const nextCounter = Number.isFinite(numericId) ? Math.max(currentCounter, numericId) : currentCounter + 1;
+      store.setState({ contador: nextCounter });
+    }
+  }
+
+  taskExists(taskId) {
+    const state = store.getState();
+    const tasks = Array.isArray(state.tarefas) ? state.tarefas : [];
+    return tasks.some((t) => this.compareIds(this.getTaskId(t), taskId));
+  }
+
+  getTaskId(task) {
+    if (!task) return null;
+    return task.id || task.contador || null;
+  }
+
+  compareIds(id1, id2) {
+    if (id1 == null || id2 == null) return false;
+    return String(id1) === String(id2);
+  }
 }
 
-export default renderProjetos;
+export default function renderProjetos() {
+  const view = new ProjetosView();
+  return {
+    render: () => view.render(),
+    mount: () => view.mount(),
+    destroy: () => view.destroy(),
+  };
+}

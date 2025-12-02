@@ -30,6 +30,7 @@ Welcome to the repository knowledge base. Start with the project overview, then 
 - `playwright.config.js` — Playwright test configuration.
 - `public/` — Static public assets and resources.
 - `README.md` — Repository root readme.
+- `re-desing/` — Re-design materials and prototypes.
 - `SAVES/` — Saved files or backups directory.
 - `sprint2/` — Deliverables from sprint 2.
 - `sprint3/` — Deliverables from sprint 3.

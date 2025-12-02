@@ -654,3 +654,59 @@
     opacity: 0.7;
 }
 
+
+/* Redesign overrides */
+.rotina-view-redesign .rotina-section {
+    background: rgba(16, 14, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-cyberpunk-2xl, 20px);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-xl-cyberpunk, 0 20px 40px rgba(0,0,0,0.35));
+}
+
+.rotina-view-redesign .rotina-section-title,
+.rotina-view-redesign .rotina-title {
+    color: var(--color-text-primary-cyberpunk, #e5e7ff);
+}
+
+.rotina-view-redesign .rotina-section-count {
+    background: rgba(255, 255, 255, 0.08);
+    color: #a0a8ff;
+}
+
+.rotina-view-redesign .rotina-section-badge {
+    color: #e5e7ff;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rotina-view-redesign .rotina-search-input,
+.rotina-view-redesign .rotina-sort-select,
+.rotina-view-redesign .rotina-sort-btn,
+.rotina-view-redesign .filter-btn,
+.rotina-view-redesign .filter-select,
+.rotina-view-redesign .rotina-task-form-input,
+.rotina-view-redesign .rotina-task-form-textarea,
+.rotina-view-redesign .rotina-task-form-select {
+    background: rgba(12, 12, 18, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e5e7ff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.rotina-view-redesign .filter-btn.active {
+    background: var(--color-neon-blue, #03a9f4);
+    color: #0f0f10;
+    box-shadow: 0 0 12px rgba(3, 169, 244, 0.35);
+}
+
+.rotina-view-redesign .rotina-task-modal-content {
+    background: rgba(16, 14, 28, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    color: #e5e7ff;
+}
+
+.rotina-view-redesign .rotina-task-modal-title {
+    color: #fff;
+}

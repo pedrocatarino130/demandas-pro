@@ -1,0 +1,120 @@
+/* NeonCheckbox Styles - Cyberpunk Design */
+
+.neon-checkbox-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-xs);
+    cursor: pointer;
+    user-select: none;
+}
+
+.neon-checkbox-container {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border: 2px solid;
+    border-radius: var(--radius-cyberpunk-sm);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: all var(--duration-base) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.neon-checkbox-container.checked {
+    border-color: var(--color-neon-green);
+    box-shadow: var(--shadow-glow-green);
+}
+
+.neon-checkbox-container:not(.checked) {
+    border-color: var(--color-text-gray-600);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.neon-checkbox-container:not(.checked):hover {
+    border-color: rgba(0, 255, 136, 0.5);
+}
+
+.neon-checkbox-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top right, var(--color-neon-green), var(--color-neon-cyan));
+    transition: all var(--duration-base) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.neon-checkbox-container.checked .neon-checkbox-background {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+}
+
+.neon-checkbox-container:not(.checked) .neon-checkbox-background {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+}
+
+.neon-checkbox-icon {
+    position: relative;
+    z-index: 10;
+    width: 16px;
+    height: 16px;
+    color: var(--color-bg-black);
+    transition: all var(--duration-base) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.neon-checkbox-container.checked .neon-checkbox-icon {
+    transform: scale(1) rotate(0deg);
+}
+
+.neon-checkbox-container:not(.checked) .neon-checkbox-icon {
+    transform: scale(0) rotate(180deg);
+}
+
+.neon-checkbox-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Glowing Dots (Decorative) */
+.neon-checkbox-dot {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-neon-green);
+    transition: all var(--duration-slow) var(--ease-default);
+    opacity: 0;
+}
+
+.neon-checkbox-dot-left {
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.neon-checkbox-dot-right {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.neon-checkbox-wrapper:hover:not(.checked) .neon-checkbox-dot {
+    opacity: 1;
+}
+
+.neon-checkbox-wrapper:hover:not(.checked) .neon-checkbox-dot-left {
+    transform: translateY(-50%) translateX(-8px);
+}
+
+.neon-checkbox-wrapper:hover:not(.checked) .neon-checkbox-dot-right {
+    transform: translateY(-50%) translateX(8px);
+}
+
+.neon-checkbox-wrapper.checked .neon-checkbox-dot {
+    opacity: 0;
+}
+

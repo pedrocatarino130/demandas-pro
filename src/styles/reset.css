@@ -19,8 +19,8 @@ body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     line-height: var(--line-height-normal);
-    color: var(--color-text-primary);
-    background-color: var(--color-background);
+    color: var(--color-text-primary-cyberpunk);
+    background-color: var(--color-bg-primary);
     min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
 }

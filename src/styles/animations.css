@@ -1,0 +1,238 @@
+/* Animation System - Cyberpunk Design */
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--color-glow-pink);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--color-glow-pink-80), 0 0 30px var(--color-glow-pink);
+  }
+}
+
+@keyframes glowBluePulse {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--color-glow-blue);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--color-glow-blue-80), 0 0 30px var(--color-glow-blue);
+  }
+}
+
+@keyframes glowGreenPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--color-glow-green);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--color-glow-green-30), 0 0 30px var(--color-glow-green);
+  }
+}
+
+@keyframes borderRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn var(--duration-base) var(--ease-default);
+}
+
+.animate-slide-in {
+  animation: slideIn var(--duration-base) var(--ease-default);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-base) var(--ease-default);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-base) var(--ease-default);
+}
+
+.animate-zoom-in {
+  animation: zoomIn var(--duration-base) var(--ease-bounce);
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spinSlow var(--duration-spin) linear infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.animate-glow-blue-pulse {
+  animation: glowBluePulse 2s ease-in-out infinite;
+}
+
+.animate-glow-green-pulse {
+  animation: glowGreenPulse 2s ease-in-out infinite;
+}
+
+.animate-border-rotate {
+  animation: borderRotate var(--duration-spin) linear infinite;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-base) var(--ease-bounce);
+}
+
+.animate-scale-out {
+  animation: scaleOut var(--duration-base) var(--ease-default);
+}
+
+/* Transition Utilities */
+.transition-all-fast {
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.transition-all-base {
+  transition: all var(--duration-base) var(--ease-default);
+}
+
+.transition-all-slow {
+  transition: all var(--duration-slow) var(--ease-default);
+}
+
+.transition-transform {
+  transition: transform var(--duration-base) var(--ease-default);
+}
+
+.transition-opacity {
+  transition: opacity var(--duration-base) var(--ease-default);
+}
+
+.transition-colors {
+  transition: color var(--duration-fast) var(--ease-default),
+              background-color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+}
+
+/* Hover Effects */
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-scale:active {
+  transform: scale(0.95);
+}
+
+/* Performance Optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+.will-change-auto {
+  will-change: auto;
+}
+

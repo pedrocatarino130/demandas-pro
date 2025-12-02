@@ -1,0 +1,274 @@
+/* Task Edit Modal - Cyberpunk Design */
+
+.task-edit-modal-redesign {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-modal);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.task-edit-modal-redesign-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.task-edit-modal-redesign-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  z-index: 10;
+  animation: zoomIn var(--duration-base) var(--ease-bounce);
+}
+
+/* Spinning Border Effect */
+.task-edit-modal-redesign-border {
+  position: absolute;
+  inset: -50px;
+  z-index: -2;
+  background: var(--conic-gradient-modal-border);
+  opacity: 0.2;
+  animation: borderRotate var(--duration-spin) linear infinite;
+  border-radius: var(--radius-cyberpunk-2xl);
+}
+
+/* Inner Content Box */
+.task-edit-modal-redesign-inner {
+  position: absolute;
+  inset: 1px;
+  background: var(--color-bg-modal);
+  border-radius: var(--radius-cyberpunk-2xl);
+  z-index: -1;
+}
+
+/* Content */
+.task-edit-modal-redesign-content {
+  position: relative;
+  background: var(--color-bg-modal);
+  border-radius: var(--radius-cyberpunk-2xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+}
+
+/* Header */
+.task-edit-modal-redesign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.task-edit-modal-redesign-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  background: linear-gradient(to right, var(--color-text-primary-cyberpunk), var(--color-text-gray-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.task-edit-modal-redesign-close {
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-cyberpunk-sm);
+  background: transparent;
+  border: none;
+  color: var(--color-text-gray-400);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-edit-modal-redesign-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary-cyberpunk);
+}
+
+.task-edit-modal-redesign-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Body */
+.task-edit-modal-redesign-body {
+  overflow-y: auto;
+  max-height: calc(90vh - 200px);
+  padding-right: var(--spacing-xs);
+}
+
+/* Scrollbar styling */
+.task-edit-modal-redesign-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-edit-modal-redesign-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-cyberpunk-full);
+}
+
+.task-edit-modal-redesign-body::-webkit-scrollbar-thumb {
+  background: var(--color-neon-blue);
+  border-radius: var(--radius-cyberpunk-full);
+}
+
+.task-edit-modal-redesign-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-pink);
+}
+
+/* Form Groups */
+.task-edit-modal-redesign-form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.task-edit-modal-redesign-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-gray-400);
+  margin-bottom: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+}
+
+/* Inputs */
+.task-edit-modal-redesign-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--color-bg-modal-input);
+  color: var(--color-text-primary-cyberpunk);
+  border-radius: var(--radius-cyberpunk-lg);
+  border: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family);
+  transition: all var(--duration-base) var(--ease-default);
+  outline: none;
+}
+
+.task-edit-modal-redesign-input::placeholder {
+  color: var(--color-text-gray-500);
+}
+
+.task-edit-modal-redesign-input:focus {
+  border-color: var(--color-neon-blue);
+  box-shadow: 0 0 0 3px var(--color-glow-blue);
+  background: rgba(3, 169, 244, 0.05);
+}
+
+.task-edit-modal-redesign-input.focused {
+  border-color: var(--color-neon-blue);
+  box-shadow: 0 0 0 3px var(--color-glow-blue);
+  background: rgba(3, 169, 244, 0.05);
+}
+
+.task-edit-modal-redesign-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: var(--font-family);
+}
+
+/* Select */
+.task-edit-modal-redesign-input[type="select"],
+.task-edit-modal-redesign-input select {
+  cursor: pointer;
+}
+
+/* Form Row */
+.task-edit-modal-redesign-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+/* Footer */
+.task-edit-modal-redesign-footer {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-gray-800);
+}
+
+.task-edit-modal-redesign-cancel {
+  flex: 1;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-cyberpunk-lg);
+  background: transparent;
+  border: 1px solid var(--color-border-gray-600);
+  color: var(--color-text-gray-300);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-default);
+}
+
+.task-edit-modal-redesign-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary-cyberpunk);
+  border-color: var(--color-border-white-10);
+}
+
+.task-edit-modal-redesign-save-container {
+  flex: 1;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .task-edit-modal-redesign {
+    padding: 0;
+  }
+
+  .task-edit-modal-redesign-container {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .task-edit-modal-redesign-content {
+    border-radius: 0;
+    padding: var(--spacing-lg);
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .task-edit-modal-redesign-body {
+    max-height: calc(100vh - 250px);
+  }
+
+  .task-edit-modal-redesign-row {
+    grid-template-columns: 1fr;
+  }
+
+  .task-edit-modal-redesign-footer {
+    flex-direction: column;
+  }
+
+  .task-edit-modal-redesign-cancel,
+  .task-edit-modal-redesign-save-container {
+    width: 100%;
+  }
+}
+
+/* Animation for modal entrance */
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

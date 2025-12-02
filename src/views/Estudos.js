@@ -1,6 +1,8 @@
+import { createNeonButton } from '../components/NeonButton.js';
+
 /**
- * View Estudos - Sprint 2
- * Integra todos os componentes: Quick Add, Kanban, Pomodoro, Notas
+ * View Estudos - Sprint 2 (Redesign wrapper)
+ * Mantém o módulo completo, mas com o container no layout cyberpunk.
  */
 
 let estudosViewInstance = null;
@@ -9,8 +11,30 @@ let estudosStore = null;
 export default function renderEstudos() {
     return {
         render: () => {
-            // Retornar container vazio, será preenchido pelo mount
-            return '<div id="estudosViewContainer"></div>';
+            return `
+                <div class="home-view home-view-redesign estudos-view-redesign">
+                    <div class="home-top-cards">
+                        <section class="home-welcome-card">
+                            <h2 class="home-welcome-title">Estudos</h2>
+                            <p class="home-welcome-message">
+                                Seu painel completo: revisão, kanban, pomodoro e notas.
+                            </p>
+                        </section>
+                        <section class="home-productivity-card">
+                            <div class="home-productivity-value">Focus</div>
+                            <div class="home-productivity-label">Modo</div>
+                            <div class="home-productivity-bar">
+                                <div class="home-productivity-bar-fill" style="width: 100%"></div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="home-section-header estudos-header">
+                        <h3 class="home-section-title">Workspace de estudos</h3>
+                        <div class="home-search" id="estudos-cta"></div>
+                    </div>
+                    <div class="estudos-modules" id="estudosViewContainer"></div>
+                </div>
+            `;
         },
         mount: () => {
             // Carregar componentes dinamicamente
@@ -24,7 +48,6 @@ export default function renderEstudos() {
                 import('../utils/estudos-store.js'),
                 import('./EstudosView.js')
             ]).then((modules) => {
-                // Extrair classes dos módulos
                 const [
                     QuickAddParserModule,
                     QuickAddInputModule,
@@ -36,7 +59,6 @@ export default function renderEstudos() {
                     EstudosViewModule
                 ] = modules;
 
-                // Definir globalmente se necessário
                 if (typeof window !== 'undefined') {
                     window.QuickAddParser = QuickAddParserModule.QuickAddParser || QuickAddParserModule.default;
                     window.QuickAddInput = QuickAddInputModule.QuickAddInput || QuickAddInputModule.default;
@@ -48,7 +70,6 @@ export default function renderEstudos() {
                     window.EstudosView = EstudosViewModule.EstudosView || EstudosViewModule.default;
                 }
 
-                // Inicializar store e view
                 const container = document.getElementById('estudosViewContainer');
                 if (container) {
                     const EstudosStore = window.EstudosStore;
@@ -57,7 +78,25 @@ export default function renderEstudos() {
                     estudosStore = new EstudosStore();
                     estudosViewInstance = new EstudosView(container, estudosStore);
 
-                    console.log('✅ Módulo de Estudos montado');
+                    // CTA para focar no QuickAdd
+                    const cta = document.getElementById('estudos-cta');
+                    if (cta) {
+                        cta.innerHTML = '';
+                        const button = createNeonButton({
+                            text: 'Nova nota / estudo',
+                            variant: 'primary',
+                            onClick: () => {
+                                const input = document.getElementById('quickAddInput');
+                                if (input) {
+                                    input.focus();
+                                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }
+                        });
+                        cta.appendChild(button);
+                    }
+
+                    console.log('✓ Módulo de Estudos montado');
                 }
 
                 return {

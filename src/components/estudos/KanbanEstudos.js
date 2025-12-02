@@ -15,6 +15,8 @@ class KanbanEstudos {
         this.areas = options.areas || [];
         this.onStatusChange = options.onStatusChange || (() => {});
         this.onCardClick = options.onCardClick || (() => {});
+        this.onEdit = options.onEdit || (() => {});
+        this.onDelete = options.onDelete || (() => {});
         
         this.draggedCard = null;
         this._createKanban();
@@ -203,7 +205,7 @@ class KanbanEstudos {
         
         // Badge de revisão
         const revisaoBadge = this._isRevisaoPendente(topico) 
-            ? '<span class="kanban-badge revisao-pendente">⏰ Revisão</span>' 
+            ? '<span class="kanban-badge revisao-pendente">� Revisão</span>' 
             : '';
         
         // Tags
@@ -222,15 +224,14 @@ class KanbanEstudos {
                 <span class="kanban-priority ${topico.prioridade?.toLowerCase()}">${topico.prioridade || 'Média'}</span>
                 ${revisaoBadge}
                 <div class="kanban-card-actions">
-                    <button class="btn-icon-small" data-action="edit" data-topico-id="${topico.id}" title="Editar">✏️</button>
-                    <button class="btn-icon-small" data-action="delete" data-topico-id="${topico.id}" title="Excluir">🗑️</button>
+                    <button class="btn-icon-small" data-action="edit" data-topico-id="${topico.id}" title="Editar">Edit</button>
+                    <button class="btn-icon-small" data-action="delete" data-topico-id="${topico.id}" title="Excluir">Del</button>
                 </div>
             </div>
             <div class="kanban-card-body">
                 <h4 class="kanban-card-title">${this._escapeHtml(topico.titulo)}</h4>
                 ${topico.descricao ? `<p class="kanban-card-desc">${this._escapeHtml(topico.descricao)}</p>` : ''}
                 ${tagsHtml}
-                ${area ? `<div class="kanban-area" style="color: ${area.cor}">${area.icone || '📚'} ${area.nome}</div>` : ''}
             </div>
             <div class="kanban-card-footer">
                 ${progresso > 0 ? `
@@ -258,6 +259,13 @@ class KanbanEstudos {
         actionButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                const action = btn.getAttribute('data-action');
+                const id = btn.getAttribute('data-topico-id');
+                if (action === 'edit') {
+                    this.onEdit(id);
+                } else if (action === 'delete') {
+                    this.onDelete(id);
+                }
             });
         });
         
