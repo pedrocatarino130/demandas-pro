@@ -1458,13 +1458,21 @@ class HomeView {
                             completedAt: null,
                         });
                         toast.info('Ação desfeita');
+                        // Forçar atualização da view após desfazer
+                        this.update();
                     },
                     actionLabel: 'Desfazer',
                 });
 
                 // Atualizar streak
                 this.updateStreak();
+            } else {
+                // Tarefa foi desmarcada
+                toast.info(`"${taskTitle}" desmarcada`);
             }
+
+            // Forçar atualização da view após mudanças (para garantir que todas as seções sejam atualizadas)
+            this.update();
         } catch (error) {
             this.handleError('Erro ao completar tarefa', error);
             toast.error('Erro ao completar tarefa');

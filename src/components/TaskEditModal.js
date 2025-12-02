@@ -3,6 +3,8 @@
  * Componente para editar tarefas do kanban de projetos
  */
 
+import { NeonButton } from './NeonButton.js';
+
 export class TaskEditModal {
     constructor() {
         this.modal = null;
@@ -25,9 +27,140 @@ export class TaskEditModal {
 
         this.render();
         this.setupEventListeners();
+        
+        // Se usar redesign, configurar botões após um pequeno delay
+        setTimeout(() => {
+            if (this.modal.classList.contains('task-edit-modal-redesign')) {
+                this.setupRedesignButtons();
+            }
+        }, 100);
     }
 
     render() {
+        // Detectar se deve usar redesign (verificar se home view redesign existe)
+        const useRedesign = !!document.querySelector('.home-view-redesign');
+        const modalClass = useRedesign ? 'task-edit-modal-redesign' : 'task-edit-modal';
+        
+        if (useRedesign) {
+            this.modal.className = modalClass;
+        }
+        
+        if (useRedesign) {
+            this.renderRedesign();
+        } else {
+            this.renderClassic();
+        }
+    }
+    
+    renderRedesign() {
+        this.modal.innerHTML = `
+            <div class="task-edit-modal-redesign-overlay"></div>
+            <div class="task-edit-modal-redesign-container">
+                <div class="task-edit-modal-redesign-border"></div>
+                <div class="task-edit-modal-redesign-inner"></div>
+                <div class="task-edit-modal-redesign-content">
+                    <div class="task-edit-modal-redesign-header">
+                        <h2 id="task-edit-modal-title" class="task-edit-modal-redesign-title">Editar Tarefa</h2>
+                        <button class="task-edit-modal-redesign-close" aria-label="Fechar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="task-edit-modal-redesign-body">
+                        <div class="task-edit-modal-redesign-form-group">
+                            <label for="task-edit-titulo" class="task-edit-modal-redesign-label">Título *</label>
+                            <input 
+                                type="text" 
+                                id="task-edit-titulo" 
+                                class="task-edit-modal-redesign-input" 
+                                required 
+                                placeholder="Ex: Refatorar Homepage"
+                            />
+                        </div>
+                        <div class="task-edit-modal-redesign-form-group">
+                            <label for="task-edit-descricao" class="task-edit-modal-redesign-label">Descrição</label>
+                            <textarea 
+                                id="task-edit-descricao" 
+                                class="task-edit-modal-redesign-input task-edit-modal-redesign-textarea" 
+                                rows="3" 
+                                placeholder="Detalhes da tarefa..."
+                            ></textarea>
+                        </div>
+                        <div class="task-edit-modal-redesign-row">
+                            <div class="task-edit-modal-redesign-form-group">
+                                <label for="task-edit-prioridade" class="task-edit-modal-redesign-label">Prioridade</label>
+                                <select id="task-edit-prioridade" class="task-edit-modal-redesign-input">
+                                    <option value="baixa">Baixa</option>
+                                    <option value="media" selected>Média</option>
+                                    <option value="alta">Alta</option>
+                                    <option value="urgente">Urgente</option>
+                                </select>
+                            </div>
+                            <div class="task-edit-modal-redesign-form-group">
+                                <label for="task-edit-responsavel" class="task-edit-modal-redesign-label">Responsável</label>
+                                <input 
+                                    type="text" 
+                                    id="task-edit-responsavel" 
+                                    class="task-edit-modal-redesign-input" 
+                                    placeholder="Nome"
+                                />
+                            </div>
+                        </div>
+                        <div class="task-edit-modal-redesign-form-group">
+                            <label for="task-edit-tags" class="task-edit-modal-redesign-label">Tags (separadas por vírgula)</label>
+                            <input 
+                                type="text" 
+                                id="task-edit-tags" 
+                                class="task-edit-modal-redesign-input" 
+                                placeholder="frontend, urgente, bug"
+                            />
+                        </div>
+                        <div class="task-edit-modal-redesign-row" id="task-edit-time-row" style="display: none;">
+                            <div class="task-edit-modal-redesign-form-group">
+                                <label for="task-edit-time" class="task-edit-modal-redesign-label">Hora</label>
+                                <input 
+                                    type="time" 
+                                    id="task-edit-time" 
+                                    class="task-edit-modal-redesign-input"
+                                />
+                            </div>
+                        </div>
+                        <div class="task-edit-modal-redesign-row">
+                            <div class="task-edit-modal-redesign-form-group">
+                                <label for="task-edit-date" class="task-edit-modal-redesign-label">Data</label>
+                                <input 
+                                    type="date" 
+                                    id="task-edit-date" 
+                                    class="task-edit-modal-redesign-input"
+                                />
+                            </div>
+                            <div class="task-edit-modal-redesign-form-group">
+                                <label for="task-edit-status" class="task-edit-modal-redesign-label">Status</label>
+                                <select id="task-edit-status" class="task-edit-modal-redesign-input">
+                                    <option value="todo">A Fazer</option>
+                                    <option value="doing">Fazendo</option>
+                                    <option value="done">Feito</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-edit-modal-redesign-footer">
+                        <button class="task-edit-modal-redesign-cancel" id="task-edit-cancel">Cancelar</button>
+                        <div class="task-edit-modal-redesign-save-container" id="task-edit-save-container"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Renderizar NeonButton via DOM
+        setTimeout(() => {
+            this.setupRedesignButtons();
+        }, 0);
+    }
+    
+    renderClassic() {
         this.modal.innerHTML = `
             <div class="task-edit-modal-overlay"></div>
             <div class="task-edit-modal-content">
@@ -118,12 +251,29 @@ export class TaskEditModal {
             </div>
         `;
     }
+    
+    setupRedesignButtons() {
+        const saveContainer = this.modal.querySelector('#task-edit-save-container');
+        if (!saveContainer || saveContainer.hasChildNodes()) return;
+        
+        const saveButton = new NeonButton({
+            text: 'Salvar',
+            variant: 'primary',
+            icon: '💾',
+            type: 'button',
+            onClick: () => this.handleSave()
+        });
+        
+        saveContainer.appendChild(saveButton.render());
+    }
 
     setupEventListeners() {
-        const overlay = this.modal.querySelector('.task-edit-modal-overlay');
-        const closeBtn = this.modal.querySelector('.task-edit-modal-close');
+        // Verificar qual estilo está sendo usado
+        const useRedesign = this.modal.classList.contains('task-edit-modal-redesign');
+        
+        const overlay = this.modal.querySelector(useRedesign ? '.task-edit-modal-redesign-overlay' : '.task-edit-modal-overlay');
+        const closeBtn = this.modal.querySelector(useRedesign ? '.task-edit-modal-redesign-close' : '.task-edit-modal-close');
         const cancelBtn = this.modal.querySelector('#task-edit-cancel');
-        const saveBtn = this.modal.querySelector('#task-edit-save');
 
         const close = () => this.close();
 
@@ -131,16 +281,34 @@ export class TaskEditModal {
         if (closeBtn) closeBtn.addEventListener('click', close);
         if (cancelBtn) cancelBtn.addEventListener('click', close);
 
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => this.handleSave());
+        // Botão save no redesign é tratado no setupRedesignButtons
+        if (!useRedesign) {
+            const saveBtn = this.modal.querySelector('#task-edit-save');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => this.handleSave());
+            }
         }
 
         // Fechar com ESC
-        document.addEventListener('keydown', (e) => {
+        const escapeHandler = (e) => {
             if (e.key === 'Escape' && this.modal.style.display !== 'none') {
                 close();
             }
-        });
+        };
+        document.addEventListener('keydown', escapeHandler);
+        
+        // Adicionar listeners para focus nos inputs (estilo neon)
+        if (useRedesign) {
+            const inputs = this.modal.querySelectorAll('.task-edit-modal-redesign-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.classList.add('focused');
+                });
+                input.addEventListener('blur', () => {
+                    input.classList.remove('focused');
+                });
+            });
+        }
     }
 
     open(task, onSave) {
@@ -148,6 +316,16 @@ export class TaskEditModal {
 
         this.currentTask = task;
         this.onSave = onSave;
+        
+        // Detectar se deve usar redesign e re-renderizar se necessário
+        const useRedesign = !!document.querySelector('.home-view-redesign');
+        const shouldUseRedesign = useRedesign && !this.modal.classList.contains('task-edit-modal-redesign');
+        
+        if (shouldUseRedesign || (!useRedesign && this.modal.classList.contains('task-edit-modal-redesign'))) {
+            // Precisa re-renderizar com o estilo correto
+            this.render();
+            this.setupEventListeners();
+        }
 
         // Atualizar título do modal
         const titleEl = this.modal.querySelector('#task-edit-modal-title');
@@ -183,12 +361,20 @@ export class TaskEditModal {
             statusSelect.value = task.status || 'todo';
         }
 
-        // Preencher data/hora se existir
+        // Preencher data - sempre mostrar no redesign
+        const defaultDate = new Date(Date.now() + 60 * 60 * 1000);
+        if (dateInput) {
+            if (task.time) {
+                const taskDate = new Date(task.time);
+                dateInput.value = taskDate.toISOString().split('T')[0];
+            } else {
+                dateInput.value = defaultDate.toISOString().split('T')[0];
+            }
+        }
+        
+        // Preencher hora se existir (campo opcional)
         if (task.time) {
             const taskDate = new Date(task.time);
-            if (dateInput) {
-                dateInput.value = taskDate.toISOString().split('T')[0];
-            }
             if (timeInput) {
                 const hours = String(taskDate.getHours()).padStart(2, '0');
                 const minutes = String(taskDate.getMinutes()).padStart(2, '0');
@@ -197,23 +383,8 @@ export class TaskEditModal {
             if (timeRow) {
                 timeRow.style.display = 'flex';
             }
-        } else if (task.time !== undefined) {
-            // Se time foi definido mas é null/undefined, mostrar campos
-            if (timeRow) {
-                timeRow.style.display = 'flex';
-            }
-            // Preencher com data/hora padrão (1 hora a partir de agora)
-            const defaultTime = new Date(Date.now() + 60 * 60 * 1000);
-            if (dateInput) {
-                dateInput.value = defaultTime.toISOString().split('T')[0];
-            }
-            if (timeInput) {
-                const hours = String(defaultTime.getHours()).padStart(2, '0');
-                const minutes = String(defaultTime.getMinutes()).padStart(2, '0');
-                timeInput.value = `${hours}:${minutes}`;
-            }
         } else {
-            // Ocultar campos de data/hora se não for tarefa com horário
+            // Ocultar campo de hora se não houver time
             if (timeRow) {
                 timeRow.style.display = 'none';
             }
@@ -221,6 +392,13 @@ export class TaskEditModal {
 
         // Mostrar modal
         this.modal.style.display = 'flex';
+        
+        // Configurar botão save se usar redesign
+        if (useRedesign) {
+            setTimeout(() => {
+                this.setupRedesignButtons();
+            }, 50);
+        }
         
         // Focar no título
         if (tituloInput) {

@@ -89,6 +89,30 @@
     --breakpoint-iphone-se: 375px;
     --breakpoint-iphone-standard: 390px;
     --breakpoint-iphone-max: 430px;
+
+    /* Cyberpunk Theme Colors */
+    --color-neon-pink: #cf30aa;
+    --color-neon-blue: #03a9f4;
+    --color-neon-green: #00ff88;
+    --color-neon-cyan: #00ffcc;
+    
+    /* Cyberpunk Backgrounds */
+    --color-bg-primary: #0f0f10;
+    --color-bg-card: #1a1a1c;
+    --color-bg-secondary: #161329;
+    --color-bg-input: #010201;
+    
+    /* Cyberpunk Text Colors */
+    --color-text-primary-cyberpunk: #ffffff;
+    --color-text-secondary-cyberpunk: #9ca3af;
+    --color-text-muted-cyberpunk: #6b7280;
+    
+    /* Cyberpunk Borders and Effects */
+    --color-border-default-cyberpunk: rgba(255, 255, 255, 0.05);
+    --color-border-hover-cyberpunk: rgba(255, 255, 255, 0.1);
+    --color-glow-pink: rgba(207, 48, 170, 0.4);
+    --color-glow-blue: rgba(3, 169, 244, 0.4);
+    --color-glow-green: rgba(0, 255, 136, 0.3);
 }
 
 /* Dark Mode Variables (preparation) */
