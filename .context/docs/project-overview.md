@@ -1,61 +1,41 @@
 <!-- agent-update:start:project-overview -->
 # Project Overview
 
-This project, named "demandas," is a web-based application designed to manage and track demands or requests, likely in a legal, administrative, or customer service context (based on the project name, which means "demands" or "claims" in Portuguese). It solves the problem of organizing, processing, and visualizing demand-related data efficiently, benefiting end-users such as administrators, legal teams, or support staff who need streamlined workflows for handling incoming requests, status updates, and reporting.
+Gerenciador Pedro v3 é uma SPA 100% client-side que concentra rotinas pessoais, quadro de projetos e estudos com forte ênfase em uso offline. O código é escrito em JavaScript moderno (sem frameworks), empacotado pelo Vite e publicado em GitHub Pages (`https://<user>.github.io/<repo>/`) com suporte a PWA (service worker, manifest e ícones). Todo o roteamento depende de um `BASE_URL` dinâmico para funcionar em subpastas, motivo pelo qual o repositório agora expõe um utilitário central (`src/utils/base-path.js`) e um fallback dedicado em `public/404.html`.
 
 ## Quick Facts
-- Root path: Project root (e.g., `./demandas/`)
-- Primary languages detected:
-  - .js (59 files)
-  - .css (15 files)
-  - .md (7 files)
-  - .json (6 files)
-  - .html (2 files)
+- **Stack:** Vite + JavaScript ES Modules + CSS modularizado, sem backend dedicado.
+- **Persistência:** IndexedDB (`firebase-cache.js`) sempre ativo; sincronização com Firebase Firestore é opcional e controlada pelas variáveis `VITE_FIREBASE_*`.
+- **Deploy:** Automatizado via `.github/workflows/deploy.yml`, que roda `npm run build` com `BASE_URL=/<repo>/` e publica no Pages.
+- **PWA:** `public/service-worker.js` resolve o escopo a partir de `self.registration.scope`, garantindo que o registro funcione mesmo em `/demandas/`.
+- **Testes:** Playwright cobre navegação SPA, refresh em rotas profundas e registro do SW (forçando-o em dev via `window.__ENABLE_SW_IN_DEV__`).
 
 ## File Structure & Code Organization
-- `docs/` — Contains project documentation, including guides, notes, and reference materials for developers and contributors.
-- `SAVES/` — Stores saved states, backups, or archived versions of data, configurations, or outputs from development sprints or testing sessions.
-- `public/` — Holds static assets for the web application, such as images, fonts, and other files served directly to the browser without processing.
-- `re-desing/` — Dedicated to redesign efforts, including updated components, prototypes, or iterative improvements to the user interface and architecture.
-- `sprint2/` — Dedicated to code, components, and features developed during Sprint 2 of the project, organizing iterative progress.
-- `sprint3/` — Contains code, components, and features from Sprint 3, reflecting ongoing development and refinements.
-- `src/` — TypeScript source files and CLI entrypoints.
-- `tests/` — Automated tests and fixtures.
-- Root-level files include:
-  - `package.json` — Defines project dependencies, scripts, and metadata for Node.js/npm management.
-  - `package-lock.json` — Locks dependency versions for reproducible installations.
-  - `playwright.config.js` — Configuration for Playwright end-to-end testing framework.
-  - `vite.config.js` — Configuration for the Vite build tool, handling development server, bundling, and optimization.
-  - `README.md` — Main entry point with project setup, usage, and contribution instructions.
-  - Other potential files: `index.html` (main entry HTML), `estudos.html` (possibly a study or demo page).
+- `src/` — views (`src/views/*.js`), componentes compartilhados, router (`src/router.js`), store global e serviços Firebase. Destaque para:
+  - `src/utils/base-path.js`: centraliza leitura/escrita do `BASE_URL`, constrói URLs e restaura rotas após fallback 404.
+  - `src/main.js`: registra o SW, ativa indicadores offline e integra o router.
+- `public/` — arquivos copiados sem transformação (manifest, service worker, `404.html` para GitHub Pages).
+- `.github/workflows/deploy.yml` — pipeline oficial de build + deploy.
+- `.context/` — documentação operacional consumida pelos agentes (playbooks, planos, guias).
+- `tests/e2e/` — specs Playwright orquestradas por `playwright.config.js`.
+- Diretórios históricos (`sprint2/`, `sprint3/`, `SAVES/`) preservam migrações e scripts utilizados nas fases anteriores.
 
 ## Technology Stack Summary
-The project leverages Node.js as the runtime environment, with JavaScript as the primary language (supplemented by TypeScript in source files). Build tooling includes Vite for fast development and production bundling. Linting and formatting are likely handled via ESLint and Prettier (inferred from standard JS projects; confirm via `package.json` devDependencies). Testing infrastructure uses Playwright for browser-based E2E tests.
+- **Runtime local:** Node 18+, Vite dev server (`npm run dev`).
+- **Build:** `npm run build` gera `dist/` respeitando `process.env.BASE_URL` (utilizado tanto pelo router quanto pelo SW).
+- **Infra externa:** GitHub Actions para CI/CD e GitHub Pages para hosting; Firebase Firestore opcional para sincronização em tempo real.
+- **Observabilidade:** Logs no console e toasts indicam status de sincronização/offline; não há backend para telemetria.
 
-## Core Framework Stack
-- **Frontend**: Vite-based setup, likely with a framework like React or Vanilla JS for building interactive UIs (check `src/` for specifics; no explicit framework detected in scans).
-- **Backend/Data**: Node.js for any server-side logic or data handling; JSON files for static data storage (e.g., in `SAVES/` or root).
-- **Testing**: Playwright for cross-browser automation.
-- Architectural patterns: Modular structure following sprint-based development, with separation of concerns (e.g., `src/` for logic, `public/` for assets). Emphasizes iterative sprints for agile progression.
-
-## UI & Interaction Libraries
-- UI: Standard HTML/CSS/JS; potential use of CSS frameworks (e.g., Bootstrap or Tailwind, based on .css file count—verify dependencies).
-- Interaction: Browser-native for web views; no CLI-specific libraries noted, but `src/` may include script runners.
-- Considerations: Ensure responsive design for web accessibility; localization may be needed for Portuguese/English (project name suggests bilingual potential). Follow WCAG guidelines for UI components in `public/` and `src/`.
-
-## Development Tools Overview
-- Essential CLIs: `npm` for package management, `npx playwright` for testing, `vite` for dev server.
-- Scripts: Run `npm run dev` to start the development server; `npm test` for running tests.
-- Environments: Node.js (v18+ recommended), modern browser for previews.
-- Link to [Tooling & Productivity Guide](./tooling.md) for deeper setup instructions.
-
-## Getting Started Checklist
-1. Install dependencies with `npm install`.
-2. Explore the CLI by running `npm run dev`.
-3. Review [Development Workflow](./development-workflow.md) for day-to-day tasks.
+## Development Workflow Highlights
+1. `npm install` e `npm run dev` para desenvolvimento.
+2. Para reproduzir o cenário de GitHub Pages localmente: `BASE_URL=/demandas/ npm run build && npx serve dist`.
+3. Arquivo `.env.local` deve conter todas as chaves `VITE_FIREBASE_*` quando a sincronização estiver habilitada.
+4. Antes de abrir PR, rode `npm run build` para atualizar `dist/` e `npm run test:e2e` para validar navegação/refresh.
 
 ## Next Steps
-Position the product as an agile web tool for demand management, with key stakeholders including developers (for sprints), product owners (for features in `sprint2/`, `sprint3/`, and `re-desing/`), and end-users (for UI in `public/`). External resources: Refer to GitHub repo issues for roadmap; no product specs linked yet—suggest adding a `docs/product-specs.md`. For collaboration, see sprint directories for progress tracking.
+- Gerar ícones reais (`public/icon-192.png`, `public/icon-512.png`) para evitar 404 no manifest.
+- Expandir documentação de troubleshooting para GitHub Pages (limpeza de cache, `skipWaiting`, etc.).
+- Consolidar scripts Playwright que cobrem cenários offline + Firebase, aproveitando o novo utilitário de base path.
 
 <!-- agent-readonly:guidance -->
 ## AI Update Checklist

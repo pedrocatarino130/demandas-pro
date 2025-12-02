@@ -43,48 +43,39 @@ O build será gerado na pasta `dist/`, pronta para deploy.
 
 ### Deploy no GitHub Pages
 
-**⚠️ IMPORTANTE**: O projeto precisa ser buildado antes de ser servido. Não tente servir os arquivos fonte diretamente.
+**⚠️ IMPORTANTE**: Sempre gere o build com a variável `BASE_URL` configurada para o nome do repositório (`/<repo>/`). Isso garante que rotas, manifest e service worker funcionem em subpastas do GitHub Pages.
 
-#### Opção 1: Deploy Manual
+#### Fluxo Automatizado (recomendado)
 
-1. **Build do projeto**:
-   ```bash
-   # Para GitHub Pages em subdiretório (ex: /demandas-pro/)
-   BASE_URL=/demandas-pro/ npm run build
-   
-   # Para GitHub Pages na raiz
-   npm run build
-   ```
+O repositório já inclui `.github/workflows/deploy.yml`, que:
 
-2. **Copiar conteúdo de `dist/` para a branch `gh-pages`** ou configurar GitHub Pages para servir da pasta `dist/`
+- executa `npm ci && npm run build` com `BASE_URL=/${{ github.event.repository.name }}/`;
+- envia o conteúdo de `dist/` para o Pages usando `actions/deploy-pages`;
+- expõe variáveis `VITE_FIREBASE_*` diretamente dos *secrets* configurados no repositório.
 
-3. **Configurar GitHub Pages** no repositório para servir da branch `gh-pages` ou da pasta `dist/`
+**Configuração necessária apenas uma vez:**
 
-#### Opção 2: GitHub Actions (Recomendado)
+1. Em *Settings → Pages*, selecione **GitHub Actions** como fonte.
+2. Adicione os seguintes *secrets* em *Settings → Secrets and variables → Actions*:
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+3. Faça push para `main`. A Action publicará automaticamente em `https://<usuario>.github.io/<repo>/`.
 
-Crie `.github/workflows/deploy.yml`:
-```yaml
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [ main ]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: BASE_URL=/demandas-pro/ npm run build
-      - uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+#### Deploy manual / testes locais
+
+```bash
+# Gera build apontando para o subcaminho do GitHub Pages
+BASE_URL=/<repo>/ npm run build
+
+# (Opcional) Servir o build localmente para validação
+npx serve dist
 ```
 
-**Nota**: Substitua `/demandas-pro/` pelo caminho correto do seu repositório no GitHub Pages.
+O diretório `public/404.html` e o utilitário `src/utils/base-path.js` garantem que um refresh direto em rotas internas funcione, inclusive quando o site roda em `/repositorio/...`. O `service-worker.js` deriva o escopo pelo `BASE_URL`, evitando 404 ao registrar o PWA.
 
 ## 📁 Estrutura do Projeto
 

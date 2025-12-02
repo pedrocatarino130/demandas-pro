@@ -14,27 +14,60 @@
  */
 
 const CACHE_NAME = 'gerenciador-pedro-v3.0';
-const CACHE_VERSION = '1.0.0';
+const CACHE_VERSION = '1.1.0';
+const ACTIVE_CACHE = `${CACHE_NAME}-${CACHE_VERSION}`;
 
-// Detectar base path dinamicamente
-const getBasePath = () => {
-    // Tentar detectar o base path do service worker
-    const swPath = self.location.pathname;
-    // Se o service worker está em /demandas-pro/service-worker.js, o base path é /demandas-pro/
-    if (swPath.includes('/demandas-pro/')) {
-        return '/demandas-pro/';
-    }
-    return '/';
-};
-
-const BASE_PATH = getBasePath();
+const BASE_PATH = resolveBasePath();
 
 // Assets para cache na instalação
 const STATIC_ASSETS = [
     BASE_PATH === '/' ? '/' : BASE_PATH,
-    BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html',
-    BASE_PATH === '/' ? '/manifest.json' : BASE_PATH + 'manifest.json'
+    withBase('index.html'),
+    withBase('manifest.json')
 ];
+
+function ensureTrailingSlash(path) {
+    if (!path) {
+        return '/';
+    }
+    if (!path.startsWith('/')) {
+        path = `/${path}`;
+    }
+    return path.endsWith('/') ? path : `${path}/`;
+}
+
+function resolveBasePath() {
+    try {
+        if (self.registration && self.registration.scope) {
+            const scopeUrl = new URL(self.registration.scope);
+            return ensureTrailingSlash(scopeUrl.pathname);
+        }
+    } catch (error) {
+        // Ignorar
+    }
+
+    const swPath = self.location && self.location.pathname ? self.location.pathname : '/';
+    if (swPath.endsWith('/service-worker.js')) {
+        return ensureTrailingSlash(swPath.replace(/service-worker\.js$/, ''));
+    }
+    return ensureTrailingSlash(swPath);
+}
+
+function withBase(path = '') {
+    if (!path) {
+        return BASE_PATH;
+    }
+
+    if (path.startsWith('http')) {
+        return path;
+    }
+
+    if (path.startsWith('/')) {
+        return BASE_PATH === '/' ? path : `${BASE_PATH}${path.slice(1)}`;
+    }
+
+    return BASE_PATH === '/' ? `/${path}` : `${BASE_PATH}${path}`;
+}
 
 /**
  * Instala o Service Worker e faz cache dos assets estáticos
@@ -43,7 +76,7 @@ self.addEventListener('install', (event) => {
     console.log('[SW] Installing service worker...');
 
     event.waitUntil(
-        caches.open(`${CACHE_NAME}-${CACHE_VERSION}`)
+        caches.open(ACTIVE_CACHE)
         .then((cache) => {
             console.log('[SW] Caching static assets');
             return cache.addAll(STATIC_ASSETS).catch(err => {
@@ -70,7 +103,7 @@ self.addEventListener('activate', (event) => {
                 cacheNames
                 .filter((cacheName) => {
                     return cacheName.startsWith(CACHE_NAME) &&
-                        cacheName !== `${CACHE_NAME}-${CACHE_VERSION}`;
+                        cacheName !== ACTIVE_CACHE;
                 })
                 .map((cacheName) => {
                     console.log('[SW] Deleting old cache:', cacheName);
@@ -93,6 +126,10 @@ self.addEventListener('fetch', (event) => {
 
     // Ignorar requisições não-GET e cross-origin
     if (request.method !== 'GET' || url.origin !== self.location.origin) {
+        return;
+    }
+
+    if (BASE_PATH !== '/' && !url.pathname.startsWith(BASE_PATH)) {
         return;
     }
 
@@ -150,7 +187,7 @@ function isStaticAsset(url) {
  */
 async function cacheFirst(request) {
     try {
-        const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
+        const cache = await caches.open(ACTIVE_CACHE);
         const cached = await cache.match(request);
 
         if (cached) {
@@ -188,14 +225,14 @@ async function networkFirst(request) {
 
         // Atualizar cache se resposta válida
         if (networkResponse.ok) {
-            const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
+            const cache = await caches.open(ACTIVE_CACHE);
             cache.put(request, networkResponse.clone());
         }
 
         return networkResponse;
     } catch (error) {
         console.log('[SW] Network failed, trying cache...');
-        const cache = await caches.open(`${CACHE_NAME}-${CACHE_VERSION}`);
+        const cache = await caches.open(ACTIVE_CACHE);
         const cached = await cache.match(request);
 
         if (cached) {
@@ -203,7 +240,7 @@ async function networkFirst(request) {
         }
 
         // Retornar página offline
-        const offlinePagePath = BASE_PATH === '/' ? '/index.html' : BASE_PATH + 'index.html';
+        const offlinePagePath = withBase('index.html');
         const offlinePage = await cache.match(offlinePagePath);
         return offlinePage || new Response('Offline', {
             status: 503
@@ -372,7 +409,7 @@ self.addEventListener('message', (event) => {
  */
 async function checkForUpdate() {
     try {
-        const manifestPath = BASE_PATH === '/' ? '/manifest.json' : BASE_PATH + 'manifest.json';
+        const manifestPath = withBase('manifest.json');
         const response = await fetch(manifestPath, {
             cache: 'no-store'
         });

@@ -1,106 +1,48 @@
-```markdown
+﻿```markdown
 <!-- agent-update:start:architecture-notes -->
 # Architecture Notes
 
-The system is a frontend web application developed iteratively across sprints, utilizing Vite as the build tool for a modern JavaScript/TypeScript stack. The design emphasizes modular development in `src/`, with separate sprint directories (`sprint2/`, `sprint3/`) for feature isolation during agile cycles. This structure supports rapid prototyping and testing with Playwright, while maintaining a lightweight deployment suitable for static hosting.
+Gerenciador Pedro é uma SPA estática empacotada com Vite e hospedada em GitHub Pages. Todo o processamento acontece no navegador; não há backend dedicado. Como o domínio público vive em um subdiretório (`https://<user>.github.io/<repo>/`), o `BASE_URL` passou a ser um contrato central, encapsulado em `src/utils/base-path.js` e persistido em storage para que `public/404.html` consiga redirecionar rotas profundas antes da inicialização.
 
 ## System Architecture Overview
-The application follows a monolithic frontend architecture, structured as a single-page application (SPA) bundled by Vite. Requests are handled client-side: the `index.html` entry point loads assets from `public/`, initializes the app from `src/`, and renders dynamically via JavaScript modules. Control flows from the entry point through imported components and utilities in `src/`, with no server-side rendering in the current setup. Deployment is static-file based, deployable to CDNs or simple web servers, with sprints representing phased enhancements (e.g., `sprint2/` for initial features, `sprint3/` for refinements).
+1. **Boot (`index.html`)**  injeta todas as folhas de estilo de `src/styles/` e carrega `src/main.js`.
+2. **Base path util (`src/utils/base-path.js`)**  calcula/persiste o `BASE_URL`, monta URLs de assets (`buildAssetPath`), normaliza paths para o router (`stripBasePath`), gera caminhos completos para `history.pushState` (`buildHistoryPath`) e restaura rotas guardadas pelo fallback 404 (`consumePendingRoute`).
+3. **Router (`src/router.js`)**  usa o util para remover/adicionar o prefixo correto e faz lazy-load das views (`src/views/*.js`).
+4. **Service Worker (`public/service-worker.js`)**  deriva `BASE_PATH` a partir de `self.registration.scope`, intercepta apenas requests dentro desse escopo, monta `STATIC_ASSETS` com `withBase()` e oferece fallback offline para `index.html`. O registro ocorre apenas fora de dev, salvo quando `window.__ENABLE_SW_IN_DEV__` é definido (Playwright força isso).
+5. **Persistência e sync**  `store.js` mantém estado; `firebase-cache.js` usa IndexedDB; `firebase-service.js`/`firebase-sync.js` só ativam Firestore quando todas as `VITE_FIREBASE_*` existem. Ausência de secrets degrada para modo offline sem quebrar a UI.
+6. **Deploy**  `.github/workflows/deploy.yml` roda `npm ci`, builda com `BASE_URL=/${{ github.event.repository.name }}/`, configura Pages e publica via `actions/deploy-pages`. O workflow injeta todas as `VITE_FIREBASE_*` a partir dos Secrets do repositório.
+7. **Fallback 404**  `public/404.html` grava a rota original em `sessionStorage` (`GERENCIADOR_PEDRO_PENDING_ROUTE`), tenta descobrir o base path via storage e redireciona para o `index.html`. Durante o boot, `consumePendingRoute()` restaura a URL com `history.replaceState`.
 
-## Core System Components
-- `Doc/` — Documentation files (approximately 5 files), including guides and notes.
-- `SAVES/` — Backup or saved artifacts (approximately 2 files).
-- `public/` — Static assets like images and favicons (approximately 2 files).
-- `sprint2/` — Feature implementations from sprint 2 (approximately 6 files), focusing on core UI and logic.
-- `sprint3/` — Feature implementations from sprint 3 (approximately 6 files), including enhancements and integrations.
-- `src/` — Main application source code, including components, utilities, and app entry (approximately 52 files).
-  - `src/config/firebase.js` — Firebase configuration and initialization
-  - `src/services/firebase-service.js` — Firestore CRUD operations and real-time listeners
-  - `src/services/firebase-sync.js` — Offline queue and synchronization management
-  - `src/services/firebase-cache.js` — IndexedDB cache for local persistence
-  - `src/services/firebase-sync-notifications.js` — Toast notifications for sync status
-  - `src/store.js` — Global state management with Firebase integration
-- `tests/` — Test suites, likely using Playwright or similar (approximately 8 files).
-
-Configuration and tooling:
-- `package.json` and `package-lock.json` — NPM dependencies and scripts.
-- `vite.config.js` — Vite build configuration for development and production.
-- `playwright.config.js` — End-to-end testing setup.
-- `index.html` — Application entry point.
-- `README.md` — Project root documentation.
-
-## Internal System Boundaries
-The system is primarily frontend-focused, with bounded contexts in `src/` divided by sprints (e.g., `sprint2/` owns initial data handling, `sprint3/` extends with UI interactions). Data persistence is managed through a hybrid approach:
-
-- **Local Storage (Primary)**: IndexedDB via `firebase-cache.js` for offline-first operation
-- **Remote Sync (Optional)**: Firebase Firestore for multi-device synchronization when configured
-- **State Management**: Global store (`store.js`) with Observer pattern for reactive updates
-
-The system implements an **offline-first architecture** where all operations work locally, with optional Firebase synchronization when credentials are configured. Sprint folders enforce feature isolation to prevent cross-contamination during development. Shared contracts are minimal, relying on ES modules for imports.
-
-## System Integration Points
-Inbound interfaces are limited to browser events and URL routing handled by the Vite dev server or router in `src/`. Outbound, the app likely orchestrates API calls from `src/` modules (e.g., fetch to external endpoints for data like `dados.json` references). No explicit event buses or webhooks; coordination with other services would occur via HTTP requests triggered from components in sprint directories.
-
-## External Service Dependencies
-- **Firebase Firestore** (Optional): Cloud database for multi-device synchronization
-  - Configuration via environment variables (`VITE_FIREBASE_*`)
-  - Graceful degradation: System works fully offline if Firebase is not configured
-  - Real-time synchronization with conflict resolution (last-write-wins)
-  - Offline queue: Operations are queued when offline and synced when online
-  - See [Firebase Architecture](./firebase-architecture.md) for detailed documentation
-- **NPM ecosystem**: Vite, Firebase SDK, and other build-time dependencies
-- **Browser APIs**: DOM, Fetch, IndexedDB, Service Workers for PWA functionality
-
-Failure handling: 
-- Firebase operations: Retry logic with 3 attempts, offline queue persistence
-- Client-side error boundaries in `src/` catch fetch failures
-- Graceful degradation ensures system works without Firebase
-
-## Key Decisions & Trade-offs
-- **Vite over Webpack**: Chosen for faster HMR and simpler config, reducing build times in iterative sprints (trade-off: less mature plugin ecosystem but sufficient for this scale).
-- **Sprint-based Folder Structure**: Enables parallel development and easy rollback (e.g., `sprint2/` as baseline), but introduces temporary duplication; planned consolidation post-sprint3.
-- **Playwright for Testing**: Selected for cross-browser E2E tests over Jest for UI fidelity (trade-off: heavier setup but better for SPA validation).
-- **Firebase Firestore for Sync**: Chosen for real-time synchronization and offline support (trade-off: requires configuration but provides multi-device sync; system works without it).
-- **Offline-First Architecture**: All operations work locally with IndexedDB; Firebase sync is optional enhancement (trade-off: requires more complex state management but ensures reliability).
-- **Last-Write-Wins Conflict Resolution**: Simple strategy for MVP (trade-off: may lose some concurrent edits but acceptable for single-user scenarios).
-
-Supporting docs: See sprint folders for commit histories; Firebase architecture documented in [firebase-architecture.md](./firebase-architecture.md).
-
-## Diagrams
 ```mermaid
 graph TD
-    A[Browser Request] --> B[index.html]
-    B --> C[Vite Bundler]
-    C --> D[src/ Components & Logic]
-    D --> E[sprint2/ Features]
-    D --> F[sprint3/ Enhancements]
-    D --> K[Store.js - Global State]
-    K --> L[IndexedDB Cache]
-    K --> M[Firebase Service]
-    M --> N[Firebase Firestore]
-    M --> O[Firebase Sync Queue]
-    O --> N
-    H[tests/] --> I[Playwright Runner]
-    I --> D
-    J[public/ Assets] --> B
+    A[index.html] --> B[src/main.js]
+    B --> C[rememberBasePath()]
+    C --> D[local/session storage]
+    B --> E[Router + BasePath util]
+    E --> F[Views/Componentes]
+    F --> G[Store.js]
+    G --> H[IndexedDB]
+    G --> I[Firebase opcional]
+    B --> J[registerServiceWorker]
+    J --> K[public/service-worker.js]
 ```
 
-This diagram illustrates the high-level flow from entry to rendering, with testing oversight and data persistence layers (local IndexedDB and optional Firebase sync).
+## External Service Dependencies
+- **GitHub Pages**  requer `public/404.html` e publicação via `actions/deploy-pages`.
+- **Firebase Firestore (opcional)**  habilitado apenas quando todas as `VITE_FIREBASE_*` estão definidas. As chaves são públicas por natureza (SDK web), mas ficam em GitHub Secrets para não poluir o repo.
+- **Browser APIs**  History API, Storage, IndexedDB, Service Workers e Background Sync compõem toda a infraestrutura.
+
+## Key Decisions & Trade-offs
+- **BASE_URL único**  evita strings hard-coded (antigo `/demandas-pro/`) e mantém router/SW/manifest em sincronia. Exige que qualquer novo módulo que gere URLs dependa do util.
+- **Offline-first**  garante uso sem rede, mas obriga versionamento criterioso do cache (`CACHE_VERSION`) e comunicação sobre `skipWaiting`.
+- **Testes forçando SW**  Playwright roda `npm run dev`; para validar SW, as specs definem `window.__ENABLE_SW_IN_DEV__`. É preciso limpar registros ao final para não interferir em outros navegadores.
+- **Secrets públicos porém centralizados**  as chaves Firebase são expostas no bundle, mas só existem durante o build graças aos Secrets, evitando vazamento no Git.
 
 ## Risks & Constraints
-- **Performance**: Large `src/` (52 files) may impact bundle size; monitor with Vite analytics. Constraint: Client-side only, so offline support limited without service workers.
-- **Scaling**: Suitable for low-traffic SPAs; high concurrency requires CDN optimization. Assumption: No real-time features, but sprint3 may introduce async ops.
-- **Technical Debt**: Sprint folders risk fragmentation; plan migration to unified `src/` post-sprint3. Active risks: Undocumented external API dependencies could introduce breakage.
-- **Testing Coverage**: 8 test files suggest focus on E2E; unit tests may be sparse.
-
-## Top Directories Snapshot
-- `Doc/` — approximately 5 files (documentation).
-- `SAVES/` — approximately 2 files (backups).
-- `public/` — approximately 2 files (static assets).
-- `sprint2/` — approximately 6 files (sprint 2 features).
-- `sprint3/` — approximately 6 files (sprint 3 features).
-- `src/` — approximately 52 files (core source).
-- `tests/` — approximately 8 files (test suites).
+- **BASE_URL incorreto**  builds sem `BASE_URL=/<repo>/` quebram SW, manifest e refresh de rotas. O workflow já aplica automaticamente, mas execuções manuais precisam seguir o mesmo padrão.
+- **Cache antigo**  usuários só recebem mudanças após nova ativação do SW. Incrementar `CACHE_VERSION` e orientar o uso de `registration.update()` é obrigatório.
+- **Ícones ausentes**  `manifest.json` referencia `icon-192.png`/`icon-512.png`, ainda não gerados. Enquanto isso, navegadores registram 404 (seguido como follow-up).
+- **Diretórios históricos**  `sprint2/` e `sprint3/` permanecem por referência, mas não entram no bundle atual. Novas features devem viver em `src/` + `tests/`.
 
 <!-- agent-readonly:guidance -->
 ## AI Update Checklist

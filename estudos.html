@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +34,7 @@
         }
     </style>
 </head>
+
 <body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
     <div class="flex h-screen">
         <aside class="w-64 flex-shrink-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-r border-gray-200 dark:border-gray-800 flex flex-col">
@@ -113,7 +115,8 @@
                         <input class="w-full md:w-64 pl-10 pr-4 py-2 bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition" placeholder="Procurar tópicos..." type="text" />
                     </div>
                     <div class="flex items-center space-x-4">
-                        <select class="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent transition">
+                        <label for="status-filter" class="sr-only">Filtrar por status</label>
+                        <select id="status-filter" name="status-filter" title="Filtrar por status" class="bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg py-2 pl-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent transition">
                             <option>Todos</option>
                             <option>Ativos</option>
                             <option>Concluídos</option>
@@ -218,4 +221,5 @@
         </main>
     </div>
 </body>
+
 </html>

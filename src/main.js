@@ -20,6 +20,11 @@ import {
 import {
     SyncStatusWidget
 } from './components/SyncStatusWidget.js';
+import {
+    buildAssetPath,
+    consumePendingRoute,
+    rememberBasePath
+} from './utils/base-path.js';
 import './utils/firebase-diagnostics.js'; // Diagnóstico automático em desenvolvimento
 import './utils/firebase-check-env.js'; // Verificação de variáveis de ambiente
 
@@ -31,8 +36,9 @@ function registerServiceWorker() {
         import.meta.env.DEV ||
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1';
+    const enableDevSW = typeof window !== 'undefined' && window.__ENABLE_SW_IN_DEV__ === true;
 
-    if (isDev) {
+    if (isDev && !enableDevSW) {
         // Desregistrar Service Workers existentes em dev
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -43,16 +49,23 @@ function registerServiceWorker() {
                 });
             });
         }
+        updateSwDiagnostics('disabled-dev');
         return;
     }
 
     if ('serviceWorker' in navigator) {
-        // O Vite já resolve o caminho correto com base no BASE_URL
-        // Usar caminho absoluto que o Vite irá processar
-        const swPath = '/service-worker.js';
-        navigator.serviceWorker.register(swPath)
+        const swPath = buildAssetPath('service-worker.js');
+        const swScope = buildAssetPath('');
+        const registerOptions = {};
+
+        if (swScope && swScope.startsWith('/')) {
+            registerOptions.scope = swScope;
+        }
+
+        navigator.serviceWorker.register(swPath, registerOptions)
             .then((registration) => {
                 console.log('[SW] Registered:', registration.scope);
+                updateSwDiagnostics('registered', registration.scope);
 
                 // Verificar atualizações periodicamente
                 setInterval(() => {
@@ -79,7 +92,29 @@ function registerServiceWorker() {
             })
             .catch((error) => {
                 console.error('[SW] Registration failed:', error);
+                updateSwDiagnostics('error', error?.message || 'unknown-error');
             });
+    }
+}
+
+function updateSwDiagnostics(status, detail) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    window.__SW_STATUS__ = status;
+    if (detail) {
+        window.__SW_SCOPE__ = detail;
+    }
+
+    try {
+        window.dispatchEvent(new CustomEvent('sw:status', {
+            detail: {
+                status,
+                scope: detail
+            }
+        }));
+    } catch (error) {
+        // Ignorar navegadores que não suportam CustomEvent no contexto atual
     }
 }
 
@@ -140,6 +175,9 @@ function setupOfflineIndicator() {
 
 // Inicializar aplicação
 function init() {
+    rememberBasePath();
+    restorePendingRoute();
+
     // Registrar service worker
     registerServiceWorker();
 
@@ -182,6 +220,19 @@ function init() {
 
     // Inicializar breadcrumb
     updateBreadcrumb(router.getCurrentPath());
+}
+
+function restorePendingRoute() {
+    const pendingPath = consumePendingRoute();
+    if (!pendingPath) {
+        return;
+    }
+
+    try {
+        window.history.replaceState({}, '', pendingPath);
+    } catch (error) {
+        console.warn('[SPA] Falha ao restaurar rota após fallback 404:', error);
+    }
 }
 
 function createHeader(sidebar) {

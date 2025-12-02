@@ -1,42 +1,26 @@
-```markdown
+﻿```markdown
 <!-- agent-update:start:testing-strategy -->
 # Testing Strategy
 
-Document how quality is maintained across the codebase.
-
 ## Test Types
-- **Unit**: Tests individual functions, components, or modules in isolation using Jest as the primary framework. Test files follow naming conventions like `*.test.js`, `*.test.ts`, or `*.spec.js` and are colocated alongside source files in the `src/` directory or within a `tests/` subdirectory. Mocking is handled via Jest's built-in features for dependencies like APIs or utilities.
-- **Integration**: Focuses on testing interactions between multiple units, such as API endpoints with database mocks or component renders with state management (e.g., Redux or Context API). Utilizes Jest combined with libraries like `msw` for API mocking or `@testing-library/react` for component integration. Scenarios include validating data flow from services to UI components; no additional tooling beyond npm dependencies is required.
-- **End-to-end**: Covers user workflows across the full application stack, such as form submissions or navigation flows. Currently, no dedicated E2E harness like Cypress is implemented; basic E2E validation occurs via integration tests simulating browser-like behavior with Jest and jsdom. Future sprints (e.g., sprint3) may introduce Playwright for full browser automation in the `public/` and `src/` environments.
+- **E2E (Playwright)**  suite oficial localizada em `tests/e2e/`. Cobre navegação SPA, quick add, persistência e (agora) refresh em rotas profundas/registro do SW.
+- **Smoke manual**  após cada build destinado ao Pages, valide `/`, `/projetos`, `/estudos` e `/rotina` em um browser real para confirmar que o `BASE_URL` foi aplicado corretamente. Verifique também os logs do console para garantir que o SW registrou sem 404.
+- (Não existem testes unitários/integration formais no momento; o foco está em E2E + smoke manual.)
 
 ## Running Tests
-- Execute all tests with `npm run test`.
-- Use watch mode locally: `npm run test -- --watch`.
-- Add coverage runs before releases: `npm run test -- --coverage`.
+- Rodar todos os E2E: `npm run test:e2e`  o Playwright levanta `npm run dev` automaticamente.
+- Navegador específico: `npx playwright test tests/e2e/navigation.spec.js --project=chromium`.
+- UI mode: `npm run test:e2e:ui`.
+- Para validar o Service Worker durante os testes, injete `window.__ENABLE_SW_IN_DEV__ = true` via `page.addInitScript` (ver exemplos em `tests/e2e/navigation.spec.js`).
 
 ## Quality Gates
-- Minimum code coverage threshold: 80% for both statements and branches, enforced via Jest's `--coverage` reporter and checked in CI pipelines.
-- Linting requirements: ESLint must pass with the project's configuration (e.g., Airbnb style guide or custom rules in `.eslintrc.js`), including no unused variables or prop-type errors. Prettier formatting is required before merging, run via `npm run lint` and `npm run format`.
-- Additional checks: TypeScript compilation (`tsc --noEmit`) and security scans (if integrated via `npm audit`) must succeed in pull requests.
+- Build (`npm run build`) e Playwright devem passar localmente antes de abrir PR.
+- Quando mexer em deploy, anexe logs/prints do workflow `Deploy to GitHub Pages` à descrição do PR.
+- Se o SW ou o router sofrerem alterações, execute smoke manual acessando `BASE_URL=/demandas/` (build local) e confirme refresh direto em rotas (`/demandas/projetos`, etc.).
 
 ## Troubleshooting
-- **Flaky suites**: No known flaky tests currently; monitor integration tests involving async API mocks, which may fail intermittently due to timing issues in jsdom. If encountered, rerun with `--runInBand` to isolate.
-- **Long-running tests**: Unit tests for sprint2/sprint3 features (e.g., in `src/` components) may take >5s if mocking large datasets; optimize by reducing mock complexity.
-- **Environment quirks**: Ensure Node.js >=16 and consistent dependency versions across local and CI (e.g., GitHub Actions). Common issues include missing `jsdom` polyfills for DOM APIs—resolved by updating Jest config in `package.json`. Link to open issues: [Issue #45 - Intermittent test failures in sprint3](https://github.com/repo/issues/45) for ongoing tracking.
-
-<!-- agent-readonly:guidance -->
-## AI Update Checklist
-1. Review test scripts and CI workflows to confirm command accuracy.
-2. Update Quality Gates with current thresholds (coverage %, lint rules, required checks).
-3. Document new test categories or suites introduced since the last update.
-4. Record known flaky areas and link to open issues for visibility.
-5. Confirm troubleshooting steps remain valid with current tooling.
-
-<!-- agent-readonly:sources -->
-## Acceptable Sources
-- `package.json` scripts and testing configuration files.
-- CI job definitions (GitHub Actions, CircleCI, etc.).
-- Issue tracker items labelled “testing” or “flaky” with maintainer confirmation.
-
+- **Playwright não inicializa**  rode `npx playwright install` e verifique se a porta 3000 está livre.
+- **Testes envolvendo SW travam**  confirme que `window.__ENABLE_SW_IN_DEV__` está sendo definido antes da navegação (`page.addInitScript`). Limpe registros anteriores com `await navigator.serviceWorker.getRegistrations()` nos testes.
+- **Falhas somente em GitHub Pages**  confira se `BASE_URL` foi exportado corretamente (logs do workflow) e se `public/404.html` está presente no artefato publicado.
 <!-- agent-update:end -->
 ```

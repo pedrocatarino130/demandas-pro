@@ -70,6 +70,32 @@ test.describe('Navegação entre Módulos', () => {
       test.skip(true, 'Navegação não encontrada');
     }
   });
+
+  test('deve manter rota ao recarregar /projetos', async ({ page }) => {
+    await page.goto('/projetos');
+    await expect(page.locator('#app')).toBeVisible();
+    await page.reload();
+    await expect(page).toHaveURL(/projetos/);
+  });
+
+  test('registra service worker quando habilitado em dev', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Validado apenas em Chromium para evitar flakiness');
+
+    await page.addInitScript(() => {
+      window.__ENABLE_SW_IN_DEV__ = true;
+    });
+
+    await page.goto('/');
+    await page.waitForFunction(() => window.__SW_STATUS__ === 'registered', null, { timeout: 5000 });
+
+    const scope = await page.evaluate(() => window.__SW_SCOPE__);
+    expect(scope).toBeTruthy();
+
+    await page.evaluate(async () => {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    });
+  });
 });
 
 

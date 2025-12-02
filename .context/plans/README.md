@@ -11,7 +11,7 @@ This directory is the run queue for AI agents and maintainers coordinating work 
 6. **Return here** and pick the next plan in the queue. Always leave the README and plan files consistent with the work performed.
 
 ## Plan Queue (process in order)
-1. [Injetar Rotina Em Tarefa Na Aba Home](./injetar-rotina-em-tarefa-na-aba-home.md)
+1. [New Plan](./new-plan.md)
 
 ## How To Create Or Update Plans
 - Run "ai-context plan <name>" to scaffold a new plan template.

@@ -1,58 +1,24 @@
-```markdown
+﻿```markdown
 <!-- agent-update:start:security -->
 # Security & Compliance Notes
 
-Capture the policies and guardrails that keep this project secure and compliant.
+## Authentication & Data Access
+- A aplicação é single-user e client-side; não há autenticação própria. Quando as credenciais Firebase (`VITE_FIREBASE_*`) são fornecidas, o acesso ao Firestore depende das regras configuradas no projeto Firebase do maintainer.
+- O Service Worker opera apenas dentro do `BASE_URL` detectado e não intercepta requests externos. Toda troca de dados ocorre diretamente entre o navegador e o Firebase (quando habilitado).
 
-## Authentication & Authorization
-This project uses JSON Web Tokens (JWT) for stateless authentication. Users authenticate via a login endpoint that issues a JWT signed with a secret key. The token includes user ID and roles (e.g., 'user', 'admin') as claims.
+## Secrets & Environment
+- **Locais**: `.env.local` (gitignored) deve conter as chaves `VITE_FIREBASE_*`. Nunca faça commit desse arquivo.
+- **CI/CD**: `.github/workflows/deploy.yml` lê os mesmos nomes de secret (ex.: `VITE_FIREBASE_API_KEY`). Configure-os em *Settings  Secrets and variables  Actions*. O workflow falhará caso algum valor esteja ausente.
+- As chaves Firebase são públicas por natureza (SDK web), mas centralizá-las em Secrets evita vazamento acidental no histórico ou em logs locais.
 
-- **Identity Provider**: Custom backend implementation with email/password authentication. No external IdP like OAuth or SAML is currently integrated.
-- **Token Format**: JWT (HS256 algorithm) with expiration set to 24 hours for access tokens; refresh tokens are not yet implemented.
-- **Session Strategy**: Stateless; tokens are validated on each request via middleware in the Express.js server (src/server.js).
-- **Role/Permission Model**: Simple RBAC with roles checked in route guards. Permissions are defined in src/auth/roles.js, e.g., admins can access /admin endpoints, users can view public data.
+## PWA & Browser Security
+- O Service Worker é registrado apenas em ambientes não-dev, a menos que `window.__ENABLE_SW_IN_DEV__` seja definido (usado nos testes). Isso evita cache inesperado durante o desenvolvimento.
+- `public/404.html` persiste a rota em `sessionStorage` para restaurar o path após o redirect do GitHub Pages. Nenhum dado sensível é gravado; apenas caminhos (ex.: `/demandas/projetos`).
+- IndexedDB (`firebase-cache.js`) guarda o estado da aplicação para uso offline. Não há criptografia; assuma que a máquina do usuário é confiável.
 
-Future sprints (sprint4+) plan to integrate OAuth2 with Google as an IdP, building on sprint3 prototypes in sprint3/auth/.
-
-## Secrets & Sensitive Data
-Secrets are managed to prevent exposure in version control or production environments.
-
-- **Storage Locations**: Development uses .env files (gitignore'd) for local secrets. Production secrets are stored in AWS Systems Manager Parameter Store (SSM) under paths like /app/{env}/secret/{key}. No HashiCorp Vault is in use.
-- **Rotation Cadence**: Secrets like JWT signing keys and database credentials are rotated quarterly or after incidents. Automated rotation scripts are planned for sprint4, with manual processes documented in sprint3/secrets-rotation.md.
-- **Encryption Practices**: All sensitive data in transit uses HTTPS (enforced via nginx in public/nginx.conf). At rest, database fields (e.g., user passwords) are hashed with bcrypt (src/models/user.js). Environment variables are not logged.
-- **Data Classifications**: Public data (e.g., static assets in public/) is non-sensitive. User data in src/database/ is classified as confidential; PII (e.g., emails) requires consent for processing.
-
-Scan results from tests/security/ show no hardcoded secrets in the scanned 106 files.
-
-## Compliance & Policies
-This project adheres to basic open-source security practices, with no formal certifications yet.
-
-- **Applicable Standards**: GDPR for EU users (data minimization in src/api/user.js); internal policies from the contributing guidelines in docs/README.md. SOC2 or HIPAA not applicable as this is not a production healthcare/finance app.
-- **Evidence Requirements**: Dependency scans via npm audit (run in CI, see package.json scripts) are required for PRs. Vulnerability reports are tracked in sprint2/issues/ and sprint3/issues/. Annual code reviews cover auth and data handling.
-
-Compliance updates: Post-sprint3 audit (commit hash: def456, see sprint3/security-audit.md) identified and fixed potential CSRF in src/api/ endpoints and updated XSS protections in public/index.html.
-
-## Incident Response
-Incidents are handled through a lightweight process suitable for an early-stage project.
-
-- **On-Call Contacts**: Primary: project lead (email: lead@example.com). Secondary: contributors via GitHub notifications.
-- **Escalation Steps**: 1) Detect via error monitoring (console logs or future Sentry integration). 2) Triage in GitHub discussions or dedicated issue labeled 'security'. 3) Escalate to security team if breach confirmed (notify within 24h per GDPR).
-- **Tooling**: Detection uses basic logging in src/utils/logger.js. Triage with git bisect for code issues. Post-incident: Root cause analysis in a new ADR (see sprint3/ADRs/), with lessons in tests/security/.
-
-Runbooks are in docs/runbooks/incident.md; update contacts after each sprint.
-
-<!-- agent-readonly:guidance -->
-## AI Update Checklist
-1. Confirm security libraries and infrastructure match current deployments.
-2. Update secrets management details when storage or naming changes.
-3. Reflect new compliance obligations or audit findings.
-4. Ensure incident response procedures include current contacts and tooling.
-
-<!-- agent-readonly:sources -->
-## Acceptable Sources
-- Security architecture docs, runbooks, policy handbooks.
-- IAM/authorization configuration (code or infrastructure).
-- Compliance updates from security or legal teams.
-
+## Compliance / Operational Notes
+- Não há requisitos de GDPR/HIPAA específicos, mas evite inserir dados pessoais reais durante o desenvolvimento.
+- Rodar `npm audit` periodicamente é recomendado (não automatizado ainda). Atualize dependências de Vite/Firebase quando o audit sinalizar CVEs relevantes.
+- Registre incidentes relacionados a deploy/PWA no README ou em issues para manter histórico de falhas.
 <!-- agent-update:end -->
 ```
