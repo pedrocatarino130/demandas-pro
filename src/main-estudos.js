@@ -14,8 +14,30 @@ import './components/estudos/NotasRapidas.js';
 import './utils/estudos-store.js';
 import './views/EstudosView.js';
 
+// Evita erros "play() request was interrupted by pause()"
+function suppressMediaAbortError() {
+    if (typeof window === 'undefined' || !window.HTMLMediaElement) return;
+    const originalPlay = window.HTMLMediaElement.prototype.play;
+    if (!originalPlay || originalPlay.__wrapped) return;
+
+    window.HTMLMediaElement.prototype.play = function (...args) {
+        const playPromise = originalPlay.apply(this, args);
+        if (playPromise && typeof playPromise.catch === 'function') {
+            return playPromise.catch((error) => {
+                if (error && error.name === 'AbortError') {
+                    return;
+                }
+                throw error;
+            });
+        }
+        return playPromise;
+    };
+    window.HTMLMediaElement.prototype.play.__wrapped = true;
+}
+
 // Inicializar quando DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
+    suppressMediaAbortError();
     // Verificar se já existe container de estudos
     let container = document.getElementById('estudosView');
 

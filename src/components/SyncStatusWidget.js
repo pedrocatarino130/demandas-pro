@@ -4,6 +4,7 @@
  */
 
 import { firebaseSync } from '../services/firebase-sync.js';
+import { toast } from './Toast.js';
 
 export class SyncStatusWidget {
     constructor() {
@@ -13,9 +14,14 @@ export class SyncStatusWidget {
             hasPending: false,
             pendingCount: 0,
             syncing: false,
+            circuitOpen: false,
+            lastError: null
         };
         this.unsubscribe = null;
         this.lastSyncedAt = null;
+        this.lastBatchTotal = 0;
+        this.lastSyncedCount = 0;
+        this.lastFailedCount = 0;
         this.manualSyncInFlight = false;
         this.elements = {};
     }
@@ -38,6 +44,10 @@ export class SyncStatusWidget {
                     <span class="sync-status-count badge badge-warning">0</span>
                 </div>
                 <div class="sync-status-message">Sincronizado</div>
+                <div class="sync-status-progress">
+                    <span class="sync-status-progress-text">Fila: --</span>
+                    <span class="sync-status-alert"></span>
+                </div>
                 <div class="sync-status-footer">
                     <span class="sync-status-meta">Última atualização: --</span>
                     <button class="sync-status-action btn btn-outline">Sincronizar agora</button>
@@ -53,14 +63,25 @@ export class SyncStatusWidget {
             count: this.container.querySelector('.sync-status-count'),
             message: this.container.querySelector('.sync-status-message'),
             meta: this.container.querySelector('.sync-status-meta'),
+            progressText: this.container.querySelector('.sync-status-progress-text'),
+            alert: this.container.querySelector('.sync-status-alert'),
             action: this.container.querySelector('.sync-status-action'),
         };
 
         this.elements.action.addEventListener('click', () => this.handleManualSync());
 
         this.unsubscribe = firebaseSync.subscribe((status) => {
+            if (status.batchTotal) {
+                this.lastBatchTotal = status.batchTotal;
+            }
             if (status.synced && status.synced > 0) {
-                this.lastSyncedAt = new Date();
+                this.lastSyncedCount = status.synced;
+                this.lastSyncedAt = status.lastSyncAt ? new Date(status.lastSyncAt) : new Date();
+            } else if (status.lastSyncAt) {
+                this.lastSyncedAt = new Date(status.lastSyncAt);
+            }
+            if (status.failed) {
+                this.lastFailedCount = status.failed;
             }
             this.status = status;
             this.updateUI();
@@ -73,18 +94,44 @@ export class SyncStatusWidget {
     updateUI() {
         if (!this.container) return;
 
-        const { isOnline, pendingCount, syncing } = this.status;
-        const showWidget = !isOnline || pendingCount > 0 || syncing || this.manualSyncInFlight;
+        const { isOnline, pendingCount, syncing, circuitOpen, lastError } = this.status;
+        const showWidget = !isOnline || pendingCount > 0 || syncing || this.manualSyncInFlight || circuitOpen || lastError;
         this.container.classList.toggle('hidden', !showWidget);
 
         // Atualizar dot e subtítulo
         this.elements.dot.classList.toggle('offline', !isOnline);
         this.elements.dot.classList.toggle('syncing', syncing || this.manualSyncInFlight);
+        this.elements.dot.classList.toggle('error', Boolean(circuitOpen || lastError));
         this.elements.subtitle.textContent = this.getSubtitleText();
 
         // Contador de pendências
         this.elements.count.textContent = pendingCount.toString();
         this.elements.count.classList.toggle('visible', pendingCount > 0);
+
+        // Progresso / alertas
+        if (this.elements.progressText) {
+            const progressParts = [`Fila: ${pendingCount}`];
+            if (this.status.currentBatchSize) {
+                progressParts.push(`Lote: ${this.status.currentBatchSize}`);
+            }
+            if (this.lastSyncedCount && this.lastBatchTotal) {
+                progressParts.push(`Último: ${this.lastSyncedCount}/${this.lastBatchTotal}`);
+            }
+            this.elements.progressText.textContent = progressParts.join(' • ');
+        }
+
+        if (this.elements.alert) {
+            const largeQueue = pendingCount >= 50 || this.status.queueWarning;
+            let alertMessage = '';
+            if (circuitOpen) {
+                alertMessage = 'Pausado após falhas';
+            } else if (largeQueue) {
+                alertMessage = 'Fila alta, sincronizando em lotes';
+            } else if (this.lastFailedCount > 0) {
+                alertMessage = `${this.lastFailedCount} falhas recentes`;
+            }
+            this.elements.alert.textContent = alertMessage;
+        }
 
         // Mensagem principal
         this.elements.message.textContent = this.getStatusMessage();
@@ -92,6 +139,8 @@ export class SyncStatusWidget {
         // Última atualização
         if (this.lastSyncedAt) {
             this.elements.meta.textContent = `Última atualização: ${this.formatTime(this.lastSyncedAt)}`;
+        } else if (circuitOpen) {
+            this.elements.meta.textContent = 'Sincronização pausada para proteger a fila';
         } else if (!isOnline) {
             this.elements.meta.textContent = 'Sem conexão';
         } else {
@@ -99,12 +148,18 @@ export class SyncStatusWidget {
         }
 
         // Botão de ação
-        const actionDisabled = !isOnline || pendingCount === 0 || syncing || this.manualSyncInFlight;
+        const actionDisabled = !isOnline || pendingCount === 0 || syncing || this.manualSyncInFlight || circuitOpen;
         this.elements.action.disabled = actionDisabled;
         this.elements.action.textContent = this.manualSyncInFlight ? 'Sincronizando...' : 'Sincronizar agora';
     }
 
     getSubtitleText() {
+        if (this.status.circuitOpen) {
+            return 'Pausa automática (falhas)';
+        }
+        if (this.status.lastError) {
+            return 'Erro na sincronização';
+        }
         if (!this.status.isOnline) {
             return 'Modo offline';
         }
@@ -118,7 +173,17 @@ export class SyncStatusWidget {
     }
 
     getStatusMessage() {
-        const { isOnline, pendingCount, syncing } = this.status;
+        const { isOnline, pendingCount, syncing, circuitOpen } = this.status;
+
+        if (circuitOpen) {
+            const remaining = this.status.circuitOpenUntil ? Math.max(0, this.status.circuitOpenUntil - Date.now()) : 0;
+            const seconds = Math.ceil(remaining / 1000);
+            return `Pausado após falhas. Retentando em ~${seconds || 5}s`;
+        }
+
+        if (this.status.lastError) {
+            return 'Erro na última tentativa. Aguardando novo retry...';
+        }
 
         if (!isOnline) {
             return pendingCount > 0
@@ -137,6 +202,9 @@ export class SyncStatusWidget {
         }
 
         if (pendingCount > 0) {
+            if (pendingCount >= 50) {
+                return `${pendingCount} alterações em fila. Processando em lotes...`;
+            }
             return `${pendingCount} alterações serão sincronizadas assim que possível.`;
         }
 
@@ -144,7 +212,15 @@ export class SyncStatusWidget {
     }
 
     async handleManualSync() {
+        if (this.status.circuitOpen) {
+            toast.info('Sincronização pausada após falhas recentes. Aguardando retomar...', { duration: 2500 });
+            return;
+        }
+
         if (!this.status.isOnline || this.manualSyncInFlight) {
+            if (!this.status.isOnline) {
+                toast.info('Sem conexão. Tentaremos assim que a rede voltar.', { duration: 2000 });
+            }
             return;
         }
 

@@ -7,6 +7,12 @@ export class ConfirmModal {
     constructor() {
         this.modal = null;
         this.resolve = null;
+        this.isProcessing = false;
+        this.labels = {
+            confirm: 'OK',
+            cancel: 'Cancelar',
+            loading: 'Processando...'
+        };
         this.init();
     }
 
@@ -47,6 +53,22 @@ export class ConfirmModal {
         }
     }
 
+    _setLoading(isLoading) {
+        this.isProcessing = isLoading;
+        const confirmBtn = this.modal.querySelector('#confirm-ok');
+        const cancelBtn = this.modal.querySelector('#confirm-cancel');
+
+        if (confirmBtn) {
+            confirmBtn.disabled = isLoading;
+            confirmBtn.textContent = isLoading ? this.labels.loading : this.labels.confirm;
+            confirmBtn.classList.toggle('loading', isLoading);
+        }
+
+        if (cancelBtn) {
+            cancelBtn.disabled = isLoading;
+        }
+    }
+
     setupEventListeners() {
         // Remover listeners anteriores se existirem
         if (this._clickHandler) {
@@ -57,6 +79,7 @@ export class ConfirmModal {
         }
 
         const close = (result) => {
+            this._setLoading(false);
             this.modal.style.display = 'none';
             if (this.resolve) {
                 this.resolve(result);
@@ -66,6 +89,12 @@ export class ConfirmModal {
 
         // Usar event delegation no modal
         this._clickHandler = (e) => {
+            if (this.isProcessing) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
             const target = e.target;
 
             // Clicar no overlay
@@ -86,7 +115,8 @@ export class ConfirmModal {
             if (target.id === 'confirm-ok' || target.closest('#confirm-ok')) {
                 e.preventDefault();
                 e.stopPropagation();
-                close(true);
+                this._setLoading(true);
+                setTimeout(() => close(true), 50);
                 return;
             }
         };
@@ -96,6 +126,9 @@ export class ConfirmModal {
         // Fechar com ESC
         this._keyDownHandler = (e) => {
             if (e.key === 'Escape' && this.modal.style.display !== 'none') {
+                if (this.isProcessing) {
+                    return;
+                }
                 close(false);
             }
         };
@@ -105,12 +138,30 @@ export class ConfirmModal {
     /**
      * Mostra o modal de confirmação
      * @param {string} message - Mensagem a ser exibida
+     * @param {Object} options - Opções do modal
+     * @param {string} options.confirmLabel - Texto do botão de confirmar
+     * @param {string} options.cancelLabel - Texto do botão de cancelar
+     * @param {string} options.loadingLabel - Texto exibido enquanto processando
      * @returns {Promise<boolean>} - Promise que resolve com true se confirmado, false se cancelado
      */
-    show(message) {
+    show(message, options = {}) {
+        this.labels.confirm = options.confirmLabel || 'OK';
+        this.labels.cancel = options.cancelLabel || 'Cancelar';
+        this.labels.loading = options.loadingLabel || 'Processando...';
+        this._setLoading(false);
+
         const messageEl = this.modal.querySelector('#confirm-message');
         if (messageEl) {
             messageEl.textContent = message;
+        }
+
+        const confirmBtn = this.modal.querySelector('#confirm-ok');
+        const cancelBtn = this.modal.querySelector('#confirm-cancel');
+        if (confirmBtn) {
+            confirmBtn.textContent = this.labels.confirm;
+        }
+        if (cancelBtn) {
+            cancelBtn.textContent = this.labels.cancel;
         }
 
         this.modal.style.display = 'flex';
@@ -127,8 +178,9 @@ export const confirmModal = new ConfirmModal();
 /**
  * Função helper para usar como substituição do confirm()
  * @param {string} message - Mensagem de confirmação
+ * @param {Object} options - Opções do modal
  * @returns {Promise<boolean>}
  */
-export async function confirmAction(message) {
-    return await confirmModal.show(message);
+export async function confirmAction(message, options = {}) {
+    return await confirmModal.show(message, options);
 }

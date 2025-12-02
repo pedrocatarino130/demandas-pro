@@ -16,6 +16,8 @@ import {
     initializeFirebase
 } from './config/firebase.js';
 
+const STORE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 dias
+
 class Store {
     constructor() {
         this.state = this.getDefaultState();
@@ -136,6 +138,20 @@ class Store {
     }
 
     /**
+     * Persistência local com compressão e TTL
+     */
+    async _persistState(state) {
+        try {
+            await firebaseCache.setWithOptions('store-state', state, {
+                compress: true,
+                ttlMs: STORE_CACHE_TTL_MS
+            });
+        } catch (error) {
+            console.error('Erro ao salvar estado no cache:', error);
+        }
+    }
+
+    /**
      * Carrega estado do cache local
      */
     async loadFromCache() {
@@ -234,7 +250,7 @@ class Store {
                 });
                 
                 // Salvar no cache local também
-                await firebaseCache.set('store-state', this.state);
+                await this._persistState(this.state);
                 
                 console.log('✅ Dados carregados do Firestore');
                 this.notify();
@@ -260,7 +276,7 @@ class Store {
                 };
 
                 // Sempre salvar no cache local primeiro (offline-first)
-                await firebaseCache.set('store-state', stateToSave);
+                await this._persistState(stateToSave);
 
                 // Se Firebase está disponível, sincronizar também
                 if (firebaseService.isAvailable()) {
@@ -382,7 +398,7 @@ class Store {
                         if (Array.isArray(docs)) {
                             this.state[stateKey] = docs;
                             // Salvar no cache local também
-                            firebaseCache.set('store-state', this.state).catch(err => {
+                            this._persistState(this.state).catch(err => {
                                 console.error('Erro ao salvar no cache após atualização remota:', err);
                             });
                             this.notify();
@@ -401,7 +417,7 @@ class Store {
                 (doc) => {
                     if (doc) {
                         this.state.configEstudos = doc;
-                        firebaseCache.set('store-state', this.state).catch(err => {
+                        this._persistState(this.state).catch(err => {
                             console.error('Erro ao salvar config no cache:', err);
                         });
                         this.notify();
@@ -554,7 +570,7 @@ class Store {
                     ...this.state,
                     ultimaAtualizacao: new Date().toISOString(),
                 };
-                await firebaseCache.set('store-state', stateToSave);
+                await this._persistState(stateToSave);
             }
 
             // Marcar como migrado
@@ -722,7 +738,7 @@ class Store {
                 ...this.state,
                 ultimaAtualizacao: new Date().toISOString(),
             };
-            await firebaseCache.set('store-state', stateToSave);
+            await this._persistState(stateToSave);
         } catch (error) {
             console.error('Erro ao forçar salvamento:', error);
         }

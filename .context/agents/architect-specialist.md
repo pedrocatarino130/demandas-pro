@@ -2,7 +2,7 @@
 # Architect Specialist Agent Playbook
 
 ## Mission
-Describe how the architect specialist agent supports the team and when to engage it.
+The Architect Specialist agent supports the development team by designing robust, scalable system architectures that align with project goals. Engage this agent during initial project planning, major feature additions, refactoring efforts, or when addressing performance and maintainability concerns to ensure long-term technical health.
 
 ## Responsibilities
 - Design overall system architecture and patterns
@@ -25,12 +25,15 @@ Describe how the architect specialist agent supports the team and when to engage
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, API references, and architectural notes separate from the main docs folder.
 - `SAVES/` — Stores temporary save files, backups, or draft artifacts from development or sprint planning sessions to preserve work in progress.
+- `docs/` — Contains project documentation, including guides, API references, and architectural notes.
+- `playwright-report/` — Houses generated reports and artifacts from Playwright end-to-end testing runs, providing visual and detailed test execution insights.
 - `public/` — Holds static assets that are publicly accessible, such as frontend resources (e.g., HTML, CSS, images, and client-side JavaScript) served directly by the web server.
+- `scripts/` — Contains automation scripts, build utilities, deployment tools, or other helper scripts to streamline development workflows.
 - `sprint2/` — Organizes code, deliverables, and outputs specific to Sprint 2, including features developed during that iteration of the agile cycle.
 - `sprint3/` — Organizes code, deliverables, and outputs specific to Sprint 3, building on previous sprints with new features and refinements.
 - `src/` — The primary source code directory, containing the core application logic, components, modules, and backend/frontend implementation files.
+- `test-results/` — Stores output files, logs, and results from executed tests, including coverage reports and failure details.
 - `tests/` — Dedicated to all testing files, including unit tests, integration tests, and end-to-end tests to ensure code quality and reliability.
 
 ## Documentation Touchpoints
@@ -80,6 +83,16 @@ Document frequent problems this agent encounters and their solutions:
 2. Run `npm update` to get compatible versions
 3. Test locally before committing
 **Prevention:** Keep dependencies updated regularly, use lockfiles
+
+### Issue: Scalability Bottlenecks in Sprint Deliverables
+**Symptoms:** System performance degrades under load during sprint demos or testing
+**Root Cause:** Early architectural choices not accounting for growth, such as monolithic components in src/ or sprint2/sprint3
+**Resolution:**
+1. Analyze data flow in [docs/data-flow.md](../docs/data-flow.md)
+2. Refactor to modular patterns, e.g., separate concerns in src/
+3. Update architecture diagrams in [docs/architecture.md](../docs/architecture.md)
+4. Run load tests via scripts/ and review test-results/
+**Prevention:** Conduct scalability reviews at sprint planning; reference [docs/architecture.md](../docs/architecture.md) for patterns
 
 ## Hand-off Notes
 Summarize outcomes, remaining risks, and suggested follow-up actions after the agent completes its work.

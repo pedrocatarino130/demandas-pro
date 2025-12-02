@@ -4,12 +4,16 @@
  */
 
 import { NeonButton } from './NeonButton.js';
+import { toast } from './Toast.js';
+import { validateForm, combineDateAndTime, isTooFarInPast } from '../utils/form-validation.js';
 
 export class TaskEditModal {
     constructor() {
         this.modal = null;
         this.currentTask = null;
         this.onSave = null;
+        this.isSaving = false;
+        this.saveButton = null;
         this.init();
     }
 
@@ -34,6 +38,79 @@ export class TaskEditModal {
                 this.setupRedesignButtons();
             }
         }, 100);
+    }
+
+    _getElements() {
+        return {
+            tituloInput: this.modal.querySelector('#task-edit-titulo'),
+            descricaoInput: this.modal.querySelector('#task-edit-descricao'),
+            prioridadeSelect: this.modal.querySelector('#task-edit-prioridade'),
+            responsavelInput: this.modal.querySelector('#task-edit-responsavel'),
+            tagsInput: this.modal.querySelector('#task-edit-tags'),
+            statusSelect: this.modal.querySelector('#task-edit-status'),
+            dateInput: this.modal.querySelector('#task-edit-date'),
+            timeInput: this.modal.querySelector('#task-edit-time'),
+            timeRow: this.modal.querySelector('#task-edit-time-row'),
+            errorBox: this.modal.querySelector('#task-edit-error')
+        };
+    }
+
+    _clearErrors() {
+        const { errorBox } = this._getElements();
+        if (errorBox) {
+            errorBox.textContent = '';
+            errorBox.classList.remove('visible');
+        }
+        this.modal.querySelectorAll('.input-error').forEach((el) => el.classList.remove('input-error'));
+    }
+
+    _showErrors(errors) {
+        const { errorBox } = this._getElements();
+        const messages = Object.values(errors || {});
+        if (errorBox && messages.length) {
+            errorBox.textContent = messages[0];
+            errorBox.classList.add('visible');
+        }
+        Object.keys(errors || {}).forEach((key) => {
+            const field = this.modal.querySelector(`#task-edit-${key}`);
+            if (field) {
+                field.classList.add('input-error');
+            }
+        });
+    }
+
+    _getSaveControls() {
+        const classicSave = this.modal.querySelector('#task-edit-save');
+        const redesignSave = this.saveButton?._element || null;
+        const saveButtonEl = this.modal.classList.contains('task-edit-modal-redesign') ? redesignSave : classicSave;
+        return { classicSave, redesignSave, saveButtonEl };
+    }
+
+    _setSavingState(isSaving) {
+        this.isSaving = isSaving;
+        const { classicSave, redesignSave, saveButtonEl } = this._getSaveControls();
+        const cancelBtn = this.modal.querySelector('#task-edit-cancel');
+
+        if (cancelBtn) {
+            cancelBtn.disabled = isSaving;
+        }
+
+        if (this.saveButton && redesignSave) {
+            this.saveButton.setDisabled(isSaving);
+            this.saveButton.setText(isSaving ? 'Salvando...' : 'Salvar');
+        }
+
+        if (classicSave) {
+            classicSave.disabled = isSaving;
+            classicSave.textContent = isSaving ? 'Salvando...' : 'Salvar';
+            classicSave.classList.toggle('loading', isSaving);
+        }
+
+        if (saveButtonEl) {
+            saveButtonEl.classList.toggle('is-loading', isSaving);
+        }
+
+        this.modal.classList.toggle('is-saving', isSaving);
     }
 
     render() {
@@ -69,6 +146,7 @@ export class TaskEditModal {
                         </button>
                     </div>
                     <div class="task-edit-modal-redesign-body">
+                        <div class="task-edit-modal-error" id="task-edit-error" aria-live="assertive" style="color: #e74c3c; min-height: 18px; font-size: 0.9rem; margin-bottom: 8px;"></div>
                         <div class="task-edit-modal-redesign-form-group">
                             <label for="task-edit-titulo" class="task-edit-modal-redesign-label">Título *</label>
                             <input 
@@ -161,14 +239,16 @@ export class TaskEditModal {
     }
     
     renderClassic() {
+        this.saveButton = null;
         this.modal.innerHTML = `
             <div class="task-edit-modal-overlay"></div>
             <div class="task-edit-modal-content">
-                <div class="task-edit-modal-header">
-                    <h2 id="task-edit-modal-title">Editar Tarefa</h2>
-                    <button class="task-edit-modal-close" aria-label="Fechar">✕</button>
-                </div>
-                <div class="task-edit-modal-body">
+                    <div class="task-edit-modal-header">
+                        <h2 id="task-edit-modal-title">Editar Tarefa</h2>
+                        <button class="task-edit-modal-close" aria-label="Fechar">✕</button>
+                    </div>
+                    <div class="task-edit-modal-body">
+                    <div class="task-edit-modal-error" id="task-edit-error" aria-live="assertive" style="color: #e74c3c; min-height: 18px; font-size: 0.9rem; margin-bottom: 8px;"></div>
                     <div class="form-group">
                         <label for="task-edit-titulo">Título *</label>
                         <input 
@@ -264,6 +344,7 @@ export class TaskEditModal {
             onClick: () => this.handleSave()
         });
         
+        this.saveButton = saveButton;
         saveContainer.appendChild(saveButton.render());
     }
 
@@ -316,6 +397,8 @@ export class TaskEditModal {
 
         this.currentTask = task;
         this.onSave = onSave;
+        this._clearErrors();
+        this._setSavingState(false);
         
         // Detectar se deve usar redesign e re-renderizar se necessário
         const useRedesign = !!document.querySelector('.home-view-redesign');
@@ -407,35 +490,74 @@ export class TaskEditModal {
     }
 
     close() {
+        this._setSavingState(false);
+        this._clearErrors();
         this.modal.style.display = 'none';
         this.currentTask = null;
         this.onSave = null;
     }
 
-    handleSave() {
-        const tituloInput = this.modal.querySelector('#task-edit-titulo');
-        const descricaoInput = this.modal.querySelector('#task-edit-descricao');
-        const prioridadeSelect = this.modal.querySelector('#task-edit-prioridade');
-        const responsavelInput = this.modal.querySelector('#task-edit-responsavel');
-        const tagsInput = this.modal.querySelector('#task-edit-tags');
-        const statusSelect = this.modal.querySelector('#task-edit-status');
-        const dateInput = this.modal.querySelector('#task-edit-date');
-        const timeInput = this.modal.querySelector('#task-edit-time');
-        const timeRow = this.modal.querySelector('#task-edit-time-row');
+    async handleSave() {
+        if (this.isSaving) return;
 
-        const titulo = tituloInput?.value.trim();
-        if (!titulo) {
-            alert('O título é obrigatório');
-            tituloInput?.focus();
+        const {
+            tituloInput,
+            descricaoInput,
+            prioridadeSelect,
+            responsavelInput,
+            tagsInput,
+            statusSelect,
+            dateInput,
+            timeInput,
+            timeRow
+        } = this._getElements();
+
+        const fields = {
+            titulo: tituloInput?.value || '',
+            date: dateInput?.value,
+            time: timeInput?.value
+        };
+
+        const validation = validateForm(fields, {
+            titulo: { required: true, message: 'O título é obrigatório' },
+            date: {
+                validator: (value, allFields) => {
+                    if (!value) return true;
+                    const combined = combineDateAndTime(value, allFields.time);
+                    if (!combined) return 'Data inválida';
+                    if (isTooFarInPast(combined, 30)) {
+                        return 'Data não pode estar mais de 30 dias no passado';
+                    }
+                    return true;
+                }
+            },
+            time: {
+                validator: (value, allFields) => {
+                    if (value && !allFields.date) {
+                        return 'Informe uma data para a hora selecionada';
+                    }
+                    return true;
+                }
+            }
+        });
+
+        if (!validation.isValid) {
+            this._showErrors(validation.errors);
+            const firstInvalidKey = Object.keys(validation.errors)[0];
+            const firstField = this.modal.querySelector(`#task-edit-${firstInvalidKey}`) || tituloInput;
+            firstField?.focus();
+            toast.error(Object.values(validation.errors)[0] || 'Preencha os campos obrigatórios', { duration: 2500 });
             return;
         }
 
+        this._clearErrors();
+
         const updates = {
-            titulo: titulo,
+            titulo: fields.titulo.trim(),
             descricao: descricaoInput?.value.trim() || '',
             prioridade: prioridadeSelect?.value || 'media',
             responsavel: responsavelInput?.value.trim() || '',
-            tags: tagsInput?.value
+            tags: (tagsInput?.value || '')
                 .split(',')
                 .map(tag => tag.trim())
                 .filter(tag => tag.length > 0),
@@ -444,18 +566,15 @@ export class TaskEditModal {
         };
 
         // Processar data/hora se os campos estiverem visíveis
-        if (timeRow && timeRow.style.display !== 'none') {
-            if (dateInput?.value && timeInput?.value) {
-                const dateStr = dateInput.value;
-                const timeStr = timeInput.value;
-                const dateTime = new Date(`${dateStr}T${timeStr}`);
-                updates.time = dateTime.toISOString();
-            } else if (this.currentTask.time !== undefined) {
-                // Se tinha time mas foi removido, definir como null
-                updates.time = null;
-            }
+        const shouldHandleTime = timeRow && timeRow.style.display !== 'none';
+        const combinedDate = combineDateAndTime(dateInput?.value, shouldHandleTime ? timeInput?.value : null);
+
+        if (combinedDate) {
+            updates.time = combinedDate.toISOString();
+        } else if (this.currentTask.time !== undefined && fields.date) {
+            const dateOnly = combineDateAndTime(fields.date, null);
+            updates.time = dateOnly ? dateOnly.toISOString() : this.currentTask.time;
         } else if (this.currentTask.time !== undefined) {
-            // Se tinha time mas os campos não estão visíveis, manter o time original
             updates.time = this.currentTask.time;
         }
 
@@ -469,13 +588,25 @@ export class TaskEditModal {
         }
 
         if (this.onSave) {
-            this.onSave(this.currentTask, updates);
+            try {
+                this._setSavingState(true);
+                const result = this.onSave(this.currentTask, updates);
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
+                toast.success('Tarefa salva com sucesso!', { duration: 2000 });
+                this.close();
+            } catch (error) {
+                console.error('Erro ao salvar tarefa:', error);
+                toast.error('Não foi possível salvar a tarefa. Tente novamente.', { duration: 3000 });
+            } finally {
+                this._setSavingState(false);
+            }
+        } else {
+            this.close();
         }
-
-        this.close();
     }
 }
 
 // Singleton
 export const taskEditModal = new TaskEditModal();
-

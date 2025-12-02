@@ -28,6 +28,28 @@ import {
 import './utils/firebase-diagnostics.js'; // Diagnóstico automático em desenvolvimento
 import './utils/firebase-check-env.js'; // Verificação de variáveis de ambiente
 
+// Evita erros "play() request was interrupted by pause()"
+function suppressMediaAbortError() {
+    if (typeof window === 'undefined' || !window.HTMLMediaElement) return;
+    const originalPlay = window.HTMLMediaElement.prototype.play;
+    if (!originalPlay || originalPlay.__wrapped) return;
+
+    window.HTMLMediaElement.prototype.play = function (...args) {
+        const playPromise = originalPlay.apply(this, args);
+        if (playPromise && typeof playPromise.catch === 'function') {
+            return playPromise.catch((error) => {
+                if (error && error.name === 'AbortError') {
+                    // Ignorar AbortError causado por pausa imediata ou troca de rota
+                    return;
+                }
+                throw error;
+            });
+        }
+        return playPromise;
+    };
+    window.HTMLMediaElement.prototype.play.__wrapped = true;
+}
+
 // Service Worker
 function registerServiceWorker() {
     // Desabilitar Service Worker em desenvolvimento (Vite precisa processar arquivos diretamente)
@@ -175,6 +197,7 @@ function setupOfflineIndicator() {
 
 // Inicializar aplicação
 function init() {
+    suppressMediaAbortError();
     rememberBasePath();
     restorePendingRoute();
 

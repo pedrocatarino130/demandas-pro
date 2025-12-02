@@ -9,14 +9,26 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { buildAssetPath } from '../utils/base-path.js';
 
+// Configuração padrão (projeto pessoal, ok expor)
+const DEFAULT_FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyD2H2jclybwrMfZ4qPjJCNb3umlk7aM2M8',
+    authDomain: 'organizacao-pedro.firebaseapp.com',
+    projectId: 'organizacao-pedro',
+    storageBucket: 'organizacao-pedro.firebasestorage.app',
+    messagingSenderId: '311571803326',
+    appId: '1:311571803326:web:122f1dbd74fe763646c2ef',
+    measurementId: 'G-GG4SN3HWCK'
+};
+
 // Configuração do Firebase - primeiro tenta variáveis de ambiente, depois arquivo JSON
 let firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || DEFAULT_FIREBASE_CONFIG.apiKey,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || DEFAULT_FIREBASE_CONFIG.authDomain,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_CONFIG.projectId,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_CONFIG.storageBucket,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || DEFAULT_FIREBASE_CONFIG.appId,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || DEFAULT_FIREBASE_CONFIG.measurementId
 };
 
 // Flag para indicar se já tentou carregar do arquivo JSON
@@ -176,6 +188,7 @@ export { app, db, auth };
 
 // Exportar função de inicialização
 export { initializeFirebase };
+export { isFirebaseConfigured };
 
 // Exportar objeto padrão para compatibilidade
 export default {
