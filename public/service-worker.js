@@ -142,12 +142,19 @@ self.addEventListener('fetch', (event) => {
         url.pathname === '/client' ||
         url.pathname.includes('websocket') ||
         url.pathname.includes('hmr') ||
-        url.hostname === 'localhost' && url.pathname.includes('.css') && url.pathname.includes('/src/')) {
+        (url.hostname === 'localhost' && url.pathname.includes('.css') && url.pathname.includes('/src/'))) {
         // Não interceptar - deixar passar direto para o Vite processar
         return;
     }
 
-    // Estratégia Cache First para assets estáticos
+    // Para módulos ES6 e assets compilados, usar Network First para garantir atualizações
+    // Isso é importante para GitHub Pages onde os arquivos podem mudar
+    if (url.pathname.startsWith('/assets/') || url.pathname.includes('/assets/')) {
+        event.respondWith(networkFirst(request));
+        return;
+    }
+
+    // Estratégia Cache First para assets estáticos (ícones, imagens, etc)
     if (isStaticAsset(request.url)) {
         event.respondWith(cacheFirst(request));
         return;

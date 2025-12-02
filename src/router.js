@@ -128,12 +128,43 @@ class Router {
 
         try {
             // Lazy load do componente
-            const componentModule = await route.component();
+            let componentModule;
+            try {
+                componentModule = await route.component();
+            } catch (importError) {
+                console.error(`Erro ao importar módulo da rota ${path}:`, importError);
+                // Tentar recarregar a página se for erro de módulo não encontrado
+                if (importError.message && importError.message.includes('Failed to fetch')) {
+                    console.warn('Tentando recarregar devido a erro de fetch...');
+                    // Não recarregar automaticamente, apenas mostrar erro
+                    this.render(`
+                        <div style="padding: 2rem; text-align: center;">
+                            <h2>Erro ao carregar página</h2>
+                            <p>Não foi possível carregar a página ${path}.</p>
+                            <p style="color: #666; font-size: 0.9em;">Erro: ${importError.message}</p>
+                            <button onclick="window.location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer;">
+                                Recarregar página
+                            </button>
+                        </div>
+                    `);
+                    return;
+                }
+                throw importError;
+            }
+            
             const component = componentModule.default || componentModule;
+
+            if (!component) {
+                throw new Error(`Componente não encontrado na rota ${path}`);
+            }
 
             // Limpar view anterior
             if (this.currentView && this.currentView.destroy) {
-                this.currentView.destroy();
+                try {
+                    this.currentView.destroy();
+                } catch (destroyError) {
+                    console.warn('Erro ao destruir view anterior:', destroyError);
+                }
             }
 
             // Renderizar nova view
@@ -143,7 +174,11 @@ class Router {
                 if (result && typeof result.render === 'function') {
                     this.render(result.render());
                     if (result.mount) {
-                        viewInstance = result.mount();
+                        try {
+                            viewInstance = result.mount();
+                        } catch (mountError) {
+                            console.error(`Erro ao montar view ${path}:`, mountError);
+                        }
                     }
                 } else {
                     this.render(result);
@@ -151,7 +186,11 @@ class Router {
             } else if (component && typeof component.render === 'function') {
                 this.render(component.render());
                 if (component.mount) {
-                    viewInstance = component.mount();
+                    try {
+                        viewInstance = component.mount();
+                    } catch (mountError) {
+                        console.error(`Erro ao montar view ${path}:`, mountError);
+                    }
                 }
             } else {
                 this.render(component);
@@ -163,6 +202,17 @@ class Router {
             this.updateActiveLinks(path);
         } catch (error) {
             console.error(`Erro ao carregar rota ${path}:`, error);
+            // Renderizar mensagem de erro amigável
+            this.render(`
+                <div style="padding: 2rem; text-align: center;">
+                    <h2>Erro ao carregar página</h2>
+                    <p>Ocorreu um erro ao carregar a página ${path}.</p>
+                    <p style="color: #666; font-size: 0.9em;">${error.message || 'Erro desconhecido'}</p>
+                    <button onclick="window.location.href='${buildHistoryPath('/')}'" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer;">
+                        Voltar para Home
+                    </button>
+                </div>
+            `);
         }
     }
 

@@ -25,10 +25,23 @@ function manifestPlugin() {
                     manifest.scope = normalizedBase + '/';
                     
                     if (manifest.icons) {
-                        manifest.icons = manifest.icons.map(icon => ({
-                            ...icon,
-                            src: normalizedBase + icon.src
-                        }));
+                        manifest.icons = manifest.icons.map(icon => {
+                            // Normalizar o caminho do ícone
+                            let iconPath = icon.src;
+                            // Se começar com /, remover para evitar duplicação
+                            if (iconPath.startsWith('/')) {
+                                iconPath = iconPath.slice(1);
+                            }
+                            // Se começar com ./, remover
+                            if (iconPath.startsWith('./')) {
+                                iconPath = iconPath.slice(2);
+                            }
+                            // Adicionar o base path
+                            return {
+                                ...icon,
+                                src: normalizedBase + '/' + iconPath
+                            };
+                        });
                     }
                 } else {
                     // Para caminho relativo, usar ./
@@ -36,10 +49,22 @@ function manifestPlugin() {
                     manifest.scope = './';
                     
                     if (manifest.icons) {
-                        manifest.icons = manifest.icons.map(icon => ({
-                            ...icon,
-                            src: '.' + icon.src
-                        }));
+                        manifest.icons = manifest.icons.map(icon => {
+                            // Normalizar o caminho do ícone para relativo
+                            let iconPath = icon.src;
+                            // Se começar com /, converter para ./
+                            if (iconPath.startsWith('/')) {
+                                iconPath = './' + iconPath.slice(1);
+                            }
+                            // Se já começar com ./, manter
+                            if (!iconPath.startsWith('./')) {
+                                iconPath = './' + iconPath;
+                            }
+                            return {
+                                ...icon,
+                                src: iconPath
+                            };
+                        });
                     }
                 }
                 

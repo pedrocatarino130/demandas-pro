@@ -309,3 +309,4 @@ Para cada componente migrado, verificar:
 - **Comunicar progresso**: Atualizar migration log regularmente
 
 
+
