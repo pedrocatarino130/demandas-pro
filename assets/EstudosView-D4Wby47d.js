@@ -1,4 +1,4 @@
-import{_ as c}from"./index-m6Z5b8eQ.js";import"./idb-Dob3nYDb.js";class l{constructor(t,o){this.container=t,this.store=o,this.quickAdd=null,this.kanban=null,this.modal=null,this.pomodoro=null,this.notas=null,this.revisaoEspacada=null,this.currentTopico=null,this._init()}async _init(){await this._loadComponents(),this.revisaoEspacada=new RevisaoEspacada,this.store.setRevisaoEspacada(this.revisaoEspacada),this._createStructure(),this._initQuickAdd(),this._initKanban(),this._setupEventListeners(),this.store.subscribe(()=>{this._updateView()}),this._updateView()}async _loadComponents(){}_createStructure(){this.container.innerHTML=`
+import{_ as c}from"./index-Ac05Oo_z.js";import"./idb-Dob3nYDb.js";class l{constructor(t,o){this.container=t,this.store=o,this.quickAdd=null,this.kanban=null,this.modal=null,this.pomodoro=null,this.notas=null,this.revisaoEspacada=null,this.currentTopico=null,this._init()}async _init(){await this._loadComponents(),this.revisaoEspacada=new RevisaoEspacada,this.store.setRevisaoEspacada(this.revisaoEspacada),this._createStructure(),this._initQuickAdd(),this._initKanban(),this._setupEventListeners(),this.store.subscribe(()=>{this._updateView()}),this._updateView()}async _loadComponents(){}_createStructure(){this.container.innerHTML=`
             <div class="estudos-view">
                 <div class="estudos-header">
                     <h1>📚 Estudos</h1>
@@ -76,4 +76,4 @@ import{_ as c}from"./index-m6Z5b8eQ.js";import"./idb-Dob3nYDb.js";class l{constr
             z-index: 10000;
             animation: slideIn 0.3s ease;
         `,document.body.appendChild(o),setTimeout(()=>{o.style.animation="slideOut 0.3s ease",setTimeout(()=>{o.parentNode&&o.parentNode.removeChild(o)},300)},3e3)}destroy(){this.quickAdd&&this.quickAdd.destroy(),this.kanban,this.pomodoro&&this.pomodoro.destroy(),this.notas&&this.notas.destroy(),this.container.innerHTML=""}}typeof module<"u"&&module.exports&&(module.exports=l);export{l as EstudosView,l as default};
-//# sourceMappingURL=EstudosView-DoS02uoW.js.map
+//# sourceMappingURL=EstudosView-D4Wby47d.js.map
