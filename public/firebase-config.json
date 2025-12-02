@@ -1,9 +1,8 @@
 {
-  "apiKey": "",
-  "authDomain": "",
-  "projectId": "",
-  "storageBucket": "",
-  "messagingSenderId": "",
-  "appId": ""
+  "apiKey": "AIzaSyD2H2jclybwrMfZ4qPjJCNb3umlk7aM2M8",
+  "authDomain": "organizacao-pedro.firebaseapp.com",
+  "projectId": "organizacao-pedro",
+  "storageBucket": "organizacao-pedro.firebasestorage.app",
+  "messagingSenderId": "311571803326",
+  "appId": "1:311571803326:web:122f1dbd74fe763646c2ef"
 }
-
