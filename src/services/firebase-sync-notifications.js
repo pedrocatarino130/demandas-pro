@@ -12,6 +12,7 @@ class FirebaseSyncNotifications {
         this.notificationDebounce = null;
         this.DEBOUNCE_DELAY = 2000; // 2 segundos para agrupar notificações
         this.isSubscribed = false;
+        this.lastLargeQueueAlert = 0;
     }
 
     /**
@@ -50,6 +51,10 @@ class FirebaseSyncNotifications {
         // Mostrar notificação quando sincronização completa
         if (status.synced && status.synced > 0) {
             this._notifySyncComplete(status.synced);
+        }
+
+        if (status.pendingCount && status.pendingCount >= 50) {
+            this._notifyLargeQueue(status.pendingCount);
         }
 
         // Mostrar notificação quando ficar online e houver pendências
@@ -125,6 +130,22 @@ class FirebaseSyncNotifications {
         toast.info(message, {
             duration: 3000
         });
+    }
+
+    _notifyLargeQueue(count) {
+        const now = Date.now();
+        if (now - this.lastLargeQueueAlert < 10000) return;
+        this.lastLargeQueueAlert = now;
+
+        const message = count === 1
+            ? 'Fila alta: 1 operação pendente. Processando em lotes.'
+            : `Fila alta: ${count} operações pendentes. Processando em lotes.`;
+
+        if (typeof toast.warning === 'function') {
+            toast.warning(message, { duration: 2500 });
+        } else {
+            toast.info(message, { duration: 2500 });
+        }
     }
 }
 

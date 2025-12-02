@@ -2,18 +2,26 @@
 # Test Writer Agent Playbook
 
 ## Mission
-Describe how the test writer agent supports the team and when to engage it.
+The Test Writer Agent supports the development team by authoring, maintaining, and optimizing tests to validate application functionality, prevent regressions, and uphold code quality standards. This agent ensures that every new feature, refactoring, or bug fix is accompanied by robust tests, contributing to a reliable CI/CD pipeline and reducing production incidents. Engage the Test Writer Agent during sprint planning for new implementations, after code changes in PRs, when addressing flaky tests, or to improve overall test coverage metrics. It is particularly useful in this repository for unit tests in `tests/`, integration tests involving `src/`, and end-to-end tests leveraging Playwright, as evidenced by the `playwright-report` and `test-results` directories.
 
 ## Responsibilities
-- Write comprehensive unit and integration tests
-- Ensure good test coverage across the codebase
-- Create test utilities and fixtures
-- Maintain and update existing tests
+- Write comprehensive unit and integration tests using frameworks like Jest or Vitest for components in `src/`
+- Author end-to-end (E2E) tests with Playwright to simulate user interactions across `public/` assets and application flows
+- Ensure good test coverage across the codebase, targeting critical paths in `sprint2/` and `sprint3/` deliverables
+- Create test utilities, fixtures, and mocks in `tests/` to support reusable testing patterns
+- Maintain and update existing tests, including refactoring for non-determinism and aligning with evolving architecture
+- Generate test reports and analyze `test-results/` outputs to identify coverage gaps or failures
+- Collaborate on test strategy by reviewing PRs and suggesting test enhancements for security, data flow, and integrations
 
 ## Best Practices
-- Write tests that are clear and maintainable
-- Test both happy path and edge cases
-- Use descriptive test names
+- Write tests that are clear, maintainable, and independent, following AAA (Arrange, Act, Assert) structure
+- Test both happy paths and edge cases, including error handling, network failures, and invalid inputs
+- Use descriptive test names that describe behavior, e.g., "should render login form with invalid credentials"
+- Prioritize mocking external dependencies (e.g., APIs in `data-flow.md`) to avoid flakiness
+- Leverage Playwright for E2E tests on real browser environments, capturing screenshots and videos in `playwright-report`
+- Run tests locally with `npm test` or `npx playwright test` before committing, and aim for fast execution times
+- Integrate tests with CI workflows from `scripts/` to automate coverage reporting and failure notifications
+- Refactor tests alongside code changes to keep them synchronized with `src/` updates
 
 ## Key Project Resources
 - Documentation index: [docs/README.md](../docs/README.md)
@@ -22,13 +30,16 @@ Describe how the test writer agent supports the team and when to engage it.
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture notes, and contributor resources.
 - `SAVES/` — Stores saved states, backups, or archived configurations from development sprints.
+- `docs/` — Contains project documentation, including guides, architecture notes, and contributor resources.
+- `playwright-report/` — Holds generated reports, traces, screenshots, and videos from Playwright E2E test runs.
 - `public/` — Holds static assets such as images, CSS, JavaScript files, and other publicly accessible resources for the frontend.
+- `scripts/` — Contains automation scripts, build utilities, deployment helpers, and testing setup commands.
 - `sprint2/` — Includes code, deliverables, and artifacts developed during Sprint 2 of the project.
 - `sprint3/` — Includes code, deliverables, and artifacts developed during Sprint 3 of the project.
 - `src/` — Main source code directory, containing core application logic, components, and modules.
-- `tests/` — Dedicated directory for all test files, including unit tests, integration tests, and test utilities.
+- `test-results/` — Stores outputs from various test executions, including logs, coverage reports, and failure artifacts.
+- `tests/` — Dedicated directory for all test files, including unit tests, integration tests, E2E tests, and test utilities.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index
@@ -89,8 +100,22 @@ Document frequent problems this agent encounters and their solutions:
 4. Refactor to eliminate race conditions with proper awaits
 **Prevention:** Prioritize mocking in integration tests and review async patterns during code reviews
 
+### Issue: Low Test Coverage in E2E Scenarios
+**Symptoms:** Playwright reports show uncovered user flows in `playwright-report/`
+**Root Cause:** Focus on unit tests neglecting browser-based interactions
+**Resolution:**
+1. Identify gaps via coverage tools like `npx playwright test --coverage`
+2. Add new E2E tests for key paths in `sprint3/` features
+3. Use page object models in `tests/` for maintainable selectors
+4. Integrate with CI scripts from `scripts/` for automated reporting
+**Prevention:** Include E2E test planning in sprint kickoffs and review coverage in PRs
+
 ## Hand-off Notes
-Summarize outcomes, remaining risks, and suggested follow-up actions after the agent completes its work.
+After completing test authoring or updates, summarize the following in PR descriptions or hand-off docs:
+- Tests added/updated: List files and coverage impact (e.g., +5% coverage from new E2E suite).
+- Remaining risks: Potential flakiness sources or untested edge cases (e.g., "Mobile viewport not fully covered").
+- Suggested follow-ups: Actions like "Run full suite in CI" or "Review mocks for API changes in data-flow.md".
+- Evidence: Link to commits (e.g., #123 for refactoring) and metrics (e.g., coverage report from `test-results/`).
 
 ## Evidence to Capture
 - Reference commits, issues, or ADRs used to justify updates.

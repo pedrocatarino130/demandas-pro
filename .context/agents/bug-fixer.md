@@ -22,12 +22,15 @@ The Bug Fixer Agent supports the development team by efficiently identifying, di
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, API references, and setup instructions.
+- `docs/` — Contains project documentation, including guides, API references, and setup instructions.
 - `SAVES/` — Stores saved snapshots, backups, or intermediate files from development sprints.
+- `playwright-report/` — Holds reports generated from Playwright end-to-end testing runs.
 - `public/` — Holds static assets such as images, fonts, and index.html for the web application.
+- `scripts/` — Contains utility scripts for tasks like building, linting, or deployment automation.
 - `sprint2/` — Contains code and features developed during Sprint 2 of the project.
 - `sprint3/` — Contains code and features developed during Sprint 3 of the project.
 - `src/` — The main source code directory, including components, utilities, and application logic.
+- `test-results/` — Stores outputs and results from automated test executions.
 - `tests/` — Directory for unit tests, integration tests, and other testing files.
 
 ## Documentation Touchpoints
@@ -63,13 +66,6 @@ Track effectiveness of this agent's contributions:
 ## Troubleshooting Common Issues
 Document frequent problems this agent encounters and their solutions:
 
-### Issue: [Common Problem]
-**Symptoms:** Describe what indicates this problem
-**Root Cause:** Why this happens
-**Resolution:** Step-by-step fix
-**Prevention:** How to avoid in the future
-
-**Example:**
 ### Issue: Build Failures Due to Outdated Dependencies
 **Symptoms:** Tests fail with module resolution errors
 **Root Cause:** Package versions incompatible with codebase
@@ -88,6 +84,16 @@ Document frequent problems this agent encounters and their solutions:
 3. Implement the fix, add error boundaries if applicable, and write a regression test
 4. Verify across browsers if UI-related
 **Prevention:** Adopt consistent error handling patterns, conduct code reviews for state logic, and run linting tools regularly
+
+### Issue: Failing Playwright End-to-End Tests
+**Symptoms:** Automated tests in playwright-report/ show failures related to UI interactions or page loads
+**Root Cause:** Changes in DOM structure, network delays, or environment inconsistencies between local and CI setups
+**Resolution:**
+1. Run `npx playwright test` locally to reproduce
+2. Inspect screenshots and traces in playwright-report/ for visual diffs
+3. Update selectors or add waits in test scripts if needed, then fix underlying component issues
+4. Rerun tests and commit changes with updated baselines if applicable
+**Prevention:** Use robust selectors (e.g., data-testid), run tests in CI early, and review test flakiness metrics regularly
 
 ## Hand-off Notes
 After completing a bug fix, summarize the following in the pull request or issue comments:

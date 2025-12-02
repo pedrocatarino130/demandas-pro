@@ -23,13 +23,16 @@ The Performance Optimizer Agent supports the development team by proactively ide
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture notes, and contributor resources.
+- `docs/` — Contains project documentation, including guides, architecture notes, and contributor resources.
 - `SAVES/` — Stores saved snapshots, backups, or intermediate project states from development sprints.
 - `public/` — Holds static assets like images, fonts, and the index.html file served by the web server.
+- `scripts/` — Includes utility scripts for build processes, data handling, or automation tasks relevant to performance monitoring and optimization.
 - `sprint2/` — Contains code, features, or deliverables developed during Sprint 2 of the project.
 - `sprint3/` — Contains code, features, or deliverables developed during Sprint 3 of the project.
 - `src/` — The main source code directory, including components, utilities, and application logic.
+- `test-results/` — Stores outputs from automated tests, including performance benchmarks and profiling reports.
 - `tests/` — Directory for unit, integration, and end-to-end tests.
+- `playwright-report/` — Contains reports from Playwright end-to-end tests, useful for identifying UI performance issues.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index
@@ -65,13 +68,6 @@ Track effectiveness of this agent's contributions:
 ## Troubleshooting Common Issues
 Document frequent problems this agent encounters and their solutions:
 
-### Issue: [Common Problem]
-**Symptoms:** Describe what indicates this problem
-**Root Cause:** Why this happens
-**Resolution:** Step-by-step fix
-**Prevention:** How to avoid in the future
-
-**Example:**
 ### Issue: Build Failures Due to Outdated Dependencies
 **Symptoms:** Tests fail with module resolution errors
 **Root Cause:** Package versions incompatible with codebase
@@ -90,6 +86,16 @@ Document frequent problems this agent encounters and their solutions:
 3. Refactor query logic in src/ to use efficient patterns, such as pagination or eager loading
 4. Implement caching (e.g., Redis) for repeated queries
 **Prevention:** Conduct regular query performance reviews during sprint planning and integrate query monitoring in the development workflow
+
+### Issue: Slow Frontend Rendering in Sprint Deliverables
+**Symptoms:** Delayed UI updates in sprint2/ or sprint3/ features, high bundle sizes affecting load times
+**Root Cause:** Unoptimized assets in public/, inefficient component re-renders, or large script bundles
+**Resolution:**
+1. Analyze bundle sizes using tools like webpack-bundle-analyzer
+2. Lazy-load components and optimize images in public/
+3. Implement memoization or virtualization for lists in src/
+4. Run Lighthouse audits on local dev server and review reports in playwright-report/
+**Prevention:** Integrate bundle analysis and Lighthouse CI checks into PR workflows, review asset optimization during sprint retrospectives
 
 ## Hand-off Notes
 After completing optimization tasks, the agent documents changes in an ADR (Architecture Decision Record) or performance log, includes before/after benchmarks in the PR, and recommends setting up monitoring alerts (e.g., via Sentry or New Relic) for potential regressions. Remaining risks include future feature additions that could reintroduce bottlenecks; suggest scheduling quarterly performance audits.

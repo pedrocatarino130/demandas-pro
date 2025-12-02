@@ -22,13 +22,16 @@ Describe how the documentation writer agent supports the team and when to engage
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation files, including guides, overviews, and API references.
+- `docs/` — Contains project documentation files, including guides, overviews, and API references.
 - `SAVES/` — Stores backup or archived files from previous development iterations or saves during debugging sessions.
 - `public/` — Holds static assets such as images, CSS, JavaScript files, and other publicly accessible resources for the web application.
+- `playwright-report/` — Generated reports from Playwright end-to-end tests, including screenshots, traces, and test artifacts.
+- `scripts/` — Utility scripts for build processes, deployment, data processing, or other automation tasks.
 - `sprint2/` — Includes source code, components, and deliverables developed during Sprint 2 of the project.
 - `sprint3/` — Contains source code, features, and updates implemented in Sprint 3, building on previous sprints.
 - `src/` — The core source code directory, housing application logic, components, modules, and business rules.
-- `tests/` — Directory for unit tests, integration tests, and end-to-end tests to ensure code reliability.
+- `test-results/` — Stores outputs and results from various test runs, such as Jest or other testing framework reports.
+- `tests/` — Directory for unit tests, integration tests, and end-to-end test files to ensure code reliability.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index
@@ -63,13 +66,6 @@ Track effectiveness of this agent's contributions:
 ## Troubleshooting Common Issues
 Document frequent problems this agent encounters and their solutions:
 
-### Issue: [Common Problem]
-**Symptoms:** Describe what indicates this problem
-**Root Cause:** Why this happens
-**Resolution:** Step-by-step fix
-**Prevention:** How to avoid in the future
-
-**Example:**
 ### Issue: Build Failures Due to Outdated Dependencies
 **Symptoms:** Tests fail with module resolution errors
 **Root Cause:** Package versions incompatible with codebase
@@ -85,7 +81,7 @@ Document frequent problems this agent encounters and their solutions:
 **Resolution:**
 1. Reference the contributor guide for Markdown standards
 2. Use tools like Prettier for MD files if configured
-3. Align with existing docs in Doc/ directory
+3. Align with existing docs in docs/ directory
 **Prevention:** Enforce style checks in CI pipeline and provide templates for new docs
 
 ## Hand-off Notes

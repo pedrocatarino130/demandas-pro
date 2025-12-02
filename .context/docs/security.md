@@ -1,4 +1,4 @@
-﻿```markdown
+```markdown
 <!-- agent-update:start:security -->
 # Security & Compliance Notes
 
@@ -8,7 +8,7 @@
 
 ## Secrets & Environment
 - **Locais**: `.env.local` (gitignored) deve conter as chaves `VITE_FIREBASE_*`. Nunca faça commit desse arquivo.
-- **CI/CD**: `.github/workflows/deploy.yml` lê os mesmos nomes de secret (ex.: `VITE_FIREBASE_API_KEY`). Configure-os em *Settings  Secrets and variables  Actions*. O workflow falhará caso algum valor esteja ausente.
+- **CI/CD**: `.github/workflows/deploy.yml` lê os mesmos nomes de secret (ex.: `VITE_FIREBASE_API_KEY`). Configure-os em *Settings > Secrets and variables > Actions*. O workflow falhará caso algum valor esteja ausente.
 - As chaves Firebase são públicas por natureza (SDK web), mas centralizá-las em Secrets evita vazamento acidental no histórico ou em logs locais.
 
 ## PWA & Browser Security

@@ -25,13 +25,16 @@ The frontend specialist agent supports the development team by focusing on the c
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture notes, and API references to support onboarding and maintenance.
+- `docs/` — Contains project documentation, including guides, architecture notes, and API references to support onboarding and maintenance.
 - `SAVES/` — Stores archived or temporary save files, potentially for user data persistence or debugging snapshots during development sprints.
 - `public/` — Holds static assets like images, fonts, and index.html that are served directly by the web server without processing.
+- `scripts/` — Includes automation scripts for building, testing, deploying, and other development tasks.
 - `sprint2/` — Includes code and assets developed during Sprint 2, focusing on core feature implementations and initial UI prototypes.
 - `sprint3/` — Contains deliverables from Sprint 3, such as enhanced features, integrations, and refined user interfaces.
 - `src/` — The primary source code directory, housing React components, styles, utilities, and application logic.
 - `tests/` — Dedicated to unit, integration, and end-to-end tests for frontend components, ensuring reliability and coverage.
+- `test-results/` — Stores outputs from automated tests, including coverage reports, logs, and performance metrics.
+- `playwright-report/` — Contains generated reports from Playwright end-to-end testing runs, used for debugging and CI/CD validation.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index
@@ -63,6 +66,7 @@ Track effectiveness of this agent's contributions:
 - Reduce average page load time to under 3 seconds, measured via Lighthouse audits.
 - Ensure all UI changes pass accessibility checks with a score of 90+ on WAVE or Axe tools.
 - Track trends over time to identify improvement areas, such as quarterly reviews of bundle sizes and bug reports.
+- Validate E2E flows with Playwright tests passing 100% in CI pipelines.
 
 ## Troubleshooting Common Issues
 Document frequent problems this agent encounters and their solutions:
@@ -103,6 +107,16 @@ Document frequent problems this agent encounters and their solutions:
 4. Add unit tests for state mutations
 **Prevention:** Follow consistent patterns documented in architecture notes and conduct peer reviews for state-heavy PRs
 
+### Issue: Playwright E2E Test Flakiness
+**Symptoms:** Tests pass locally but fail intermittently in CI with timing or selector errors
+**Root Cause:** Race conditions, network delays, or unstable locators in dynamic UI
+**Resolution:**
+1. Review playwright-report/ for failure traces and screenshots
+2. Add explicit waits (e.g., page.waitForSelector) and retry logic in tests
+3. Stabilize selectors using data-testid attributes over class names
+4. Run tests in headed mode locally for debugging
+**Prevention:** Use consistent test data setup, monitor CI logs regularly, and refactor flaky tests during sprint retrospectives
+
 ## Hand-off Notes
 Summarize outcomes, remaining risks, and suggested follow-up actions after the agent completes its work. For example: "Implemented responsive navbar; risk of edge-case overflows on older browsers—recommend cross-browser testing in next sprint. Follow-up: Update component docs in src/."
 
@@ -111,4 +125,5 @@ Summarize outcomes, remaining risks, and suggested follow-up actions after the a
 - Command output or logs that informed recommendations (e.g., npm audit results showing vulnerabilities).
 - Follow-up items for maintainers or future agent runs (e.g., "Human review needed for accessibility compliance in sprint4").
 - Performance metrics and benchmarks where applicable (e.g., Lighthouse score improved from 75 to 92 post-optimization).
+- Test reports from playwright-report/ or test-results/ (e.g., 98% coverage achieved in latest run).
 <!-- agent-update:end -->

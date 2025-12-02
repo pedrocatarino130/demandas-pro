@@ -13,7 +13,8 @@
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "test:e2e:headed": "playwright test --headed",
-        "generate-icons": "node scripts/generate-icons.js"
+        "generate-icons": "node scripts/generate-icons.js",
+        "seed:firestore": "cross-env NODE_OPTIONS=--experimental-fetch node scripts/seed-firestore.js"
     },
     "devDependencies": {
         "@playwright/test": "^1.40.0",

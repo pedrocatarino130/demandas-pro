@@ -1,26 +1,27 @@
-﻿```markdown
+```markdown
 <!-- agent-update:start:testing-strategy -->
 # Testing Strategy
 
 ## Test Types
-- **E2E (Playwright)**  suite oficial localizada em `tests/e2e/`. Cobre navegação SPA, quick add, persistência e (agora) refresh em rotas profundas/registro do SW.
-- **Smoke manual**  após cada build destinado ao Pages, valide `/`, `/projetos`, `/estudos` e `/rotina` em um browser real para confirmar que o `BASE_URL` foi aplicado corretamente. Verifique também os logs do console para garantir que o SW registrou sem 404.
-- (Não existem testes unitários/integration formais no momento; o foco está em E2E + smoke manual.)
+- **E2E (Playwright)**: Official suite located in `tests/e2e/`. Covers SPA navigation, quick add, persistence, and (now) refresh in deep routes/SW registration.
+- **Manual Smoke**: After each build intended for Pages, validate `/`, `/projetos`, `/estudos`, and `/rotina` in a real browser to confirm that the `BASE_URL` was applied correctly. Also check console logs to ensure the SW registered without 404 errors.
+- (There are no formal unit/integration tests at the moment; the focus remains on E2E + manual smoke. See [architecture-decisions.md](architecture-decisions.md#test-coverage) for plans to introduce unit tests in future sprints.)
 
 ## Running Tests
-- Rodar todos os E2E: `npm run test:e2e`  o Playwright levanta `npm run dev` automaticamente.
-- Navegador específico: `npx playwright test tests/e2e/navigation.spec.js --project=chromium`.
+- Run all E2E: `npm run test:e2e` (Playwright automatically starts `npm run dev`).
+- Specific browser: `npx playwright test tests/e2e/navigation.spec.js --project=chromium`.
 - UI mode: `npm run test:e2e:ui`.
-- Para validar o Service Worker durante os testes, injete `window.__ENABLE_SW_IN_DEV__ = true` via `page.addInitScript` (ver exemplos em `tests/e2e/navigation.spec.js`).
+- To validate the Service Worker during tests, inject `window.__ENABLE_SW_IN_DEV__ = true` via `page.addInitScript` (see examples in `tests/e2e/navigation.spec.js`).
 
 ## Quality Gates
-- Build (`npm run build`) e Playwright devem passar localmente antes de abrir PR.
-- Quando mexer em deploy, anexe logs/prints do workflow `Deploy to GitHub Pages` à descrição do PR.
-- Se o SW ou o router sofrerem alterações, execute smoke manual acessando `BASE_URL=/demandas/` (build local) e confirme refresh direto em rotas (`/demandas/projetos`, etc.).
+- Build (`npm run build`) and Playwright must pass locally before opening a PR.
+- When modifying deploy processes, attach logs/screenshots from the `Deploy to GitHub Pages` workflow to the PR description.
+- If the SW or router undergo changes, perform manual smoke tests accessing `BASE_URL=/demandas/` (local build) and confirm direct refresh in routes (`/demandas/projetos`, etc.).
+- Ensure no failures in `playwright-report` or `test-results` directories after local runs; these artifacts are generated for review.
 
 ## Troubleshooting
-- **Playwright não inicializa**  rode `npx playwright install` e verifique se a porta 3000 está livre.
-- **Testes envolvendo SW travam**  confirme que `window.__ENABLE_SW_IN_DEV__` está sendo definido antes da navegação (`page.addInitScript`). Limpe registros anteriores com `await navigator.serviceWorker.getRegistrations()` nos testes.
-- **Falhas somente em GitHub Pages**  confira se `BASE_URL` foi exportado corretamente (logs do workflow) e se `public/404.html` está presente no artefato publicado.
+- **Playwright does not initialize**: Run `npx playwright install` and verify that port 3000 is free.
+- **Tests involving SW hang**: Confirm that `window.__ENABLE_SW_IN_DEV__` is set before navigation (`page.addInitScript`). Clear previous registrations with `await navigator.serviceWorker.getRegistrations()` in tests.
+- **Failures only in GitHub Pages**: Verify `BASE_URL` was exported correctly (check workflow logs) and ensure `public/404.html` is present in the published artifact. Cross-reference with [deployment-guide.md](deployment-guide.md#github-pages-setup) for BASE_URL configuration.
 <!-- agent-update:end -->
 ```

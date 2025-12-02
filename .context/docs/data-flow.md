@@ -1,11 +1,11 @@
-﻿<!-- agent-update:start:data-flow -->
+<!-- agent-update:start:data-flow -->
 # Data Flow & Integrations
 
 ## High-level Flow
 1. Usuário acessa `index.html` (ou `public/404.html`, em caso de rota profunda). O fallback salva a rota pedida em `sessionStorage` e redireciona para a raiz (`BASE_URL`).
 2. `src/main.js` chama `rememberBasePath()`/`consumePendingRoute()`, registra o Service Worker (quando não está em dev) e inicializa o router.
 3. As views interagem com `store.js`, que escreve em IndexedDB (`firebase-cache.js`) imediatamente.
-4. Se as variáveis `VITE_FIREBASE_*` existem, `firebase-service.js` conecta ao Firestore e `firebase-sync.js` processa a fila offline  online.
+4. Se as variáveis `VITE_FIREBASE_*` existem, `firebase-service.js` conecta ao Firestore e `firebase-sync.js` processa a fila offline/online.
 5. O Service Worker (`public/service-worker.js`) intercepta apenas requests dentro de `BASE_PATH`, responde com `cache-first` para assets estáticos e `network-first` para HTML/API. Em fallback offline, retorna `index.html` do cache.
 
 ## Internal Movement
@@ -18,7 +18,7 @@
 ## External Integrations
 - **Firebase Firestore (opcional)**
   - Configuração via `VITE_FIREBASE_*` tanto localmente quanto nos GitHub Secrets.
-  - Fluxo: `store.js`  `firebase-service.js` (CRUD)  Firestore. Falhas ou falta de configuração devolvem o app ao modo offline.
+  - Fluxo: `store.js` → `firebase-service.js` (CRUD) → Firestore. Falhas ou falta de configuração devolvem o app ao modo offline.
   - Segurança/escopo definidos nas regras do projeto Firebase do maintainer.
 - **GitHub Pages**
   - Hosting estático. Precisa de `public/404.html` para refresh nas rotas e `BASE_URL` ajustado para o nome do repo.

@@ -22,12 +22,15 @@ The Feature Developer Agent supports the team by turning product specifications 
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains core project documentation, including overviews, guides, and reference materials that supplement the `docs/` folder.
+- `docs/` — Contains core project documentation, including overviews, guides, and reference materials.
 - `SAVES/` — Stores backup files, saved development states, or exported data from tools and workflows to preserve progress during iterations.
 - `public/` — Houses static web assets such as HTML entry points, images, CSS files, and other publicly served resources for the application.
+- `playwright-report/` — Holds reports, screenshots, and artifacts generated from Playwright end-to-end testing runs.
+- `scripts/` — Includes automation scripts, build tools, deployment utilities, and other executable scripts supporting development workflows.
 - `sprint2/` — Organizes code, prototypes, and deliverables developed during Sprint 2, focusing on initial feature foundations and iterations.
 - `sprint3/` — Contains code, enhancements, and outputs from Sprint 3, building on prior sprints with refined features and optimizations.
 - `src/` — The primary source code directory, including application logic, components, services, and modules central to the project's functionality.
+- `test-results/` — Stores outputs from test executions, including coverage reports, logs, and failure summaries across unit, integration, and E2E tests.
 - `tests/` — Dedicated to all testing artifacts, such as unit tests, integration tests, end-to-end suites, and testing utilities to validate code behavior.
 
 ## Documentation Touchpoints

@@ -26,13 +26,14 @@ The Security Auditor Agent supports the development team by proactively identify
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture notes, and contributor resources.
+- `docs/` — Contains project documentation, including guides, architecture notes, and contributor resources.
 - `SAVES/` — Stores saved development states, backups, or archived files from previous iterations or debugging sessions.
 - `public/` — Holds static assets for the web application, such as images, CSS, JavaScript files, and index.html, which are publicly accessible and require protection from common web attacks like XSS.
+- `scripts/` — Utility scripts for build processes, data migrations, or automation tasks that may handle sensitive operations or credentials.
 - `sprint2/` — Artifacts from Sprint 2 development, including completed features, prototypes, and legacy code that may contain outdated security patterns.
 - `sprint3/` — Current development directory for Sprint 3, housing ongoing feature implementations, API endpoints, and components that need security reviews for new integrations.
 - `src/` — Core source code directory, including application logic, routes, and models where input validation, authentication, and authorization must be audited.
-- `tests/` — Test suites for unit, integration, and security testing, ensuring that security controls are verified and not bypassed.
+- `tests/` — Test suites for unit, integration, and security testing, ensuring that security controls are verified and not bypassed; includes `test-results/` for execution outputs and `playwright-report/` for end-to-end test reports.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index

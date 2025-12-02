@@ -173,4 +173,3 @@ console.log('Fila:', queue);
 
 **Status:** ✅ Pronto para uso!  
 Sistema funcionando com sincronização Firebase ativa.
-

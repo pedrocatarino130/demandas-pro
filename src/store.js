@@ -17,6 +17,17 @@ import {
 } from './config/firebase.js';
 
 const STORE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 dias
+const STATE_COLLECTION_MAP = {
+    tarefas: 'tarefas',
+    tarefasRotina: 'tarefasRotina',
+    historico: 'historico',
+    categorias: 'categorias',
+    areasEstudo: 'areasEstudo',
+    topicosEstudo: 'topicosEstudo',
+    sessoesEstudo: 'sessoesEstudo',
+    tagsEstudo: 'tagsEstudo',
+    avaliacoesDiarias: 'avaliacoesDiarias'
+};
 
 class Store {
     constructor() {
@@ -694,8 +705,12 @@ class Store {
     removeItem(key, predicate) {
         const current = this.state[key];
         if (Array.isArray(current)) {
+            const removedItems = current.filter((item) => predicate(item));
             this.setState({
                 [key]: current.filter((item) => !predicate(item))
+            });
+            this._enqueueDeletes(key, removedItems).catch(err => {
+                console.warn('Erro ao enfileirar deleções:', err);
             });
         } else {
             // Se não for array, inicializar como array vazio
@@ -741,6 +756,37 @@ class Store {
             await this._persistState(stateToSave);
         } catch (error) {
             console.error('Erro ao forçar salvamento:', error);
+        }
+    }
+
+    _getCollectionForStateKey(stateKey) {
+        return STATE_COLLECTION_MAP[stateKey] || null;
+    }
+
+    _getDocId(item) {
+        if (!item) return null;
+        return item.id || item.contador || item.key || null;
+    }
+
+    async _enqueueDeletes(stateKey, items = []) {
+        const collection = this._getCollectionForStateKey(stateKey);
+        if (!collection || !items.length) return;
+
+        const ops = items
+            .map((item) => {
+                const docId = this._getDocId(item);
+                if (!docId) return null;
+                return {
+                    type: 'DELETE',
+                    collection,
+                    docId,
+                    data: null
+                };
+            })
+            .filter(Boolean);
+
+        for (const op of ops) {
+            await firebaseSync.addToQueue(op);
         }
     }
 

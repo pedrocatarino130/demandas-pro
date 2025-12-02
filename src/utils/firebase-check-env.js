@@ -3,13 +3,22 @@
  * Verifica se todas as variáveis necessárias estão configuradas
  */
 
+import { isFirebaseConfigured } from '../config/firebase.js';
+
 /**
  * Verifica todas as variáveis de ambiente do Firebase
  * @returns {Object} Resultado da verificação
  */
 export function checkFirebaseEnv() {
     console.group('🔍 Verificando Variáveis de Ambiente Firebase');
-    
+
+    // Se já estiver configurado (via arquivo/defaults), não precisamos checar env vars
+    if (isFirebaseConfigured()) {
+        console.log('✅ Firebase já configurado via arquivo/defaults. Variáveis VITE_* são opcionais.');
+        console.groupEnd();
+        return {};
+    }
+
     const requiredVars = [
         'VITE_FIREBASE_API_KEY',
         'VITE_FIREBASE_AUTH_DOMAIN',
@@ -46,9 +55,16 @@ export function checkFirebaseEnv() {
     
     console.groupEnd();
     
-    if (allPresent) {
-        console.log('✅ Todas as variáveis estão presentes e preenchidas!');
-        console.log('💡 Se ainda vê erro, verifique se os valores estão corretos.');
+    // Se o Firebase já está configurado por arquivo ou default, não precisamos alertar
+    const hasFallbackConfig = isFirebaseConfigured();
+    
+    if (allPresent || hasFallbackConfig) {
+        if (!allPresent && hasFallbackConfig) {
+            console.log('ℹ️ Variáveis VITE_* não estão setadas, mas o Firebase foi configurado via arquivo ou defaults. Prosseguindo.');
+        } else {
+            console.log('✅ Todas as variáveis estão presentes e preenchidas!');
+            console.log('💡 Se ainda vê erro, verifique se os valores estão corretos.');
+        }
     } else {
         console.error('❌ Algumas variáveis estão faltando ou vazias!');
         console.log('📝 Verifique:');

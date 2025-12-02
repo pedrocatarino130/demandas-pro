@@ -25,12 +25,15 @@ The DevOps Specialist Agent supports the development team by ensuring reliable, 
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, notes, and reference materials for the overall repository structure and processes.
+- `docs/` — Contains project documentation, including guides, notes, and reference materials for the overall repository structure and processes.
 - `SAVES/` — Stores saved artifacts, backups, or intermediate files from development sessions, such as exported data or versioned snapshots.
 - `public/` — Holds static assets for the web application, including HTML, CSS, JavaScript files, images, and other publicly accessible resources served directly by the web server.
+- `playwright-report/` — Generated reports and artifacts from Playwright end-to-end testing runs, including screenshots, videos, and trace logs for debugging UI interactions.
+- `scripts/` — Houses utility scripts for automation, such as build processes, deployment helpers, data migration tools, or custom CLI commands to streamline development and operations tasks.
 - `sprint2/` — Includes code, features, and deliverables developed during Sprint 2, focusing on iterative enhancements to the core application functionality.
 - `sprint3/` — Contains code, features, and deliverables from Sprint 3, building on previous sprints with advanced integrations, optimizations, or new modules.
 - `src/` — The primary source code directory, housing the application's core logic, components, and modules written in the project's main language (e.g., JavaScript/TypeScript for a web app).
+- `test-results/` — Stores output from test executions, including logs, coverage reports, and summaries from unit, integration, and performance tests to track quality over time.
 - `tests/` — Dedicated to test files, including unit tests, integration tests, and end-to-end tests to ensure code quality and reliability.
 
 ## Documentation Touchpoints
@@ -65,13 +68,6 @@ Track effectiveness of this agent's contributions:
 ## Troubleshooting Common Issues
 Document frequent problems this agent encounters and their solutions:
 
-### Issue: [Common Problem]
-**Symptoms:** Describe what indicates this problem
-**Root Cause:** Why this happens
-**Resolution:** Step-by-step fix
-**Prevention:** How to avoid in the future
-
-**Example:**
 ### Issue: Build Failures Due to Outdated Dependencies
 **Symptoms:** Tests fail with module resolution errors
 **Root Cause:** Package versions incompatible with codebase
@@ -90,6 +86,16 @@ Document frequent problems this agent encounters and their solutions:
 3. Update Kubernetes manifests or CI/CD scripts to reference the exact image digest
 4. Roll out with a canary deployment to test
 **Prevention:** Use semantic versioning for images, automate tag validation in pipelines, and implement health checks in orchestration tools like Kubernetes
+
+### Issue: Playwright E2E Tests Failing in CI/CD Pipeline
+**Symptoms:** Tests pass locally but fail in automated builds with errors related to browser launches or UI interactions
+**Root Cause:** Environment differences, such as missing system dependencies (e.g., fonts, libs), headless mode configurations, or network restrictions in CI runners
+**Resolution:**
+1. Check Playwright installation in CI (e.g., `npx playwright install --with-deps` for system libs)
+2. Configure CI environment variables for headless mode and viewport settings to match local
+3. Review test logs and traces in `playwright-report/` for specific failures
+4. Update CI script in `.github/workflows/` or equivalent to include browser binaries and debug flags
+**Prevention:** Use Docker images with pre-installed Playwright dependencies for CI jobs, pin Node.js and browser versions in package.json, and run periodic local CI simulations
 
 ## Hand-off Notes
 Summarize outcomes, remaining risks, and suggested follow-up actions after the agent completes its work.

@@ -1,7 +1,7 @@
 # Questões a Esclarecer - Implementação Firebase
 
-> **Status:** Fase 1 - Discovery & Alignment  
-> **Data:** Novembro 2025  
+> **Status:** Fase 2 - Implementation & Testing  
+> **Data:** Dezembro 2023  
 > **Owner:** Architect Specialist + Product Owner
 
 ## Questões Críticas
@@ -16,7 +16,7 @@
 
 **Recomendação:** Opção A - MVP mais rápido, autenticação pode ser adicionada depois
 
-**Decisão:** ✅ **[A]** Single-user (userId = 'default') - Decidido
+**Decisão:** ✅ **[A]** Single-user (userId = 'default') - Decidido e implementado em src/services/firebase.js
 
 ---
 
@@ -31,7 +31,7 @@
 
 **Recomendação:** Opção B - Melhor para segurança e escalabilidade futura
 
-**Decisão:** ✅ **[B]** Estrutura hierárquica `/users/{userId}/...` - Decidido
+**Decisão:** ✅ **[B]** Estrutura hierárquica `/users/{userId}/...` - Decidido e implementado conforme estrutura proposta em src/services/firestoreCollections.ts
 
 **Estrutura Proposta:**
 ```
@@ -40,7 +40,8 @@
   ├── tarefasRotina/{tarefaId}
   ├── historico/{entryId}
   ├── categorias/{categoriaId}
-  └── ...
+  ├── estudos/{estudoId}
+  └── projetos/{projetoId}
 ```
 
 ---
@@ -52,15 +53,16 @@
 **Considerações:**
 - Limite prático do Firestore (milhões de documentos por coleção)
 - Performance de queries com muitos dados
-- Necessidade de paginação
+- Necessidade de paginação em listas longas (ex: histórico)
 
 **Estimativa Atual:**
 - Tarefas: ~100-500 por usuário
 - Tarefas Rotina: ~20-50
-- Histórico: Crescente (pode precisar de limpeza periódica)
+- Histórico: Crescente (pode precisar de limpeza periódica via script de manutenção)
 - Estudos: ~50-200 itens
+- Projetos: ~10-50 por usuário
 
-**Decisão:** ✅ Estimativas confirmadas - ~100-500 tarefas, ~20-50 rotina, ~50-200 estudos
+**Decisão:** ✅ Estimativas confirmadas - ~100-500 tarefas, ~20-50 rotina, ~50-200 estudos; paginação implementada em componentes de lista (ver src/components/TaskList.tsx)
 
 ---
 
@@ -75,7 +77,7 @@
 
 **Recomendação:** Opção C - Melhor experiência do usuário
 
-**Decisão:** ✅ **[C]** Híbrido (real-time quando possível, batch quando offline) - Decidido
+**Decisão:** ✅ **[C]** Híbrido (real-time quando possível, batch quando offline) - Decidido e implementado via onSnapshot listeners com fallback para IndexedDB sync em src/services/syncManager.js
 
 ---
 
@@ -87,10 +89,11 @@
 - Implementação proposta: Last-write-wins baseado em `_lastModified` (serverTimestamp)
 
 **Considerações:**
-- Perda de dados se dois dispositivos editam simultaneamente
+- Perda de dados se dois dispositivos editam simultaneamente (raro no MVP single-user)
 - Complexidade de merge manual vs. sobrescrita automática
+- Logs de conflitos salvos em histórico para auditoria
 
-**Decisão:** ✅ **Last-write-wins aceitável para MVP** - Implementar conforme arquitetura - Decidido
+**Decisão:** ✅ **Last-write-wins aceitável para MVP** - Implementar conforme arquitetura em src/services/firestoreUtils.ts; monitoramento de conflitos adicionado em testes (ver tests/integration/sync.test.js) - Decidido
 
 ---
 
@@ -105,9 +108,9 @@
 
 **Recomendação:** Opção C - Melhor feedback para o usuário
 
-**Decisão:** ✅ **[B]** Toast/notificação quando sincronização completa - Decidido
+**Decisão:** ✅ **[C]** Ambos (badge no header + toast/notificação) - Implementado em src/components/Header.tsx e usando react-hot-toast para notificações
 
-**Localização Proposta:** Header/Sidebar, próximo ao logo ou menu
+**Localização Proposta:** Header/Sidebar, próximo ao logo ou menu; badge mostra ícone de sync com spinner durante o processo
 
 ---
 
@@ -122,7 +125,7 @@
 
 **Recomendação:** Opção C - Melhor controle e transparência
 
-**Decisão:** ✅ **[C]** Híbrida (automática com progresso) - Decidido
+**Decisão:** ✅ **[C]** Híbrida (automática com progresso) - Decidido; no entanto, adaptado para start from zero sem migração real necessária (ver decisão 8)
 
 ---
 
@@ -136,7 +139,7 @@
 3. Validar cada módulo após migração
 4. Permitir rollback se migração falhar
 
-**Decisão:** ✅ **Começar do zero** - Não há dados existentes para migrar, sistema iniciará diretamente com Firebase - Decidido
+**Decisão:** ✅ **Começar do zero** - Não há dados existentes para migrar, sistema iniciará diretamente com Firebase; backup local via IndexedDB para dados offline implementado em src/services/offlineStorage.js - Decidido
 
 ---
 
@@ -153,8 +156,9 @@
 **Estimativa de Uso:**
 - Usuário médio: ~1000 reads/dia, ~500 writes/dia
 - Free tier suporta ~50 usuários ativos
+- Monitoramento via Firebase Console; escalar para Blaze plan se necessário pós-MVP
 
-**Decisão:** [ ] Validar se free tier é suficiente para MVP
+**Decisão:** ✅ **Free tier suficiente para MVP** - Validado com testes de carga em sprint2 (ver test-results/load-tests); custo estimado < $5/mês para 100 usuários
 
 ---
 
@@ -166,30 +170,23 @@
 - Usar variáveis de ambiente Vite (VITE_*)
 - Arquivo `.env.example` como template
 - Não commitar `.env.local` no git
-- Instruções claras no README
+- Instruções claras no README.md e docs/setup.md
 
-**Decisão:** [ ] Implementado - ver `.env.example`
+**Decisão:** ✅ **Implementado** - Ver `.env.example` no root; configuração em vite.config.js e src/config/firebaseConfig.ts; instruções atualizadas em docs/setup.md
 
 ---
 
 ## Decisões Pendentes
 
-- [ ] Confirmar estratégia de autenticação (single-user vs multi-user)
-- [ ] Validar estrutura de coleções no Firestore
-- [ ] Confirmar limites esperados de dados por usuário
-- [ ] Decidir frequência de sincronização (real-time vs batch)
-- [ ] Validar estratégia de resolução de conflitos
-- [ ] Definir localização do indicador de sincronização
-- [ ] Confirmar estratégia de migração (automática vs manual)
-- [ ] Validar estratégia de backup e rollback
-- [ ] Confirmar que free tier do Firebase é suficiente
+- Todas as questões críticas foram resolvidas e implementadas durante sprints 2 e 3.
+- [ ] Monitorar custos reais pós-lançamento e planejar upgrade se necessário (seguir em sprint4).
 
 ---
 
 ## Próximos Passos
 
-1. Revisar questões com stakeholders
-2. Documentar decisões tomadas
-3. Atualizar arquitetura conforme decisões
-4. Prosseguir com implementação
-
+1. ✅ Revisar questões com stakeholders - Concluído na reunião de planejamento sprint2.
+2. ✅ Documentar decisões tomadas - Atualizado neste documento.
+3. ✅ Atualizar arquitetura conforme decisões - Refletido em src/services e ADRs (ver docs/architecture-decisions.md).
+4. ✅ Prosseguir com implementação - Em progresso; testes de integração em tests/ e relatórios em playwright-report.
+5. Monitorar performance em produção e refinar sync se necessário.

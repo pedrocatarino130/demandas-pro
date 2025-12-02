@@ -6,19 +6,21 @@ Gerenciador Pedro v3 é uma SPA 100% client-side que concentra rotinas pessoais,
 ## Quick Facts
 - **Stack:** Vite + JavaScript ES Modules + CSS modularizado, sem backend dedicado.
 - **Persistência:** IndexedDB (`firebase-cache.js`) sempre ativo; sincronização com Firebase Firestore é opcional e controlada pelas variáveis `VITE_FIREBASE_*`.
-- **Deploy:** Automatizado via `.github/workflows/deploy.yml`, que roda `npm run build` com `BASE_URL=/<repo>/` e publica no Pages.
+- **Deploy:** Automatizado via `.github/workflows/deploy.yml`, que roda `npm run build` com `BASE_URL=/<repo>/` e publica no Pages (assumindo configuração GitHub Actions padrão; verifique `scripts/` para scripts alternativos de deploy manual).
 - **PWA:** `public/service-worker.js` resolve o escopo a partir de `self.registration.scope`, garantindo que o registro funcione mesmo em `/demandas/`.
-- **Testes:** Playwright cobre navegação SPA, refresh em rotas profundas e registro do SW (forçando-o em dev via `window.__ENABLE_SW_IN_DEV__`).
+- **Testes:** Playwright cobre navegação SPA, refresh em rotas profundas e registro do SW (forçando-o em dev via `window.__ENABLE_SW_IN_DEV__`); relatórios gerados em `playwright-report/` e `test-results/`.
 
 ## File Structure & Code Organization
 - `src/` — views (`src/views/*.js`), componentes compartilhados, router (`src/router.js`), store global e serviços Firebase. Destaque para:
   - `src/utils/base-path.js`: centraliza leitura/escrita do `BASE_URL`, constrói URLs e restaura rotas após fallback 404.
   - `src/main.js`: registra o SW, ativa indicadores offline e integra o router.
 - `public/` — arquivos copiados sem transformação (manifest, service worker, `404.html` para GitHub Pages).
-- `.github/workflows/deploy.yml` — pipeline oficial de build + deploy.
-- `.context/` — documentação operacional consumida pelos agentes (playbooks, planos, guias).
-- `tests/e2e/` — specs Playwright orquestradas por `playwright.config.js`.
+- `scripts/` — scripts auxiliares para tarefas de desenvolvimento, build ou deploy manual.
+- `tests/` — especificações e configurações para testes e2e com Playwright (`tests/e2e/`, `playwright.config.js`).
+- `docs/` — documentação do projeto, incluindo guias e overviews.
+- Diretórios de saída de testes: `playwright-report/` (relatórios HTML detalhados) e `test-results/` (artefatos de execução).
 - Diretórios históricos (`sprint2/`, `sprint3/`, `SAVES/`) preservam migrações e scripts utilizados nas fases anteriores.
+- `.github/workflows/` — pipelines de CI/CD, incluindo `deploy.yml` para build e publicação automatizada (se presente; caso contrário, use scripts manuais).
 
 ## Technology Stack Summary
 - **Runtime local:** Node 18+, Vite dev server (`npm run dev`).
@@ -33,9 +35,10 @@ Gerenciador Pedro v3 é uma SPA 100% client-side que concentra rotinas pessoais,
 4. Antes de abrir PR, rode `npm run build` para atualizar `dist/` e `npm run test:e2e` para validar navegação/refresh.
 
 ## Next Steps
-- Gerar ícones reais (`public/icon-192.png`, `public/icon-512.png`) para evitar 404 no manifest.
-- Expandir documentação de troubleshooting para GitHub Pages (limpeza de cache, `skipWaiting`, etc.).
-- Consolidar scripts Playwright que cobrem cenários offline + Firebase, aproveitando o novo utilitário de base path.
+- Gerar ícones reais (`public/icon-192.png`, `public/icon-512.png`) para evitar 404 no manifest. (Verificar se arquivos existem; caso contrário, gerar via ferramenta como PWA Asset Generator.)
+- Expandir documentação de troubleshooting para GitHub Pages (limpeza de cache, `skipWaiting`, etc.), possivelmente em um novo guia em `docs/`.
+- Consolidar scripts Playwright que cobrem cenários offline + Firebase, aproveitando o novo utilitário de base path; integrar com relatórios em `playwright-report/`.
+- Confirmar presença de `.github/workflows/deploy.yml` ou migrar deploy para scripts em `scripts/` se necessário. (Nota: Sumário do repositório não lista `.github/`, sugerindo verificação humana para automação CI/CD atual.)
 
 <!-- agent-readonly:guidance -->
 ## AI Update Checklist

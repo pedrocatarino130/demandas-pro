@@ -3,7 +3,7 @@
  * Verifica se Firebase está configurado e funcionando corretamente
  */
 
-import { db } from '../config/firebase.js';
+import { db, isFirebaseConfigured } from '../config/firebase.js';
 import { firebaseService } from '../services/firebase-service.js';
 import { firebaseSync } from '../services/firebase-sync.js';
 
@@ -121,7 +121,9 @@ if (import.meta.env.DEV) {
         
         const missingVars = requiredVars.filter(varName => !import.meta.env[varName]);
         
-        if (missingVars.length > 0) {
+        const hasDefaultConfig = isFirebaseConfigured();
+
+        if (missingVars.length > 0 && !hasDefaultConfig) {
             console.warn('⚠️ Variáveis de ambiente Firebase faltando:');
             missingVars.forEach(varName => {
                 console.warn(`   - ${varName}`);

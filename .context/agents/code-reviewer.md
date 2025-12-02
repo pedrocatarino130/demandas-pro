@@ -22,12 +22,15 @@ The code reviewer agent supports the development team by ensuring that all code 
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, notes, and architectural decisions.
+- `docs/` — Contains project documentation, including guides, notes, and architectural decisions.
 - `SAVES/` — Stores saved files, backups, or intermediate artifacts from development processes, such as exported data or snapshots.
+- `playwright-report/` — Contains reports generated from Playwright end-to-end testing runs, including screenshots, traces, and test artifacts.
 - `public/` — Holds static assets for the application, including HTML, CSS, JavaScript, images, and other publicly accessible files.
+- `scripts/` — Contains utility scripts for tasks like build processes, deployments, data migrations, or automation workflows.
 - `sprint2/` — Contains code, features, and deliverables developed during Sprint 2, focusing on iterative progress in the project's agile cycle.
 - `sprint3/` — Contains code, features, and deliverables developed during Sprint 3, building on previous sprints with enhanced functionality.
 - `src/` — The primary source code directory, including application logic, components, modules, and core implementation files.
+- `test-results/` — Stores outputs and logs from various test executions, such as Jest, Mocha, or other testing framework results.
 - `tests/` — Houses all testing files, such as unit tests, integration tests, and end-to-end tests to validate codebase functionality.
 
 ## Documentation Touchpoints

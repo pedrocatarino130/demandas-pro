@@ -3,7 +3,7 @@
  * Gerencia operações CRUD e listeners real-time com Firestore
  */
 
-import { db } from '../config/firebase.js';
+import { app, auth as firebaseAuth, db as firebaseDb, initializeFirebase, isFirebaseConfigured } from '../config/firebase.js';
 import {
     doc,
     getDoc,
@@ -26,17 +26,55 @@ const USER_ID = 'default'; // Single-user MVP
 
 class FirebaseService {
     constructor() {
-        this.db = db;
+        this.db = firebaseDb;
+        this.auth = firebaseAuth;
         this.listeners = new Map();
-        this.available = false;
-        
-        // Verificar disponibilidade
-        if (this.db) {
-            this.available = true;
+        this.available = Boolean(this.db);
+        this.initializing = false;
+        this.initPromise = null;
+
+        if (this.available) {
             console.log('✅ Firebase Service disponível');
         } else {
-            console.warn('⚠️ Firebase Service não disponível - modo offline apenas');
+            this._init().catch((err) => {
+                console.warn('⚠️ Firebase Service não disponível - modo offline apenas', err?.message);
+            });
         }
+    }
+
+    async _init() {
+        if (this.initPromise) return this.initPromise;
+        this.initializing = true;
+
+        this.initPromise = initializeFirebase()
+            .then(() => {
+                this.db = firebaseDb;
+                this.auth = firebaseAuth;
+                this.available = Boolean(this.db);
+                if (this.available) {
+                    console.log('✅ Firebase Service inicializado');
+                } else {
+                    console.warn('⚠️ Firebase Service segue indisponível (sem db)');
+                }
+                return this.available;
+            })
+            .catch((error) => {
+                this.available = false;
+                console.warn('⚠️ Erro ao inicializar Firebase Service:', error?.message || error);
+                return false;
+            })
+            .finally(() => {
+                this.initializing = false;
+            });
+
+        return this.initPromise;
+    }
+
+    async ensureReady() {
+        if (this.available) return true;
+        if (!isFirebaseConfigured()) return false;
+        await this._init();
+        return this.available;
     }
 
     /**
@@ -112,7 +150,7 @@ class FirebaseService {
      * @returns {Promise<Object|null>}
      */
     async getDocument(collectionName, docId) {
-        if (!this.isAvailable()) return null;
+        if (!(await this.ensureReady())) return null;
 
         try {
             const docRef = this._getDocRef(collectionName, docId);
@@ -152,7 +190,7 @@ class FirebaseService {
      * @returns {Promise<Array>}
      */
     async getCollection(collectionName, filters = [], orderByField = null, orderDirection = 'asc', limit = null) {
-        if (!this.isAvailable()) return [];
+        if (!(await this.ensureReady())) return [];
 
         try {
             const collectionRef = this._getCollectionPath(collectionName);
@@ -212,7 +250,7 @@ class FirebaseService {
      * @returns {Promise<string>} ID do documento
      */
     async setDocument(collectionName, docId, data, merge = true) {
-        if (!this.isAvailable()) return docId || null;
+        if (!(await this.ensureReady())) return docId || null;
 
         try {
             const docRef = this._getDocRef(collectionName, docId || this._generateId());
@@ -239,7 +277,7 @@ class FirebaseService {
      * @returns {Promise<string>} ID do documento
      */
     async updateDocument(collectionName, docId, updates) {
-        if (!this.isAvailable()) return docId || null;
+        if (!(await this.ensureReady())) return docId || null;
 
         try {
             const docRef = this._getDocRef(collectionName, docId);
@@ -264,7 +302,7 @@ class FirebaseService {
      * @returns {Promise<void>}
      */
     async deleteDocument(collectionName, docId) {
-        if (!this.isAvailable()) return;
+        if (!(await this.ensureReady())) return;
 
         try {
             const docRef = this._getDocRef(collectionName, docId);
@@ -281,7 +319,7 @@ class FirebaseService {
      * @returns {Promise<void>}
      */
     async batchWrite(operations) {
-        if (!this.isAvailable() || !operations || operations.length === 0) return;
+        if (!(await this.ensureReady()) || !operations || operations.length === 0) return;
 
         try {
             const batch = writeBatch(this.db);
@@ -331,6 +369,7 @@ class FirebaseService {
      */
     subscribeToDocument(collectionName, docId, callback) {
         if (!this.isAvailable()) {
+            this.ensureReady().catch(() => {});
             return () => {}; // Retorna função vazia se não disponível
         }
 
@@ -374,6 +413,7 @@ class FirebaseService {
      */
     subscribeToCollection(collectionName, callback, filters = []) {
         if (!this.isAvailable()) {
+            this.ensureReady().catch(() => {});
             return () => {}; // Retorna função vazia se não disponível
         }
 

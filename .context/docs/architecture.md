@@ -1,4 +1,4 @@
-﻿```markdown
+```markdown
 <!-- agent-update:start:architecture-notes -->
 # Architecture Notes
 
@@ -41,7 +41,7 @@ graph TD
 ## Risks & Constraints
 - **BASE_URL incorreto**  builds sem `BASE_URL=/<repo>/` quebram SW, manifest e refresh de rotas. O workflow já aplica automaticamente, mas execuções manuais precisam seguir o mesmo padrão.
 - **Cache antigo**  usuários só recebem mudanças após nova ativação do SW. Incrementar `CACHE_VERSION` e orientar o uso de `registration.update()` é obrigatório.
-- **Ícones ausentes**  `manifest.json` referencia `icon-192.png`/`icon-512.png`, ainda não gerados. Enquanto isso, navegadores registram 404 (seguido como follow-up).
+- **Ícones ausentes**  `manifest.json` referencia `icon-192.png`/`icon-512.png`, ainda não gerados. Enquanto isso, navegadores registram 404 (seguido como follow-up em issue #XX ou tarefa pendente).
 - **Diretórios históricos**  `sprint2/` e `sprint3/` permanecem por referência, mas não entram no bundle atual. Novas features devem viver em `src/` + `tests/`.
 
 <!-- agent-readonly:guidance -->

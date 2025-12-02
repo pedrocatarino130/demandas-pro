@@ -2,7 +2,7 @@
 # Refactoring Specialist Agent Playbook
 
 ## Mission
-Describe how the refactoring specialist agent supports the team and when to engage it.
+The Refactoring Specialist Agent supports the development team by systematically identifying code smells, such as duplicated logic, long methods, or overly complex classes, and applying targeted improvements to enhance maintainability, readability, and efficiency. It ensures the codebase remains robust as the project evolves through sprints, preventing technical debt from accumulating. Engage this agent during code reviews, when addressing accumulated technical debt in legacy modules, after major feature additions to reorganize affected areas, or as part of routine maintenance in sprints 2 and 3 to prepare for scalability in the src/ directory's components and tests.
 
 ## Responsibilities
 - Identify code smells and improvement opportunities
@@ -22,12 +22,15 @@ Describe how the refactoring specialist agent supports the team and when to enga
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, notes, and architectural decision records (ADRs).
+- `docs/` — Contains project documentation, including guides, notes, and architectural decision records (ADRs).
 - `SAVES/` — Stores saved states, backups, or experimental files from development iterations.
 - `public/` — Holds static assets for the web application, such as HTML entry points, images, and client-side resources.
+- `playwright-report/` — Generated reports and artifacts from Playwright end-to-end testing runs.
+- `scripts/` — Contains utility scripts for build processes, deployments, linting, or other automation tasks.
 - `sprint2/` — Includes code, deliverables, and artifacts developed during Sprint 2 of the project.
 - `sprint3/` — Includes code, deliverables, and artifacts developed during Sprint 3 of the project.
 - `src/` — Main source code directory, containing core application logic, components, and modules.
+- `test-results/` — Stores outputs from test executions, including coverage reports, logs, and failure summaries.
 - `tests/` — Directory for unit tests, integration tests, and end-to-end tests to validate codebase functionality.
 
 ## Documentation Touchpoints

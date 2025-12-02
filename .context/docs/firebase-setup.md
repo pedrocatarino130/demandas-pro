@@ -1,7 +1,7 @@
 # Configuração do Firebase
 
-> **Status:** Fase 1 - Discovery & Alignment  
-> **Data:** Novembro 2025  
+> **Status:** Configurado e Testado - Fase de Implementação  
+> **Data:** Novembro 2023  
 > **Owner:** Backend Specialist + Devops Specialist
 
 ## Pré-requisitos
@@ -178,7 +178,7 @@ No Firebase Console, vá em Firestore Database > Índices e crie os seguintes í
   - `dataExecucao` (Descendente)
 - **Tipo:** Simples
 
-**Nota:** O Firestore criará automaticamente índices conforme necessário durante o desenvolvimento, mas é bom criar antecipadamente para melhor performance.
+**Nota:** O Firestore criará automaticamente índices conforme necessário durante o desenvolvimento, mas é bom criar antecipadamente para melhor performance. Verifique a aba "Índices" no console para confirmar criação automática baseada em queries do código fonte em `src/services/firebase-service.js`.
 
 ## Passo 8: Verificar Configuração
 
@@ -187,13 +187,13 @@ Após configurar tudo, teste a conexão:
 1. Inicie o servidor de desenvolvimento: `npm run dev`
 2. Abra o console do navegador (F12)
 3. Verifique se não há erros de conexão com Firebase
-4. Verifique se o cache IndexedDB está funcionando
+4. Verifique se o cache IndexedDB está funcionando (veja implementações em `src/utils/offline-cache.js` se aplicável)
 
 ## Troubleshooting
 
 ### Erro: "Firebase: Error (auth/api-key-not-valid)"
 
-**Solução:** Verifique se as variáveis de ambiente estão corretas no `.env.local`
+**Solução:** Verifique se as variáveis de ambiente estão corretas no `.env.local`. Certifique-se de que o servidor foi reiniciado após alterações.
 
 ### Erro: "Firestore: Permission denied"
 
@@ -201,28 +201,32 @@ Após configurar tudo, teste a conexão:
 - Verifique as regras de segurança do Firestore
 - Para desenvolvimento, use regras permissivas temporárias
 - Verifique se está acessando a coleção correta (`users/default/...`)
+- Consulte logs em `src/services/firebase-service.js` para queries específicas
 
 ### Erro: "IndexedDB not available"
 
 **Solução:** 
 - Verifique se está usando um navegador moderno
 - Teste em modo anônimo (sem extensões que bloqueiam IndexedDB)
+- Verifique configurações em `src/utils/offline-cache.js` para fallbacks
 
 ### Variáveis de ambiente não funcionam
 
 **Solução:**
 - Certifique-se de que as variáveis começam com `VITE_`
 - Reinicie o servidor de desenvolvimento após criar `.env.local`
-- Verifique se o arquivo está na raiz do projeto
+- Verifique se o arquivo está na raiz do projeto e não ignorado pelo `.gitignore`
 
 ## Próximos Passos
 
 Após configurar o Firebase:
 
 1. ✅ Verificar conexão funcionando
-2. ⏭️ Implementar `firebase.js` com configuração real
-3. ⏭️ Implementar `firebase-service.js` com métodos reais
-4. ⏭️ Testar operações básicas de CRUD
+2. ✅ Implementar `firebase.js` com configuração real (veja `src/config/firebase.js`)
+3. ✅ Implementar `firebase-service.js` com métodos reais (veja `src/services/firebase-service.js`)
+4. ✅ Testar operações básicas de CRUD (executar testes em `tests/` ou manualmente via app)
+5. ⏭️ Configurar autenticação Firebase se necessário para multi-user (ver [docs/auth-setup.md](auth-setup.md))
+6. ⏭️ Integrar com offline support e sincronização
 
 ## Recursos Adicionais
 
@@ -230,4 +234,5 @@ Após configurar o Firebase:
 - [Documentação do Firestore](https://firebase.google.com/docs/firestore)
 - [Guia de Regras de Segurança](https://firebase.google.com/docs/firestore/security/get-started)
 - [Índices do Firestore](https://firebase.google.com/docs/firestore/query-data/indexing)
-
+- [Integração com Vite](https://vitejs.dev/guide/env-and-mode.html) para variáveis de ambiente
+- Repositório: Verifique `package.json` para versão do Firebase SDK instalada (atualmente ~10.x)

@@ -12,7 +12,7 @@ The Backend Specialist Agent supports the development team by focusing on the se
 - Handle server deployment and scaling
 
 ## Best Practices
-- Design APIs according the specification of the project
+- Design APIs according to the specification of the project
 - Implement proper error handling and logging
 - Use appropriate design patterns and clean architecture
 - Consider scalability and performance from the start
@@ -25,12 +25,15 @@ The Backend Specialist Agent supports the development team by focusing on the se
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, notes, and reference materials for developers and contributors.
+- `docs/` — Contains project documentation, including guides, notes, and reference materials for developers and contributors.
 - `SAVES/` — Stores backup files, saved versions of assets, or temporary data from development iterations to prevent loss during experimentation.
 - `public/` — Holds static assets such as images, fonts, and client-side files that are served directly to users without processing.
+- `playwright-report/` — Generated reports and artifacts from Playwright end-to-end testing runs, including screenshots, traces, and test outcomes.
+- `scripts/` — Contains utility scripts for automation tasks, such as build processes, deployments, data migrations, or environment setup.
 - `sprint2/` — Includes code, deliverables, and artifacts developed during Sprint 2, focusing on iterative feature builds and prototypes.
 - `sprint3/` — Contains code, tests, and outputs from Sprint 3, advancing core functionality and integrations based on prior sprints.
 - `src/` — The primary source code directory for the application's backend logic, including server files, modules, and configuration.
+- `test-results/` — Stores results and outputs from test executions, such as coverage reports, logs, and performance metrics.
 - `tests/` — Houses unit, integration, and end-to-end test files to validate backend functionality, APIs, and data flows.
 
 ## Documentation Touchpoints

@@ -25,12 +25,14 @@ The Mobile Specialist Agent supports the development team by ensuring high-quali
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture notes, API references, and sprint retrospectives.
+- `docs/` — Contains project documentation, including guides, architecture notes, API references, and sprint retrospectives.
 - `SAVES/` — Stores saved drafts, backups, or temporary files from development iterations and sprint planning sessions.
 - `public/` — Holds static assets such as images, icons, splash screens, and configuration files accessible to the mobile app bundle.
+- `scripts/` — Includes build scripts, deployment automation, and utility scripts for mobile app development, testing, and CI/CD pipelines.
 - `sprint2/` — Contains code, deliverables, and artifacts from Sprint 2, focusing on initial feature prototyping and basic mobile UI implementation.
 - `sprint3/` — Includes code and outputs from Sprint 3, emphasizing performance optimizations, integration testing, and preparation for beta deployment.
 - `src/` — Main source code directory for the mobile application, housing components, services, navigation logic, and platform-specific modules.
+- `test-results/` — Stores outputs from running tests, including logs, reports, and artifacts from mobile device, emulator, and integration test suites.
 - `tests/` — Directory for unit tests, integration tests, UI tests, and device-specific test suites to ensure mobile app reliability.
 
 ## Documentation Touchpoints

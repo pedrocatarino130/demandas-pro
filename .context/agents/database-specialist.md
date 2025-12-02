@@ -25,13 +25,16 @@ The Database Specialist Agent supports the development team by designing, optimi
 - Contributor guide: [CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ## Repository Starting Points
-- `Doc/` — Contains project documentation, including guides, architecture overviews, and API references relevant to database design and data flows.
+- `docs/` — Contains project documentation, including guides, architecture overviews, and API references relevant to database design and data flows.
 - `SAVES/` — Stores archived or saved files from development iterations, such as backup database dumps or previous schema versions for recovery reference.
 - `public/` — Holds static assets for the application, which may include data export files or client-side resources that interact with database-driven APIs.
+- `scripts/` — Utility scripts for automation, potentially including database seeding, migration execution, or backup routines.
 - `sprint2/` — Artifacts from the second development sprint, including early database prototypes, initial schema designs, and related tests focused on core data models.
 - `sprint3/` — Code and resources from the third sprint, incorporating refined database features, optimizations, and integrations built upon prior sprints.
 - `src/` — Main source code directory, housing database models, ORM configurations (e.g., Sequelize or Mongoose), connection scripts, and backend logic that interacts with the database.
+- `test-results/` — Outputs from test executions, including logs from database integration tests, performance benchmarks, and coverage reports for data-related functionality.
 - `tests/` — Unit, integration, and end-to-end tests, including database-specific tests for migrations, queries, and data validation to ensure reliability.
+- `playwright-report/` — Reports generated from Playwright E2E tests, which may validate database-driven user flows and API responses.
 
 ## Documentation Touchpoints
 - [Documentation Index](../docs/README.md) — agent-update:docs-index

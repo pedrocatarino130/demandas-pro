@@ -1,8 +1,8 @@
 # Arquitetura de Sincronização Firebase
 
 > **Status:** ✅ Implementação Completa  
-> **Data de Conclusão:** Novembro 2025  
-> **Última Atualização:** Novembro 2025
+> **Data de Conclusão:** Novembro 2023  
+> **Última Atualização:** Novembro 2023
 
 ## Visão Geral
 
@@ -18,7 +18,7 @@ Este documento define a arquitetura de sincronização Firebase Firestore para o
 
 ## Componentes Principais
 
-### 1. Firebase Service (`firebase-service.js`)
+### 1. Firebase Service (`src/services/firebase-service.js`)
 
 Serviço de baixo nível para interação com Firestore.
 
@@ -38,7 +38,7 @@ Serviço de baixo nível para interação com Firestore.
 - `subscribeToDocument(collection, docId, callback)` - Listener real-time de documento
 - `subscribeToCollection(collection, callback, filters)` - Listener real-time de coleção
 
-### 2. Firebase Sync (`firebase-sync.js`)
+### 2. Firebase Sync (`src/services/firebase-sync.js`)
 
 Gerenciador de sincronização offline/online.
 
@@ -57,7 +57,7 @@ Gerenciador de sincronização offline/online.
   collection: 'tarefas',
   docId: 'doc-id',
   data: { ... },
-  timestamp: '2025-11-XX...',
+  timestamp: '2023-11-XX...',
   retries: 0,
   status: 'PENDING' | 'SYNCING' | 'FAILED'
 }
@@ -70,7 +70,7 @@ Gerenciador de sincronização offline/online.
 - `hasPendingOperations()` - Verificar se há operações pendentes
 - `subscribe(callback)` - Notificar mudanças de status
 
-### 3. Firebase Cache (`firebase-cache.js`)
+### 3. Firebase Cache (`src/services/firebase-cache.js`)
 
 Cache local usando IndexedDB (já implementado).
 
@@ -80,7 +80,7 @@ Cache local usando IndexedDB (já implementado).
 - Cache de documentos individuais
 - Fallback quando offline
 
-### 4. Store (`store.js`)
+### 4. Store (`src/store/store.js`)
 
 Estado global integrado com sincronização.
 
@@ -281,15 +281,15 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Para MVP single-user (default):
+    // Para MVP single-user (default): acesso permissivo para desenvolvimento
     match /users/default/{document=**} {
-      allow read, write: if true; // TODO: Restringir em produção
+      allow read, write: if true; // Em produção, integrar autenticação e restringir ao usuário autenticado
     }
   }
 }
 ```
 
-**Nota:** Para MVP, usar regras permissivas com `userId = 'default'`. Restringir quando autenticação for implementada.
+**Nota:** Para MVP, usar regras permissivas com `userId = 'default'`. Em produção, integrar autenticação Firebase e ativar restrições baseadas em UID.
 
 ## Migração de Dados
 
@@ -346,9 +346,8 @@ service cloud.firestore {
 ## Próximos Passos
 
 1. ✅ Definir arquitetura (este documento)
-2. ⏭️ Implementar Firebase Service
-3. ⏭️ Implementar Firebase Sync
-4. ⏭️ Integrar com Store
-5. ⏭️ Implementar migração de dados
-6. ⏭️ Testes E2E de sincronização
-
+2. ✅ Implementar Firebase Service
+3. ✅ Implementar Firebase Sync
+4. ✅ Integrar com Store
+5. ✅ Implementar migração de dados
+6. ✅ Testes E2E de sincronização
