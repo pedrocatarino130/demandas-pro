@@ -50,17 +50,42 @@ class EstudosStore {
         // Migrar dados v2 se necessário
         await this._migrateFromV2();
 
+        // Tentar carregar do Firestore (online)
+        await this._loadFromFirestore();
+        // Configurar listeners real-time
+        this._setupListeners();
+
         this.initialized = true;
-        console.log('✅ EstudosStore inicializado (modo local)');
+        console.log('✅ EstudosStore inicializado (modo Firebase + local)');
     }
 
     /**
-     * Método removido - não carrega mais do Firestore
-     * Mantido apenas para compatibilidade (não faz nada)
+     * Carrega dados do Firestore
      */
     async _loadFromFirestore() {
-        // Não faz nada - sistema agora é 100% local
-        return;
+        if (!firebaseService.isAvailable()) return;
+        try {
+            const collections = [
+                { collection: 'areasEstudo', stateKey: 'areas' },
+                { collection: 'topicosEstudo', stateKey: 'topicos' }
+            ];
+
+            const updates = {};
+            for (const { collection, stateKey } of collections) {
+                const docs = await firebaseService.getCollection(collection, [], '_lastModified', 'desc');
+                if (docs && docs.length) {
+                    updates[stateKey] = docs;
+                }
+            }
+
+            if (Object.keys(updates).length) {
+                this.state = { ...this.state, ...updates };
+                await firebaseCache.set('estudos-store-state', this.state);
+                this._notify();
+            }
+        } catch (error) {
+            console.warn('Erro ao carregar Estudos do Firestore:', error);
+        }
     }
 
     /**
@@ -76,7 +101,40 @@ class EstudosStore {
                 // Salvar no cache imediatamente
                 await firebaseCache.set('estudos-store-state', this.state);
 
-                // Salvar apenas localmente (já salvo no cache acima)
+                // Salvar no Firestore se disponível
+                if (firebaseService.isAvailable()) {
+                    const operations = [];
+                    const map = [
+                        { stateKey: 'areas', collection: 'areasEstudo' },
+                        { stateKey: 'topicos', collection: 'topicosEstudo' }
+                    ];
+
+                    map.forEach(({ stateKey, collection }) => {
+                        const items = this.state[stateKey];
+                        if (!Array.isArray(items)) return;
+                        items.forEach((item) => {
+                            if (item && item.id) {
+                                operations.push({
+                                    type: 'UPDATE',
+                                    collection,
+                                    docId: item.id,
+                                    data: item
+                                });
+                            }
+                        });
+                    });
+
+                    if (operations.length) {
+                        try {
+                            await firebaseService.batchWrite(operations);
+                        } catch (err) {
+                            // fallback para fila de sync
+                            for (const op of operations) {
+                                await import('../services/firebase-sync.js').then(({ firebaseSync }) => firebaseSync.addToQueue(op));
+                            }
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('Erro ao salvar estudos no Firestore:', error);
             }
@@ -84,12 +142,37 @@ class EstudosStore {
     }
 
     /**
-     * Método removido - não configura mais listeners do Firestore
-     * Mantido apenas para compatibilidade (não faz nada)
+     * Configura listeners em tempo real no Firestore
      */
     _setupListeners() {
-        // Não faz nada - sistema agora é 100% local
-        return;
+        if (!firebaseService.isAvailable()) return;
+        // Limpar listeners antigos
+        this.listeners.forEach((u) => {
+            try {
+                u();
+            } catch (e) {}
+        });
+        this.listeners = [];
+
+        const map = [
+            { collection: 'areasEstudo', stateKey: 'areas' },
+            { collection: 'topicosEstudo', stateKey: 'topicos' }
+        ];
+
+        map.forEach(({ collection, stateKey }) => {
+            const unsub = firebaseService.subscribeToCollection(
+                collection,
+                (docs) => {
+                    if (Array.isArray(docs)) {
+                        this.state[stateKey] = docs;
+                        firebaseCache.set('estudos-store-state', this.state).catch(() => {});
+                        this._notify();
+                    }
+                },
+                []
+            );
+            this.listeners.push(unsub);
+        });
     }
 
     /**
