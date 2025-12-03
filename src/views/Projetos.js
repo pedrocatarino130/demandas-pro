@@ -9,6 +9,7 @@ import { ComplexSearch } from '../components/ComplexSearch.js';
 import { createNeonButton } from '../components/NeonButton.js';
 import { taskEditModal } from '../components/TaskEditModal.js';
 import { confirmAction } from '../components/ConfirmModal.js';
+import { toast } from '../components/Toast.js';
 
 class ProjetosView {
   constructor() {
@@ -240,6 +241,7 @@ class ProjetosView {
           onToggleStatus: (id, checked) => this.handleToggleStatus(id, checked),
           onEdit: (t) => this.handleEdit(t),
           onDelete: (id) => this.handleDelete(id),
+          onInjectToHome: (t) => this.handleInjectToHome(t),
           isCompleted: this.isDone(task),
         });
         body.appendChild(card.render());
@@ -554,6 +556,45 @@ class ProjetosView {
       status: checked ? 'done' : 'todo',
       completedAt: checked ? new Date().toISOString() : null,
     });
+  }
+
+  handleInjectToHome(task) {
+    if (!task) {
+      toast.error('Tarefa não encontrada');
+      return;
+    }
+
+    try {
+      const state = store.getState();
+      const newId = (state.contadorHome || 0) + 1;
+
+      // Converter tarefa de projeto para tarefa do Home
+      const homeTask = {
+        id: newId,
+        contador: newId,
+        titulo: task.titulo || task.nome || 'Nova Tarefa',
+        descricao: task.descricao || '',
+        prioridade: task.prioridade || 'media',
+        responsavel: task.responsavel || '',
+        tags: Array.isArray(task.tags) ? [...task.tags] : [],
+        status: 'todo',
+        completed: false,
+        time: task.time || new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+
+      // Adicionar ao Home
+      store.addItem('tarefasHome', homeTask);
+      store.setState({ contadorHome: newId });
+
+      // Feedback visual
+      toast.success(`"${homeTask.titulo}" adicionada ao Home!`, {
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Erro ao injetar tarefa no Home:', error);
+      toast.error('Erro ao adicionar tarefa ao Home');
+    }
   }
 
   createTask() {

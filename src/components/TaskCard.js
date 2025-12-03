@@ -304,6 +304,12 @@ export class TaskCard {
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                 `;
+                injectBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.options.onInjectToHome) {
+                        this.options.onInjectToHome(this.task);
+                    }
+                });
                 actions.appendChild(injectBtn);
             }
 

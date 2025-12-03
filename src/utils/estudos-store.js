@@ -16,6 +16,7 @@ class EstudosStore {
         this.state = {
             areas: [],
             topicos: [],
+            removedAreaIds: [],
             contadorAreas: 0,
             contadorTopicos: 0,
             versao: 3
@@ -74,7 +75,12 @@ class EstudosStore {
             for (const { collection, stateKey } of collections) {
                 const docs = await firebaseService.getCollection(collection, [], '_lastModified', 'desc');
                 if (docs && docs.length) {
-                    updates[stateKey] = docs;
+                    // Filtrar itens removidos localmente
+                    if (stateKey === 'areas' && this.state.removedAreaIds?.length) {
+                        updates[stateKey] = docs.filter((doc) => !this.state.removedAreaIds.includes(doc.id));
+                    } else {
+                        updates[stateKey] = docs;
+                    }
                 }
             }
 
@@ -164,7 +170,11 @@ class EstudosStore {
                 collection,
                 (docs) => {
                     if (Array.isArray(docs)) {
-                        this.state[stateKey] = docs;
+                        if (stateKey === 'areas' && this.state.removedAreaIds?.length) {
+                            this.state[stateKey] = docs.filter((doc) => !this.state.removedAreaIds.includes(doc.id));
+                        } else {
+                            this.state[stateKey] = docs;
+                        }
                         firebaseCache.set('estudos-store-state', this.state).catch(() => {});
                         this._notify();
                     }
@@ -330,12 +340,16 @@ class EstudosStore {
         if (index >= 0) {
             this.state.areas.splice(index, 1);
             this.state.contadorAreas--;
+            if (!this.state.removedAreaIds.includes(id)) {
+                this.state.removedAreaIds.push(id);
+            }
             // Atualizar tópicos que referenciam esta área
             this.state.topicos.forEach(topico => {
                 if (topico.areaId === id) {
                     topico.areaId = null;
                 }
             });
+            firebaseCache.set('estudos-store-state', this.state).catch(() => {});
             this._saveToFirestore();
             this._notify();
             return true;
