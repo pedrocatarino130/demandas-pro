@@ -503,5 +503,6 @@ export default function renderHome() {
     return {
         render: () => view.render(),
         mount: () => view.mount(),
+        destroy: () => view.destroy(),
     };
 }
