@@ -10,6 +10,7 @@ import { createNeonButton } from '../components/NeonButton.js';
 import { taskEditModal } from '../components/TaskEditModal.js';
 import { confirmAction } from '../components/ConfirmModal.js';
 import { getCompletedTasks } from '../utils/taskFilters.js';
+import { router } from '../router.js';
 
 class HomeView {
   constructor() {
@@ -296,6 +297,11 @@ class HomeView {
       const numericId = Number(taskId);
       const nextCounter = Number.isFinite(numericId) ? Math.max(currentCounter, numericId) : currentCounter + 1;
       store.setState({ contadorHome: nextCounter });
+    }
+
+    // Garantir que o usuário permaneça na Home após salvar/criar
+    if (router && typeof router.getCurrentPath === 'function' && router.getCurrentPath() !== '/') {
+      router.navigate('/', false);
     }
   }
 
