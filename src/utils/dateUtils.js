@@ -109,6 +109,26 @@ export function getTodayISO() {
 }
 
 /**
+ * Formata duração em milissegundos para HH:MM:SS
+ * @param {number} ms - Duração em milissegundos
+ * @returns {string} Duração formatada
+ */
+export function formatDuration(ms) {
+  if (!Number.isFinite(ms)) return '00:00:00';
+
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const hh = String(hours).padStart(2, '0');
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
+
+  return `${hh}:${mm}:${ss}`;
+}
+
+/**
  * Cria objeto Date a partir de string ISO ou Date
  */
 export function toDate(date) {

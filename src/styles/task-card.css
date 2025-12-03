@@ -40,7 +40,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: 
+    background-image:
         linear-gradient(var(--grid-pattern-color) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-pattern-color) 1px, transparent 1px);
     background-size: var(--grid-pattern-size) var(--grid-pattern-size);
@@ -73,11 +73,11 @@
     stroke-width: 2;
 }
 
-/* Priority Badge Top Right */
+/* Priority Badge Top Left */
 .task-card-priority-badge {
     position: absolute;
     top: var(--spacing-md);
-    right: var(--spacing-md);
+    left: var(--spacing-md);
     display: flex;
     gap: var(--spacing-xs);
 }
@@ -197,7 +197,7 @@
     border-top: 1px solid var(--color-border-gray-800);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     font-size: var(--font-size-xs);
     color: var(--color-text-gray-500);
 }
@@ -206,6 +206,15 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+}
+
+.task-card-meta-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: auto;
 }
 
 .task-card-meta-item {
@@ -226,6 +235,101 @@
     white-space: nowrap;
 }
 
+.task-card-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 8px 12px;
+    border-radius: var(--radius-cyberpunk-full);
+    border: 1px solid var(--color-border-white-5);
+    background: rgba(255, 255, 255, 0.03);
+    flex-shrink: 0;
+}
+
+.task-card-timer-completed {
+    background: rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.35);
+}
+
+.task-card-timer-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.task-card-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-cyberpunk-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    border: 1px solid transparent;
+}
+
+.task-card-status-pill.status-todo {
+    color: var(--color-neon-blue);
+    background: rgba(3, 169, 244, 0.12);
+    border-color: rgba(3, 169, 244, 0.3);
+}
+
+.task-card-status-pill.status-doing {
+    color: var(--color-neon-pink);
+    background: rgba(207, 48, 170, 0.12);
+    border-color: rgba(207, 48, 170, 0.35);
+}
+
+.task-card-status-pill.status-done {
+    color: var(--color-neon-green);
+    background: rgba(0, 255, 136, 0.12);
+    border-color: rgba(0, 255, 136, 0.3);
+}
+
+.task-card-timer-elapsed {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary-cyberpunk);
+}
+
+.task-card-timer-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-cyberpunk-full);
+    border: 1px solid var(--color-border-white-5);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-text-primary-cyberpunk);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    transition: all var(--duration-fast) var(--ease-default);
+}
+
+.task-card-timer-button.start {
+    color: var(--color-neon-green);
+    border-color: rgba(0, 255, 136, 0.35);
+    box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.1);
+}
+
+.task-card-timer-button.stop {
+    color: var(--color-status-delayed);
+    border-color: rgba(249, 115, 22, 0.4);
+    background: rgba(249, 115, 22, 0.08);
+}
+
+.task-card-timer-button:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.task-card-timer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Actions (Edit/Delete) - Only visible on hover */
 .task-card-actions {
     display: flex;
@@ -233,6 +337,7 @@
     gap: var(--spacing-xs);
     opacity: 0;
     transition: opacity var(--duration-base) var(--ease-default);
+    flex-shrink: 0;
 }
 
 .task-card:hover .task-card-actions {
@@ -321,6 +426,7 @@
     }
 
     .task-card-actions {
-        opacity: 1; /* Always visible on mobile */
+        opacity: 1;
+        /* Always visible on mobile */
     }
 }

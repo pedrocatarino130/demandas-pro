@@ -707,3 +707,5 @@ Sem mudanças - configuração existente em `public/firebase-config.json` perman
 **Próximo passo:** Iniciar Phase 1 (Backend Setup)
 
 
+
+

@@ -7,7 +7,8 @@ import {
     formatTime,
     formatDate,
     getDaysOverdue,
-    toDate
+    toDate,
+    formatDuration
 } from '../utils/dateUtils.js';
 import { createNeonCheckbox } from './NeonCheckbox.js';
 
@@ -18,6 +19,7 @@ export class TaskCard {
             showCheckbox: true,
             showPriority: true,
             showActions: true, // Botões de editar/excluir no hover
+            showTimerControls: false, // Botões de play/stop com cronômetro
             isCurrent: false,
             isOverdue: false,
             isCompleted: false,
@@ -26,6 +28,9 @@ export class TaskCard {
             onEdit: null,
             onDelete: null,
             onInjectToHome: null, // Callback para injetar tarefa no Home
+            onStartTimer: null,
+            onStopTimer: null,
+            onDuplicate: null,
             ...options,
         };
     }
@@ -243,6 +248,16 @@ export class TaskCard {
 
         metaInfo.appendChild(metaLeft);
 
+        const metaRight = document.createElement('div');
+        metaRight.className = 'task-card-meta-right';
+
+        if (this.options.showTimerControls) {
+            const timerArea = this.renderTimerArea();
+            if (timerArea) {
+                metaRight.appendChild(timerArea);
+            }
+        }
+
         // Actions (Edit/Delete) - Only visible on hover
         if (this.options.showActions) {
             const actions = document.createElement('div');
@@ -313,10 +328,123 @@ export class TaskCard {
                 actions.appendChild(injectBtn);
             }
 
-            metaInfo.appendChild(actions);
+            // Botão de Duplicar - apenas se callback for fornecido
+            if (this.options.onDuplicate) {
+                const duplicateBtn = document.createElement('button');
+                duplicateBtn.className = 'task-card-action-button duplicate';
+                duplicateBtn.setAttribute('data-action', 'duplicate');
+                duplicateBtn.setAttribute('data-task-id', taskId);
+                duplicateBtn.setAttribute('title', 'Duplicar');
+                duplicateBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                `;
+                duplicateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.options.onDuplicate) {
+                        this.options.onDuplicate(this.task);
+                    }
+                });
+                actions.appendChild(duplicateBtn);
+            }
+
+            metaRight.appendChild(actions);
+        }
+
+        if (metaRight.childNodes.length > 0) {
+            metaInfo.appendChild(metaRight);
         }
 
         return metaInfo;
+    }
+
+    renderTimerArea() {
+        const container = document.createElement('div');
+        container.className = 'task-card-timer';
+
+        const taskId = this.task.id || this.task.contador || '';
+        const statusInfo = this.getStatusInfo();
+        const isRunning = this.isDoing();
+        const isCompleted = this.isCompleted();
+
+        if (isCompleted) {
+            container.classList.add('task-card-timer-completed');
+
+            const label = document.createElement('span');
+            label.className = 'task-card-timer-label';
+            label.textContent = 'Tempo gasto';
+            container.appendChild(label);
+
+            const elapsedCompleted = document.createElement('span');
+            elapsedCompleted.className = 'task-card-timer-elapsed';
+            elapsedCompleted.setAttribute('data-task-timer-id', taskId);
+            elapsedCompleted.textContent = formatDuration(this.getElapsedMs());
+            container.appendChild(elapsedCompleted);
+
+            return container;
+        }
+
+        const statusPill = document.createElement('span');
+        statusPill.className = `task-card-status-pill ${statusInfo.className}`;
+        statusPill.textContent = statusInfo.label;
+        container.appendChild(statusPill);
+
+        const elapsed = document.createElement('span');
+        elapsed.className = 'task-card-timer-elapsed';
+        elapsed.setAttribute('data-task-timer-id', taskId);
+        elapsed.textContent = formatDuration(this.getElapsedMs());
+        container.appendChild(elapsed);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `task-card-timer-button ${isRunning ? 'stop' : 'start'}`;
+        button.setAttribute('data-task-id', taskId);
+        button.innerHTML = isRunning
+            ? `<span class="task-card-timer-icon">⏹</span><span>Parar</span>`
+            : `<span class="task-card-timer-icon">▶</span><span>Play</span>`;
+
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (isRunning) {
+                if (this.options.onStopTimer) {
+                    this.options.onStopTimer(taskId);
+                }
+            } else if (this.options.onStartTimer) {
+                this.options.onStartTimer(taskId);
+            }
+        });
+        container.appendChild(button);
+
+        return container;
+    }
+
+    getElapsedMs() {
+        const base = Number(this.task.timerElapsedMs) || 0;
+        const startedAt = this.task.timerStartedAt ? new Date(this.task.timerStartedAt).getTime() : null;
+        if (startedAt && !Number.isNaN(startedAt)) {
+            return base + Math.max(0, Date.now() - startedAt);
+        }
+        return base;
+    }
+
+    getStatusInfo() {
+        const status = (this.task.status || (this.task.completed ? 'done' : 'todo')).toLowerCase();
+        const map = {
+            todo: { label: 'A Fazer', className: 'status-todo' },
+            doing: { label: 'Fazendo', className: 'status-doing' },
+            done: { label: 'Concluída', className: 'status-done' },
+        };
+        return map[status] || map.todo;
+    }
+
+    isDoing() {
+        return (this.task.status || '').toLowerCase() === 'doing';
+    }
+
+    isCompleted() {
+        return this.task.completed === true || (this.task.status || '').toLowerCase() === 'done';
     }
 
     escapeHtml(text) {

@@ -10,6 +10,7 @@ import { createNeonButton } from '../components/NeonButton.js';
 import { taskEditModal } from '../components/TaskEditModal.js';
 import { confirmAction } from '../components/ConfirmModal.js';
 import { getCompletedTasks } from '../utils/taskFilters.js';
+import { formatDuration } from '../utils/dateUtils.js';
 import { router } from '../router.js';
 
 class HomeView {
@@ -17,6 +18,7 @@ class HomeView {
     this.activeTab = 'urgent';
     this.searchQuery = '';
     this.unsubscribe = null;
+    this.timerInterval = null;
   }
 
   render() {
@@ -54,6 +56,7 @@ class HomeView {
     this.renderSearch();
     this.renderCTA();
     this.renderData();
+    this.startTimerLoop();
 
     this.unsubscribe = store.subscribe(() => this.renderData());
     return this;
@@ -63,6 +66,10 @@ class HomeView {
     if (this.unsubscribe) {
       this.unsubscribe();
       this.unsubscribe = null;
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
   }
 
@@ -166,12 +173,56 @@ class HomeView {
         showCheckbox: true,
         showPriority: true,
         showActions: true,
+        showTimerControls: true,
         onToggleStatus: (id, checked) => this.handleToggleStatus(id, checked),
         onEdit: (t) => this.handleEdit(t),
         onDelete: (id) => this.handleDelete(id),
+        onStartTimer: (id) => this.handleStartTimer(id),
+        onStopTimer: (id) => this.handleStopTimer(id),
+        onDuplicate: (t) => this.handleDuplicate(t),
       });
       grid.appendChild(card.render());
     });
+  }
+
+  startTimerLoop() {
+    if (this.timerInterval) return;
+    this.timerInterval = setInterval(() => this.updateTimersDisplay(), 1000);
+  }
+
+  updateTimersDisplay() {
+    const grid = document.getElementById('home-tasks-grid');
+    if (!grid) return;
+
+    const state = store.getState();
+    const tasks = Array.isArray(state.tarefasHome) ? state.tarefasHome : [];
+    const running = tasks.filter((task) => task && task.timerStartedAt);
+
+    if (running.length === 0) return;
+
+    running.forEach((task) => {
+      const id = this.getTaskId(task);
+      const timerEl = grid.querySelector(`[data-task-timer-id="${id}"]`);
+      if (timerEl) {
+        timerEl.textContent = formatDuration(this.calculateElapsedMs(task));
+      }
+    });
+  }
+
+  calculateElapsedMs(task) {
+    if (!task) return 0;
+    const base = Number(task.timerElapsedMs) || 0;
+    const startedAt = task.timerStartedAt ? new Date(task.timerStartedAt).getTime() : null;
+    if (startedAt && !Number.isNaN(startedAt)) {
+      return base + Math.max(0, Date.now() - startedAt);
+    }
+    return base;
+  }
+
+  findTaskById(taskId) {
+    const state = store.getState();
+    const tasks = Array.isArray(state.tarefasHome) ? state.tarefasHome : [];
+    return tasks.find((t) => this.compareIds(this.getTaskId(t), taskId));
   }
 
   updateTopCards(categories, tasks) {
@@ -248,6 +299,7 @@ class HomeView {
     const confirmed = await confirmAction('Deseja excluir esta tarefa?');
     if (!confirmed) return;
     store.removeItem('tarefasHome', (t) => this.compareIds(this.getTaskId(t), taskId));
+    this.ensureStayOnHome();
   }
 
   handleEdit(task) {
@@ -256,10 +308,86 @@ class HomeView {
   }
 
   handleToggleStatus(taskId, checked) {
+    const task = this.findTaskById(taskId);
+    const elapsedMs = this.calculateElapsedMs(task);
     store.updateItem('tarefasHome', (t) => this.compareIds(this.getTaskId(t), taskId), {
       completed: checked,
+      status: checked ? 'done' : 'todo',
       completedAt: checked ? new Date().toISOString() : null,
+      timerStartedAt: null,
+      timerElapsedMs: elapsedMs,
     });
+  }
+
+  handleStartTimer(taskId) {
+    const task = this.findTaskById(taskId);
+    if (!task) return;
+
+    const isAlreadyRunning =
+      (task.status || '').toLowerCase() === 'doing' && Boolean(task.timerStartedAt);
+    if (isAlreadyRunning) return;
+
+    const now = new Date().toISOString();
+    const elapsed = Number(task.timerElapsedMs) || 0;
+
+    store.updateItem('tarefasHome', (t) => this.compareIds(this.getTaskId(t), taskId), {
+      status: 'doing',
+      completed: false,
+      completedAt: null,
+      timerStartedAt: now,
+      timerElapsedMs: elapsed,
+    });
+  }
+
+  async handleStopTimer(taskId) {
+    const task = this.findTaskById(taskId);
+    if (!task) return;
+
+    const elapsedMs = this.calculateElapsedMs(task);
+    const concluded = await confirmAction('Você concluiu esta tarefa?');
+    const completed = concluded === true;
+
+    let nextElapsed = elapsedMs;
+    if (!completed) {
+      const resetTimer = await confirmAction('Deseja zerar o cronômetro? (Cancelar = pausar)');
+      nextElapsed = resetTimer ? 0 : elapsedMs;
+    }
+
+    store.updateItem('tarefasHome', (t) => this.compareIds(this.getTaskId(t), taskId), {
+      status: completed ? 'done' : 'todo',
+      completed,
+      completedAt: completed ? new Date().toISOString() : null,
+      timerStartedAt: null,
+      timerElapsedMs: nextElapsed,
+    });
+  }
+
+  handleDuplicate(task) {
+    if (!task) return;
+    const state = store.getState();
+    const newId = (state.contadorHome || 0) + 1;
+    const title = task.titulo || task.nome || 'Nova Tarefa';
+
+    const duplicatedTask = {
+      ...task,
+      id: newId,
+      contador: newId,
+      titulo: `${title} (cópia)`,
+      completed: false,
+      completedAt: null,
+      status: 'todo',
+      timerElapsedMs: 0,
+      timerStartedAt: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Garantir que tags e arrays sejam copiados
+    if (Array.isArray(task.tags)) {
+      duplicatedTask.tags = [...task.tags];
+    }
+
+    taskEditModal.open(duplicatedTask, (currentTask, updates) => this.saveTask(currentTask, updates));
   }
 
   createTask() {
@@ -278,6 +406,8 @@ class HomeView {
       tags: [],
       status: 'todo',
       completed: false,
+      timerElapsedMs: 0,
+      timerStartedAt: null,
       time: defaultDate.toISOString(),
     };
 
@@ -298,17 +428,21 @@ class HomeView {
       const nextCounter = Number.isFinite(numericId) ? Math.max(currentCounter, numericId) : currentCounter + 1;
       store.setState({ contadorHome: nextCounter });
     }
-
-    // Garantir que o usuário permaneça na Home após salvar/criar
-    if (router && typeof router.getCurrentPath === 'function' && router.getCurrentPath() !== '/') {
-      router.navigate('/', false);
-    }
+    this.ensureStayOnHome();
   }
 
   taskExists(taskId) {
     const state = store.getState();
     const tasks = Array.isArray(state.tarefasHome) ? state.tarefasHome : [];
     return tasks.some((t) => this.compareIds(this.getTaskId(t), taskId));
+  }
+
+  ensureStayOnHome() {
+    if (!router || typeof router.getCurrentPath !== 'function') return;
+    const current = router.getCurrentPath();
+    if (current && current !== '/') {
+      router.navigate('/', false);
+    }
   }
 
   isHighPriority(task) {
