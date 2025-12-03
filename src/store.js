@@ -19,6 +19,7 @@ import {
 const STORE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 dias
 const STATE_COLLECTION_MAP = {
     tarefas: 'tarefas',
+    tarefasHome: 'tarefasHome',
     tarefasRotina: 'tarefasRotina',
     historico: 'historico',
     categorias: 'categorias',
@@ -203,6 +204,7 @@ class Store {
             // Mapeamento de coleções do Firestore para chaves do estado
             const collections = [
                 { collection: 'tarefas', stateKey: 'tarefas' },
+                { collection: 'tarefasHome', stateKey: 'tarefasHome' },
                 { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
                 { collection: 'historico', stateKey: 'historico' },
                 { collection: 'categorias', stateKey: 'categorias' },
@@ -310,6 +312,7 @@ class Store {
             // Mapeamento de chaves do estado para coleções do Firestore
             const collections = [
                 { stateKey: 'tarefas', collection: 'tarefas' },
+                { stateKey: 'tarefasHome', collection: 'tarefasHome' },
                 { stateKey: 'tarefasRotina', collection: 'tarefasRotina' },
                 { stateKey: 'historico', collection: 'historico' },
                 { stateKey: 'categorias', collection: 'categorias' },
@@ -390,6 +393,7 @@ class Store {
             // Coleções principais para listeners real-time
             const collections = [
                 { collection: 'tarefas', stateKey: 'tarefas' },
+                { collection: 'tarefasHome', stateKey: 'tarefasHome' },
                 { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
                 { collection: 'historico', stateKey: 'historico' },
                 { collection: 'categorias', stateKey: 'categorias' },
