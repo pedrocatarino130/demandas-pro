@@ -14,6 +14,11 @@ class ProjetosView {
   constructor() {
     this.unsubscribe = null;
     this.searchQuery = '';
+    this.filterStatus = 'all'; // all | todo | doing | done
+    this.priorityFilter = 'all'; // all | urgente | alta | media | baixa
+    this.orderBy = 'execution'; // fixo, prioriza execução
+    this.userOrder = [];
+    this.orderModal = null;
   }
 
   render() {
@@ -23,6 +28,7 @@ class ProjetosView {
           <h1 class="home-section-title">Projetos</h1>
           <div class="home-search" id="projetos-search"></div>
         </div>
+        <div class="home-filters" id="projetos-filters"></div>
 
         <div class="home-top-cards">
           <section class="home-welcome-card">
@@ -48,7 +54,9 @@ class ProjetosView {
   }
 
   mount() {
+    this.loadPreferences();
     this.renderSearch();
+    this.renderFilters();
     this.renderCTA();
     this.renderKanban();
 
@@ -77,6 +85,88 @@ class ProjetosView {
     });
 
     container.appendChild(search.render());
+  }
+
+  renderFilters() {
+    const container = document.getElementById('projetos-filters');
+    if (!container) return;
+    container.innerHTML = `
+      <div class="projetos-filters-panel">
+        <div class="projetos-filters-header">
+          <div class="projetos-filters-title">
+            <span class="projetos-filters-icon">🎯</span>
+            <div>
+              <p class="projetos-filters-eyebrow">Board de projetos</p>
+              <h3>Filtros rápidos</h3>
+            </div>
+          </div>
+          <div class="projetos-filters-badges">
+            <span class="projetos-filters-badge">A fazer</span>
+            <span class="projetos-filters-badge badge-doing">Fazendo</span>
+            <span class="projetos-filters-badge badge-done">Concluídos</span>
+          </div>
+        </div>
+        <div class="projetos-filters-grid">
+          <div class="projetos-filter-group">
+            <label class="projetos-filter-label" for="projetos-status-filter">Status</label>
+            <div class="projetos-select-wrapper">
+              <select id="projetos-status-filter" class="projetos-filter-select">
+                <option value="all" ${this.filterStatus === 'all' ? 'selected' : ''}>Todos status</option>
+                <option value="todo" ${this.filterStatus === 'todo' ? 'selected' : ''}>A fazer</option>
+                <option value="doing" ${this.filterStatus === 'doing' ? 'selected' : ''}>Fazendo</option>
+                <option value="done" ${this.filterStatus === 'done' ? 'selected' : ''}>Concluídos</option>
+              </select>
+              <span class="projetos-select-caret">⌄</span>
+            </div>
+          </div>
+          <div class="projetos-filter-group">
+            <label class="projetos-filter-label" for="projetos-priority-filter">Prioridade</label>
+            <div class="projetos-select-wrapper">
+              <select id="projetos-priority-filter" class="projetos-filter-select">
+                <option value="all" ${this.priorityFilter === 'all' ? 'selected' : ''}>Todas</option>
+                <option value="urgente" ${this.priorityFilter === 'urgente' ? 'selected' : ''}>Urgente</option>
+                <option value="alta" ${this.priorityFilter === 'alta' ? 'selected' : ''}>Alta</option>
+                <option value="media" ${this.priorityFilter === 'media' ? 'selected' : ''}>Média</option>
+                <option value="baixa" ${this.priorityFilter === 'baixa' ? 'selected' : ''}>Baixa</option>
+              </select>
+              <span class="projetos-select-caret">⌄</span>
+            </div>
+          </div>
+          <div class="projetos-filter-group projetos-order-group">
+            <label class="projetos-filter-label">Ordem de execução</label>
+            <button class="projetos-order-button" id="projetos-order-button" type="button">
+              <span class="projetos-order-icon">⇅</span>
+              <span>Definir ordem</span>
+            </button>
+            <p class="projetos-order-hint">Prioridade + prazo, com prioridade manual</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const statusSelect = container.querySelector('#projetos-status-filter');
+    const prioritySelect = container.querySelector('#projetos-priority-filter');
+    const orderButton = container.querySelector('#projetos-order-button');
+
+    if (statusSelect) {
+      statusSelect.addEventListener('change', () => {
+        this.filterStatus = statusSelect.value;
+        this.renderKanban();
+        this.savePreferences();
+      });
+    }
+
+    if (prioritySelect) {
+      prioritySelect.addEventListener('change', () => {
+        this.priorityFilter = prioritySelect.value;
+        this.renderKanban();
+        this.savePreferences();
+      });
+    }
+
+    if (orderButton) {
+      orderButton.addEventListener('click', () => this.openOrderModal());
+    }
   }
 
   renderCTA() {
@@ -164,7 +254,24 @@ class ProjetosView {
       return [];
     }
     
-    const filtered = tasks.filter((t) => t && !t.arquivado);
+    let filtered = tasks.filter((t) => t && !t.arquivado);
+
+    // Filtrar por status
+    if (this.filterStatus !== 'all') {
+      filtered = filtered.filter((task) => {
+        const status = (task.status || 'todo').toLowerCase();
+        return status === this.filterStatus;
+      });
+    }
+
+    // Filtrar por prioridade
+    if (this.priorityFilter !== 'all') {
+      filtered = filtered.filter((task) => {
+        const priority = (task.prioridade || 'media').toLowerCase();
+        return priority === this.priorityFilter;
+      });
+    }
+
     if (!this.searchQuery) return filtered;
     const q = this.searchQuery.toLowerCase();
     return filtered.filter((task) => {
@@ -204,8 +311,208 @@ class ProjetosView {
 
     return columns.map((col) => ({
       ...col,
-      tasks: map.get(col.id) || [],
+      tasks: this.sortColumnTasks(map.get(col.id) || []),
     }));
+  }
+
+  sortColumnTasks(tasks) {
+    const priorityOrder = { urgente: 4, alta: 3, media: 2, baixa: 1 };
+    return [...tasks].sort((a, b) => {
+      const idA = this.getTaskId(a);
+      const idB = this.getTaskId(b);
+      const idxA = this.userOrder.findIndex((id) => String(id) === String(idA));
+      const idxB = this.userOrder.findIndex((id) => String(id) === String(idB));
+
+      if (idxA !== -1 || idxB !== -1) {
+        if (idxA !== -1 && idxB !== -1 && idxA !== idxB) {
+          return idxA - idxB;
+        }
+        if (idxA !== -1 && idxB === -1) return -1;
+        if (idxB !== -1 && idxA === -1) return 1;
+      }
+
+      if (this.orderBy === 'execution' || this.orderBy === 'priority') {
+        const pA = priorityOrder[(a?.prioridade || 'media').toLowerCase()] || 0;
+        const pB = priorityOrder[(b?.prioridade || 'media').toLowerCase()] || 0;
+        if (pA !== pB) return pB - pA;
+        if (this.orderBy === 'execution') {
+          // dentro da mesma prioridade, os prazos mais próximos primeiro
+          const tA = a?.time ? new Date(a.time) : null;
+          const tB = b?.time ? new Date(b.time) : null;
+          if (tA && tB && tA.getTime() !== tB.getTime()) {
+            return tA - tB;
+          }
+          if (tA && !tB) return -1;
+          if (!tA && tB) return 1;
+        }
+      }
+
+      if (this.orderBy === 'date') {
+        const tA = a?.time ? new Date(a.time) : null;
+        const tB = b?.time ? new Date(b.time) : null;
+        if (tA && tB && tA.getTime() !== tB.getTime()) {
+          return tA - tB;
+        }
+        if (tA && !tB) return -1;
+        if (!tA && tB) return 1;
+      }
+
+      // fallback for title or tie-break
+      const titleA = (a?.titulo || a?.nome || '').toString().toLowerCase();
+      const titleB = (b?.titulo || b?.nome || '').toString().toLowerCase();
+      return titleA.localeCompare(titleB, 'pt-BR');
+    });
+  }
+
+  loadPreferences() {
+    try {
+      const saved = localStorage.getItem('projetos-filters');
+      if (!saved) return;
+      const prefs = JSON.parse(saved);
+      this.filterStatus = prefs.filterStatus || this.filterStatus;
+      this.priorityFilter = prefs.priorityFilter || this.priorityFilter;
+      this.orderBy = prefs.orderBy || this.orderBy;
+      this.userOrder = Array.isArray(prefs.userOrder) ? prefs.userOrder : [];
+    } catch (err) {
+      console.warn('Não foi possível carregar preferências de filtros de projetos', err);
+    }
+  }
+
+  savePreferences() {
+    try {
+      localStorage.setItem('projetos-filters', JSON.stringify({
+        filterStatus: this.filterStatus,
+        priorityFilter: this.priorityFilter,
+        orderBy: this.orderBy,
+        userOrder: this.userOrder,
+      }));
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  openOrderModal() {
+    const state = store.getState();
+    const tasks = Array.isArray(state.tarefas) ? state.tarefas : [];
+    const items = this.getOrderedList(tasks);
+
+    if (!this.orderModal) {
+      this.orderModal = document.createElement('div');
+      this.orderModal.className = 'projetos-order-modal';
+      document.body.appendChild(this.orderModal);
+    }
+
+    this.orderModal.innerHTML = `
+      <div class="projetos-order-overlay"></div>
+      <div class="projetos-order-dialog">
+        <div class="projetos-order-header">
+          <div>
+            <p class="projetos-order-eyebrow">Execução personalizada</p>
+            <h3>Ordenar projetos</h3>
+          </div>
+          <button class="projetos-order-close" aria-label="Fechar">✕</button>
+        </div>
+        <p class="projetos-order-subtitle">Arraste ou use os botões para ranquear. Dentro da mesma prioridade, o prazo mais próximo vem primeiro.</p>
+        <div class="projetos-order-list" id="projetos-order-list">
+          ${items.map((item) => `
+            <div class="projetos-order-item" data-id="${item.id}">
+              <span class="projetos-order-handle">⋮⋮</span>
+              <span class="projetos-order-name">${this.escapeHtml(item.titulo)}</span>
+              <div class="projetos-order-actions">
+                <button class="projetos-order-move" data-dir="up" aria-label="Mover para cima">↑</button>
+                <button class="projetos-order-move" data-dir="down" aria-label="Mover para baixo">↓</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="projetos-order-footer">
+          <button class="projetos-order-cancel">Cancelar</button>
+          <button class="projetos-order-save">Salvar ordem</button>
+        </div>
+      </div>
+    `;
+
+    const closeBtn = this.orderModal.querySelector('.projetos-order-close');
+    const overlay = this.orderModal.querySelector('.projetos-order-overlay');
+    const listEl = this.orderModal.querySelector('#projetos-order-list');
+    const moveButtons = this.orderModal.querySelectorAll('.projetos-order-move');
+    const saveBtn = this.orderModal.querySelector('.projetos-order-save');
+    const cancelBtn = this.orderModal.querySelector('.projetos-order-cancel');
+
+    const moveItem = (itemEl, dir) => {
+      if (!listEl || !itemEl) return;
+      if (dir === 'up' && itemEl.previousElementSibling) {
+        listEl.insertBefore(itemEl, itemEl.previousElementSibling);
+      }
+      if (dir === 'down' && itemEl.nextElementSibling) {
+        listEl.insertBefore(itemEl.nextElementSibling, itemEl);
+      }
+    };
+
+    moveButtons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const item = e.target.closest('.projetos-order-item');
+        const dir = e.target.getAttribute('data-dir');
+        moveItem(item, dir);
+      });
+    });
+
+    const close = () => {
+      this.orderModal.style.display = 'none';
+    };
+
+    const save = () => {
+      if (!listEl) return;
+      const newOrder = Array.from(listEl.children).map((el) => el.getAttribute('data-id')).filter(Boolean);
+      this.userOrder = newOrder;
+      this.savePreferences();
+      this.renderKanban();
+      close();
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (overlay) overlay.addEventListener('click', close);
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    if (saveBtn) saveBtn.addEventListener('click', save);
+
+    this.orderModal.style.display = 'flex';
+  }
+
+  getOrderedList(tasks) {
+    const items = (tasks || []).filter(Boolean).map((t) => ({
+      id: this.getTaskId(t),
+      titulo: t.titulo || t.nome || 'Sem título',
+    })).filter((t) => t.id);
+
+    const uniqueMap = new Map();
+    items.forEach((item) => {
+      if (!uniqueMap.has(item.id)) {
+        uniqueMap.set(item.id, item);
+      }
+    });
+
+    const uniqueItems = Array.from(uniqueMap.values());
+    const ordered = [];
+    this.userOrder.forEach((id) => {
+      const found = uniqueItems.find((item) => String(item.id) === String(id));
+      if (found) {
+        ordered.push(found);
+      }
+    });
+
+    uniqueItems.forEach((item) => {
+      if (!ordered.find((o) => String(o.id) === String(item.id))) {
+        ordered.push(item);
+      }
+    });
+
+    return ordered;
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   updateProgress(tasks) {
