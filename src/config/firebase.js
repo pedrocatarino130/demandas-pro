@@ -20,6 +20,9 @@ const DEFAULT_FIREBASE_CONFIG = {
     measurementId: 'G-GG4SN3HWCK'
 };
 
+// Versão para bust de cache do firebase-config.json
+const FIREBASE_CONFIG_VERSION = '2025-12-02-01';
+
 // Configuração do Firebase - primeiro tenta variáveis de ambiente, depois arquivo JSON
 let firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY || DEFAULT_FIREBASE_CONFIG.apiKey,
@@ -44,7 +47,7 @@ async function loadFirebaseConfigFromFile() {
     configLoaded = true;
 
     try {
-        const configPath = buildAssetPath('firebase-config.json');
+        const configPath = `${buildAssetPath('firebase-config.json')}?v=${FIREBASE_CONFIG_VERSION}`;
         console.log('🔍 Carregando Firebase config de:', configPath);
         const response = await fetch(configPath, {
             cache: 'no-cache' // Garantir que sempre busque a versão mais recente

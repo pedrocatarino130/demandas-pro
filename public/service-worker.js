@@ -14,7 +14,7 @@
  */
 
 const CACHE_NAME = 'gerenciador-pedro-v3.0';
-const CACHE_VERSION = '1.1.0';
+const CACHE_VERSION = '1.1.1';
 const ACTIVE_CACHE = `${CACHE_NAME}-${CACHE_VERSION}`;
 
 const BASE_PATH = resolveBasePath();
