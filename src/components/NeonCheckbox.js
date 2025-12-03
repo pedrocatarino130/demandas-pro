@@ -9,6 +9,7 @@ export class NeonCheckbox {
     this.onChange = options.onChange || (() => {});
     this.id = options.id || null;
     this.className = options.className || '';
+    this.stopPropagation = options.stopPropagation || false;
   }
 
   render() {
@@ -51,7 +52,9 @@ export class NeonCheckbox {
     // Event listener
     wrapper.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
+      if (this.stopPropagation) {
+        e.stopPropagation();
+      }
       this.toggle();
     });
 

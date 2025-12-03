@@ -23,6 +23,7 @@ class FirebaseSync {
         this.isOnline = navigator.onLine;
         this.syncInProgress = false;
         this.listeners = [];
+        this.notifyScheduled = false;
         this.retryTimeout = null;
         this.consecutiveFailures = 0;
         this.circuitOpenUntil = null;
@@ -30,6 +31,9 @@ class FirebaseSync {
         this.lastError = null;
         this.lastQueueWarningAt = 0;
         this.currentBatchSize = 0;
+        this._notifyScheduler = (typeof window !== 'undefined' && window.requestAnimationFrame)
+            ? (cb) => window.requestAnimationFrame(cb)
+            : (cb) => setTimeout(cb, 16);
         
         // Inicializar
         this._init();
@@ -591,12 +595,20 @@ class FirebaseSync {
             ...extraData
         };
 
-        this.listeners.forEach(callback => {
-            try {
-                callback(status);
-            } catch (error) {
-                console.error('Erro ao notificar listener:', error);
-            }
+        if (this.notifyScheduled) {
+            return;
+        }
+
+        this.notifyScheduled = true;
+        this._notifyScheduler(() => {
+            this.notifyScheduled = false;
+            this.listeners.forEach(callback => {
+                try {
+                    callback(status);
+                } catch (error) {
+                    console.error('Erro ao notificar listener:', error);
+                }
+            });
         });
     }
 

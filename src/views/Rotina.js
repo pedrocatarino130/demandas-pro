@@ -23,11 +23,6 @@ import {
     toast
 } from '../components/Toast.js';
 import {
-    setupSwipeGestures,
-    createCompleteTaskHandler,
-    createPostponeTaskHandler
-} from '../utils/swipe-gestures.js';
-import {
     confirmAction
 } from '../components/ConfirmModal.js';
 
@@ -266,8 +261,10 @@ class RotinaView {
               showDuration: true,
               showActions: true,
               isCurrent: false,
+              isCompleted: Boolean(task.completed),
               isOverdue: overdueTasks.some(t => (t.id || t.contador) === (task.id || task.contador)),
               isPostponed: isPostponed,
+              onToggleStatus: (id, checked) => this.handleTaskComplete(id, checked),
               onInjectToHome: (t) => this.handleInjectToHome(t)
             });
             const cardHtml = taskCard.render().outerHTML;
@@ -300,12 +297,9 @@ class RotinaView {
         this.unsubscribe = store.subscribe(() => {
             this.update();
         });
-
+        
         // Event listeners
         this.setupEventListeners();
-        
-        // Aplicar swipe gestures
-        this.setupSwipeGestures();
     }
 
     setupEventListeners() {
@@ -369,17 +363,6 @@ class RotinaView {
             priorityFilter.addEventListener('change', this.eventHandlers.priorityFilterChange);
         }
 
-        // Checkboxes de conclusão - usar event delegation
-        this.eventHandlers.checkboxChange = (e) => {
-            if (e.target.classList.contains('task-checkbox') || e.target.classList.contains('ios-checkbox-input')) {
-                const taskId = e.target.getAttribute('data-task-id');
-                if (taskId) {
-                    this.handleTaskComplete(taskId, e.target.checked);
-                }
-            }
-        };
-        document.addEventListener('change', this.eventHandlers.checkboxChange);
-
         // Botões de ação nos cards (editar/excluir/inject) - usar event delegation
         this.eventHandlers.actionClick = (e) => {
             const actionBtn = e.target.closest('[data-action]');
@@ -437,26 +420,6 @@ class RotinaView {
         }
     }
 
-    setupSwipeGestures() {
-        // Aplicar swipe gestures nos cards
-        setTimeout(() => {
-            const taskItems = document.querySelectorAll('.rotina-task-item .task-card');
-            taskItems.forEach((card) => {
-                const taskId = card.closest('.rotina-task-item').getAttribute('data-task-id');
-                if (taskId) {
-                    setupSwipeGestures(card, {
-                        onSwipeLeft: createCompleteTaskHandler(taskId, (id) => {
-                            this.handleTaskComplete(id, true);
-                        }),
-                        onSwipeRight: createPostponeTaskHandler(taskId, (id, days) => {
-                            this.handlePostpone(id, days);
-                        })
-                    });
-                }
-            });
-        }, 100);
-    }
-
     handleTaskComplete(taskId, completed) {
         const state = store.getState();
         const task = state.tarefasRotina.find(t => (t.id || t.contador) == taskId);
@@ -464,6 +427,7 @@ class RotinaView {
         if (!task) return;
 
         const taskTitle = task.titulo || task.nome || 'Tarefa';
+        let createdNextId = null;
 
         // Atualizar estado
         store.updateItem('tarefasRotina', (t) => (t.id || t.contador) == taskId, {
@@ -473,7 +437,12 @@ class RotinaView {
 
         // Se for tarefa recorrente e foi completada, criar próxima ocorrência
         if (completed && task.recurrence) {
-            this.handleRecurringTask(task);
+            createdNextId = this.handleRecurringTask(task);
+        }
+
+        // Se desmarcar uma tarefa recorrente, limpar instâncias criadas muito próximas (evita duplicidade)
+        if (!completed && task.recurrence && task.recurrence.enabled) {
+            this.cleanupRecentRecurringInstances(task);
         }
 
         // Mostrar toast com opção de desfazer
@@ -486,6 +455,9 @@ class RotinaView {
                         completed: false,
                         completedAt: null,
                     });
+                    if (createdNextId) {
+                        store.removeItem('tarefasRotina', (t) => (t.id || t.contador) == createdNextId);
+                    }
                     toast.info('Ação desfeita');
                 },
                 actionLabel: 'Desfazer',
@@ -498,28 +470,40 @@ class RotinaView {
 
         const state = store.getState();
         const newId = (state.contadorRotina || 0) + 1;
-        const currentTime = task.time ? toDate(task.time) : new Date();
-        let nextTime = new Date(currentTime);
+        const originalTime = task.time ? toDate(task.time) : null;
+        const now = new Date();
 
-        switch (task.recurrence.type) {
-            case 'daily':
-                nextTime.setDate(nextTime.getDate() + 1);
-                break;
-            case 'weekly':
-                nextTime.setDate(nextTime.getDate() + 7);
-                break;
-            case 'monthly':
-                nextTime.setMonth(nextTime.getMonth() + 1);
-                break;
-            case 'custom':
-                nextTime.setDate(nextTime.getDate() + (task.recurrence.interval || 1));
-                break;
-            default:
-                return;
+        // Base: mantém horário original, mas nunca gera ocorrência no passado
+        let nextTime = new Date(now);
+        if (originalTime) {
+            nextTime.setHours(originalTime.getHours(), originalTime.getMinutes(), originalTime.getSeconds(), 0);
+        }
+
+        if (nextTime <= now) {
+            nextTime = this._addRecurrenceInterval(nextTime, task.recurrence);
+        }
+
+        if (!nextTime || !(nextTime instanceof Date)) {
+            return;
+        }
+
+        const seriesId = this.getSeriesId(task);
+
+        // Se já existir uma próxima instância para a mesma série no futuro, evitar duplicar
+        const existingNext = state.tarefasRotina.find((t) => {
+            if ((t.id || t.contador) === (task.id || task.contador)) return false;
+            const sameSeries = this.getSeriesId(t) === seriesId;
+            const hasFutureDate = t.time && toDate(t.time) && toDate(t.time) >= nextTime && !t.completed;
+            return sameSeries && hasFutureDate;
+        });
+        if (existingNext) {
+            return null;
         }
 
         const nextTask = {
             ...task,
+            seriesId,
+            originalId: task.originalId || task.id || task.contador,
             id: newId,
             contador: newId,
             time: nextTime.toISOString(),
@@ -534,6 +518,56 @@ class RotinaView {
 
         store.addItem('tarefasRotina', nextTask);
         store.setState({ contadorRotina: newId });
+        return newId;
+    }
+
+    _addRecurrenceInterval(date, recurrence, forceStep = true) {
+        const next = new Date(date);
+        const step = recurrence.interval && recurrence.interval > 0 ? recurrence.interval : 1;
+
+        switch (recurrence.type) {
+            case 'daily':
+                next.setDate(next.getDate() + step);
+                break;
+            case 'weekly':
+                next.setDate(next.getDate() + 7 * step);
+                break;
+            case 'monthly':
+                next.setMonth(next.getMonth() + step);
+                break;
+            case 'custom':
+                next.setDate(next.getDate() + step);
+                break;
+            default:
+                if (forceStep) return null;
+        }
+
+        return next;
+    }
+
+    cleanupRecentRecurringInstances(task) {
+        const seriesId = this.getSeriesId(task);
+        const now = Date.now();
+        const RECENT_WINDOW_MS = 2 * 60 * 1000;
+
+        const state = store.getState();
+        const recentFuture = state.tarefasRotina.filter((t) => {
+            if ((t.id || t.contador) === (task.id || task.contador)) return false;
+            const sameSeries = this.getSeriesId(t) === seriesId;
+            const createdAt = t.createdAt ? new Date(t.createdAt).getTime() : null;
+            const isRecent = createdAt ? (now - createdAt) <= RECENT_WINDOW_MS : false;
+            return sameSeries && isRecent && !t.completed;
+        });
+
+        if (recentFuture.length > 0) {
+            recentFuture.forEach((t) => {
+                store.removeItem('tarefasRotina', (item) => (item.id || item.contador) === (t.id || t.contador));
+            });
+        }
+    }
+
+    getSeriesId(task) {
+        return task.seriesId || task.originalId || task.id || task.contador;
     }
 
     handlePostpone(taskId, days) {
@@ -847,7 +881,6 @@ class RotinaView {
         if (container) {
             container.innerHTML = this.render();
             this.setupEventListeners();
-            this.setupSwipeGestures();
         }
     }
 
@@ -873,4 +906,3 @@ export default function renderRotina() {
         },
     };
 }
-

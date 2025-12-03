@@ -40,6 +40,10 @@ class Store {
         this.initializing = false;
         this.listeners = []; // Firestore listeners
         this.userId = 'default'; // Para futuro suporte de autenticação
+        this.notifyScheduled = false;
+        this.notifyScheduler = (typeof window !== 'undefined' && window.requestAnimationFrame)
+            ? (cb) => window.requestAnimationFrame(cb)
+            : (cb) => setTimeout(cb, 16); // fallback para ambientes de teste/no-window
 
         // Inicializar assincronamente
         this.init();
@@ -615,12 +619,20 @@ class Store {
      * Notifica todos os subscribers
      */
     notify() {
-        this.subscribers.forEach((callback) => {
-            try {
-                callback(this.state);
-            } catch (error) {
-                console.error('Erro ao notificar subscriber:', error);
-            }
+        if (this.notifyScheduled) {
+            return;
+        }
+
+        this.notifyScheduled = true;
+        this.notifyScheduler(() => {
+            this.notifyScheduled = false;
+            this.subscribers.forEach((callback) => {
+                try {
+                    callback(this.state);
+                } catch (error) {
+                    console.error('Erro ao notificar subscriber:', error);
+                }
+            });
         });
     }
 

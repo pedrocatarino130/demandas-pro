@@ -35,22 +35,25 @@ export class SyncStatusWidget {
         this.container.className = 'sync-status-widget hidden';
         this.container.innerHTML = `
             <div class="sync-status-card">
-                <div class="sync-status-header">
-                    <span class="sync-status-dot"></span>
-                    <div class="sync-status-titles">
-                        <strong class="sync-status-title">Sincronização</strong>
-                        <span class="sync-status-subtitle">Monitorando backend</span>
+                <div class="sync-status-row">
+                    <div class="sync-status-main">
+                        <span class="sync-status-dot"></span>
+                        <div class="sync-status-texts">
+                            <strong class="sync-status-title">Sincronização</strong>
+                            <span class="sync-status-message">Sincronizado</span>
+                        </div>
                     </div>
-                    <span class="sync-status-count badge badge-warning">0</span>
+                    <div class="sync-status-actions">
+                        <span class="sync-status-count badge badge-warning">0</span>
+                        <button class="sync-status-action" type="button">
+                            <span class="sync-status-action-icon">⟳</span>
+                            <span class="sync-status-action-label">Sincronizar</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="sync-status-message">Sincronizado</div>
-                <div class="sync-status-progress">
-                    <span class="sync-status-progress-text">Fila: --</span>
+                <div class="sync-status-meta">
+                    <span class="sync-status-meta-text">Última atualização: --</span>
                     <span class="sync-status-alert"></span>
-                </div>
-                <div class="sync-status-footer">
-                    <span class="sync-status-meta">Última atualização: --</span>
-                    <button class="sync-status-action btn btn-outline">Sincronizar agora</button>
                 </div>
             </div>
         `;
@@ -59,13 +62,13 @@ export class SyncStatusWidget {
 
         this.elements = {
             dot: this.container.querySelector('.sync-status-dot'),
-            subtitle: this.container.querySelector('.sync-status-subtitle'),
             count: this.container.querySelector('.sync-status-count'),
             message: this.container.querySelector('.sync-status-message'),
-            meta: this.container.querySelector('.sync-status-meta'),
-            progressText: this.container.querySelector('.sync-status-progress-text'),
+            meta: this.container.querySelector('.sync-status-meta-text'),
             alert: this.container.querySelector('.sync-status-alert'),
             action: this.container.querySelector('.sync-status-action'),
+            actionIcon: this.container.querySelector('.sync-status-action-icon'),
+            actionLabel: this.container.querySelector('.sync-status-action-label'),
         };
 
         this.elements.action.addEventListener('click', () => this.handleManualSync());
@@ -98,39 +101,29 @@ export class SyncStatusWidget {
         const showWidget = !isOnline || pendingCount > 0 || syncing || this.manualSyncInFlight || circuitOpen || lastError;
         this.container.classList.toggle('hidden', !showWidget);
 
-        // Atualizar dot e subtítulo
+        // Atualizar dot
         this.elements.dot.classList.toggle('offline', !isOnline);
         this.elements.dot.classList.toggle('syncing', syncing || this.manualSyncInFlight);
         this.elements.dot.classList.toggle('error', Boolean(circuitOpen || lastError));
-        this.elements.subtitle.textContent = this.getSubtitleText();
 
         // Contador de pendências
         this.elements.count.textContent = pendingCount.toString();
         this.elements.count.classList.toggle('visible', pendingCount > 0);
-
-        // Progresso / alertas
-        if (this.elements.progressText) {
-            const progressParts = [`Fila: ${pendingCount}`];
-            if (this.status.currentBatchSize) {
-                progressParts.push(`Lote: ${this.status.currentBatchSize}`);
-            }
-            if (this.lastSyncedCount && this.lastBatchTotal) {
-                progressParts.push(`Último: ${this.lastSyncedCount}/${this.lastBatchTotal}`);
-            }
-            this.elements.progressText.textContent = progressParts.join(' • ');
-        }
 
         if (this.elements.alert) {
             const largeQueue = pendingCount >= 50 || this.status.queueWarning;
             let alertMessage = '';
             if (circuitOpen) {
                 alertMessage = 'Pausado após falhas';
+            } else if (this.status.lastError) {
+                alertMessage = 'Erro recente na sincronização';
             } else if (largeQueue) {
                 alertMessage = 'Fila alta, sincronizando em lotes';
             } else if (this.lastFailedCount > 0) {
                 alertMessage = `${this.lastFailedCount} falhas recentes`;
             }
             this.elements.alert.textContent = alertMessage;
+            this.elements.alert.classList.toggle('visible', Boolean(alertMessage));
         }
 
         // Mensagem principal
@@ -138,38 +131,27 @@ export class SyncStatusWidget {
 
         // Última atualização
         if (this.lastSyncedAt) {
-            this.elements.meta.textContent = `Última atualização: ${this.formatTime(this.lastSyncedAt)}`;
+            this.elements.meta.textContent = `Atualizado ${this.formatTime(this.lastSyncedAt)}`;
         } else if (circuitOpen) {
-            this.elements.meta.textContent = 'Sincronização pausada para proteger a fila';
+            this.elements.meta.textContent = 'Pausado para proteger a fila';
         } else if (!isOnline) {
             this.elements.meta.textContent = 'Sem conexão';
         } else {
-            this.elements.meta.textContent = 'Aguardando primeira sincronização...';
+            this.elements.meta.textContent = 'Primeira sync pendente';
         }
 
         // Botão de ação
         const actionDisabled = !isOnline || pendingCount === 0 || syncing || this.manualSyncInFlight || circuitOpen;
         this.elements.action.disabled = actionDisabled;
-        this.elements.action.textContent = this.manualSyncInFlight ? 'Sincronizando...' : 'Sincronizar agora';
-    }
-
-    getSubtitleText() {
-        if (this.status.circuitOpen) {
-            return 'Pausa automática (falhas)';
+        const actionLabel = this.manualSyncInFlight ? 'Sincronizando' : 'Sincronizar';
+        if (this.elements.actionLabel) {
+            this.elements.actionLabel.textContent = actionLabel;
+        } else {
+            this.elements.action.textContent = actionLabel;
         }
-        if (this.status.lastError) {
-            return 'Erro na sincronização';
+        if (this.elements.actionIcon) {
+            this.elements.actionIcon.textContent = this.manualSyncInFlight ? '…' : '⟳';
         }
-        if (!this.status.isOnline) {
-            return 'Modo offline';
-        }
-        if (this.status.syncing || this.manualSyncInFlight) {
-            return 'Sincronizando dados';
-        }
-        if (this.status.pendingCount > 0) {
-            return 'Pendências detectadas';
-        }
-        return 'Tudo em dia';
     }
 
     getStatusMessage() {
@@ -178,17 +160,17 @@ export class SyncStatusWidget {
         if (circuitOpen) {
             const remaining = this.status.circuitOpenUntil ? Math.max(0, this.status.circuitOpenUntil - Date.now()) : 0;
             const seconds = Math.ceil(remaining / 1000);
-            return `Pausado após falhas. Retentando em ~${seconds || 5}s`;
+            return `Pausado após falhas • retoma em ~${seconds || 5}s`;
         }
 
         if (this.status.lastError) {
-            return 'Erro na última tentativa. Aguardando novo retry...';
+            return 'Erro recente, tentando novamente em instantes';
         }
 
         if (!isOnline) {
             return pendingCount > 0
-                ? `${pendingCount} pendências aguardando conexão`
-                : 'Sem conexão. Continuaremos tentando em segundo plano.';
+                ? `${pendingCount} pendências offline`
+                : 'Sem conexão no momento';
         }
 
         if (this.manualSyncInFlight) {
@@ -197,18 +179,18 @@ export class SyncStatusWidget {
 
         if (syncing) {
             return pendingCount > 0
-                ? `Sincronizando ${pendingCount} pendências...`
-                : 'Sincronizando dados...';
+                ? `Sincronizando ${pendingCount}`
+                : 'Sincronizando';
         }
 
         if (pendingCount > 0) {
             if (pendingCount >= 50) {
-                return `${pendingCount} alterações em fila. Processando em lotes...`;
+                return `Fila alta: ${pendingCount} itens`;
             }
-            return `${pendingCount} alterações serão sincronizadas assim que possível.`;
+            return `${pendingCount} pendência${pendingCount > 1 ? 's' : ''} aguardando sync`;
         }
 
-        return 'Sincronização concluída. Tudo pronto!';
+        return 'Tudo sincronizado';
     }
 
     async handleManualSync() {

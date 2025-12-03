@@ -151,6 +151,7 @@ export class TaskCard {
         if (this.options.showCheckbox) {
             const checkboxWrapper = document.createElement('div');
             checkboxWrapper.className = 'task-card-checkbox-wrapper';
+            checkboxWrapper.setAttribute('data-task-id', this.task.id || this.task.contador || '');
 
             const checkbox = createNeonCheckbox({
                 checked: isDone,

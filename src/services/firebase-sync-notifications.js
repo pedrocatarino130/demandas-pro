@@ -13,6 +13,10 @@ class FirebaseSyncNotifications {
         this.DEBOUNCE_DELAY = 2000; // 2 segundos para agrupar notificações
         this.isSubscribed = false;
         this.lastLargeQueueAlert = 0;
+        this.lastSuccessToastAt = 0;
+        this.successToastCooldown = 15000; // evita spam de sucesso
+        this.minItemsForSuccessToast = 3;
+        this.wasOfflineNotified = false;
     }
 
     /**
@@ -57,28 +61,14 @@ class FirebaseSyncNotifications {
             this._notifyLargeQueue(status.pendingCount);
         }
 
-        // Mostrar notificação quando ficar online e houver pendências
-        if (status.isOnline && status.hasPending && status.pendingCount > 0) {
-            if (!status.syncing) {
-                // Aguardar um pouco antes de notificar (pode estar sincronizando em breve)
-                setTimeout(() => {
-                    const currentStatus = {
-                        isOnline: firebaseSync.getOnlineStatus(),
-                        hasPending: firebaseSync.hasPendingOperations(),
-                        pendingCount: firebaseSync.getPendingCount(),
-                        syncing: false
-                    };
-                    
-                    if (currentStatus.hasPending && !currentStatus.syncing) {
-                        this._notifyPendingSync(currentStatus.pendingCount);
-                    }
-                }, 1000);
-            }
+        // Mostrar notificação quando ficar offline
+        if (!status.isOnline && status.hasPending && status.pendingCount > 0 && !this.wasOfflineNotified) {
+            this._notifyOffline(status.pendingCount);
+            this.wasOfflineNotified = true;
         }
 
-        // Mostrar notificação quando ficar offline
-        if (!status.isOnline && status.hasPending) {
-            this._notifyOffline(status.pendingCount);
+        if (status.isOnline) {
+            this.wasOfflineNotified = false;
         }
     }
 
@@ -87,35 +77,32 @@ class FirebaseSyncNotifications {
      * @param {number} count - Número de itens sincronizados
      */
     _notifySyncComplete(count) {
+        const now = Date.now();
+        const shouldSkipSmallSync =
+            count < this.minItemsForSuccessToast &&
+            now - this.lastSuccessToastAt < this.successToastCooldown;
+
+        if (shouldSkipSmallSync) {
+            this.lastSyncedCount = count;
+            return;
+        }
+
         if (this.notificationDebounce) {
             clearTimeout(this.notificationDebounce);
         }
 
         this.notificationDebounce = setTimeout(() => {
             const message = count === 1 
-                ? 'Dado sincronizado com sucesso!' 
-                : `${count} dados sincronizados com sucesso!`;
+                ? 'Alteração sincronizada'
+                : `${count} itens sincronizados`;
             
             toast.success(message, {
-                duration: 3000
+                duration: 2500
             });
 
             this.lastSyncedCount = count;
+            this.lastSuccessToastAt = now;
         }, this.DEBOUNCE_DELAY);
-    }
-
-    /**
-     * Notifica sobre operações pendentes quando online
-     * @param {number} count - Número de operações pendentes
-     */
-    _notifyPendingSync(count) {
-        const message = count === 1
-            ? '1 operação pendente será sincronizada...'
-            : `${count} operações pendentes serão sincronizadas...`;
-        
-        toast.info(message, {
-            duration: 2000
-        });
     }
 
     /**
