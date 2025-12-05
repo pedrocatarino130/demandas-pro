@@ -28,6 +28,7 @@ import {
 
 class RotinaView {
     constructor() {
+        this.isDestroyed = false;
         this.unsubscribe = null;
         this.currentFilter = 'all'; // 'all', 'today', 'overdue', 'completed', 'postponed'
         this.searchQuery = '';
@@ -293,6 +294,8 @@ class RotinaView {
     }
 
     mount() {
+        if (this.isDestroyed) return;
+
         // Escutar mudanças no store
         this.unsubscribe = store.subscribe(() => {
             this.update();
@@ -620,8 +623,15 @@ class RotinaView {
                 ...newTask,
                 ...taskData
             };
-            store.addItem('tarefasRotina', finalTask);
-            store.setState({ contadorRotina: newId });
+            
+            // Atualização atômica para garantir salvamento correto
+            const state = store.getState();
+            const currentTasks = state.tarefasRotina || [];
+            
+            store.setState({
+                tarefasRotina: [...currentTasks, finalTask],
+                contadorRotina: newId
+            });
             
             toast.success('Tarefa de rotina criada com sucesso');
             this.update();
@@ -693,8 +703,11 @@ class RotinaView {
             };
 
             // Adicionar ao Home
-            store.addItem('tarefasHome', homeTask);
-            store.setState({ contadorHome: newId });
+            const currentHomeTasks = state.tarefasHome || [];
+            store.setState({
+                tarefasHome: [...currentHomeTasks, homeTask],
+                contadorHome: newId
+            });
 
             // Feedback visual
             toast.success(`"${homeTask.titulo}" adicionada ao Home!`, {
@@ -885,6 +898,7 @@ class RotinaView {
     }
 
     destroy() {
+        this.isDestroyed = true;
         this.cleanupEventListeners();
         if (this.unsubscribe) {
             this.unsubscribe();
