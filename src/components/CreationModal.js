@@ -90,7 +90,8 @@ export class CreationModal {
                         impact: 3,
                         effort: 3,
                         score: 1.0,
-                        source: ''
+                        source: '',
+                        attachments: []
                     };
                     break;
                 
@@ -101,7 +102,8 @@ export class CreationModal {
                         deadline: new Date().toISOString().split('T')[0],
                         currentStep: 1,
                         status: PlanningStatus.ACTIVE,
-                        templateUsedId: this.availableTemplates[0]?.id || ''
+                        templateUsedId: this.availableTemplates[0]?.id || '',
+                        attachments: []
                     };
                     break;
                 
@@ -326,6 +328,8 @@ export class CreationModal {
                         <textarea rows="4" class="${inputClass}" id="field-description">${this.escapeHtml(this.formData.description || '')}</textarea>
                     </div>
 
+                    ${this.renderAttachments()}
+
                     <div class="creation-modal-field">
                         <label class="${labelClass}">Tags (separadas por vírgula)</label>
                         <input type="text" class="${inputClass}" id="field-tags" placeholder="tag1, tag2" value="${(this.formData.tags || []).join(', ')}" />
@@ -385,6 +389,8 @@ export class CreationModal {
                         </div>
                     </div>
 
+                    ${this.renderAttachments()}
+
                     <div class="creation-modal-field">
                         <label class="${labelClass}">Tags (separadas por vírgula)</label>
                         <input type="text" class="${inputClass}" id="field-tags" placeholder="tag1, tag2" value="${(this.formData.tags || []).join(', ')}" />
@@ -436,6 +442,8 @@ export class CreationModal {
                             </select>
                         </div>
                     </div>
+
+                    ${this.renderAttachments()}
 
                     <div class="creation-modal-field">
                         <label class="${labelClass}">Tags (separadas por vírgula)</label>
@@ -491,6 +499,99 @@ export class CreationModal {
             default:
                 return `<p>Tipo de modal não implementado: ${this.modalType}</p>`;
         }
+    }
+
+    renderAttachments() {
+        const attachments = this.formData.attachments || [];
+        
+        return `
+            <div class="creation-modal-field">
+                <label class="creation-modal-label">Recursos & Arquivos</label>
+                <div class="creation-modal-attachments-input-row">
+                    <div class="creation-modal-attachment-input-wrapper">
+                        <svg class="creation-modal-attachment-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                        <input 
+                            type="text" 
+                            class="creation-modal-input" 
+                            id="attachment-input"
+                            placeholder="Cole um link ou adicione arquivo..."
+                        />
+                    </div>
+                    
+                    <button type="button" class="creation-modal-attachment-btn upload" id="attachment-upload-btn" title="Anexar arquivo (simulado)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                    
+                    <button type="button" class="creation-modal-attachment-btn audio" id="attachment-audio-btn" title="Gravar áudio (simulado)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                    
+                    <button type="button" class="creation-modal-attachment-btn add" id="attachment-add-btn" title="Adicionar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="creation-modal-attachments-list" id="attachments-list">
+                    ${attachments.map((att, index) => this.renderAttachmentItem(att, index)).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    renderAttachmentItem(attachment, index) {
+        const isLink = attachment.match(/^https?:\/\//) || attachment.match(/^www\./);
+        const isAudio = attachment.endsWith('.mp3') || attachment.endsWith('.wav');
+        
+        let icon = '';
+        let colorClass = '';
+        
+        if (isLink) {
+            icon = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>`;
+            colorClass = 'link';
+        } else if (isAudio) {
+            icon = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </svg>`;
+            colorClass = 'audio';
+        } else {
+            icon = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>`;
+            colorClass = 'file';
+        }
+
+        return `
+            <div class="creation-modal-attachment-item ${colorClass}">
+                ${icon}
+                <span class="creation-modal-attachment-name">${this.escapeHtml(attachment)}</span>
+                <button type="button" class="creation-modal-attachment-remove" data-remove-attachment="${index}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        `;
     }
 
     renderSteps() {
@@ -617,6 +718,144 @@ export class CreationModal {
         } else if (this.modalType === 'template') {
             this.setupTemplateListeners();
         }
+        
+        // Attachments (para idea, planning, creation-task)
+        if (['idea', 'planning', 'creation-task'].includes(this.modalType)) {
+            this.setupAttachmentListeners();
+        }
+    }
+
+    setupAttachmentListeners() {
+        const addBtn = this.modal.querySelector('#attachment-add-btn');
+        const uploadBtn = this.modal.querySelector('#attachment-upload-btn');
+        const audioBtn = this.modal.querySelector('#attachment-audio-btn');
+        const input = this.modal.querySelector('#attachment-input');
+        const list = this.modal.querySelector('#attachments-list');
+
+        // Adicionar link/texto
+        const addAttachment = () => {
+            if (!input || !input.value.trim()) return;
+            
+            if (!this.formData.attachments) {
+                this.formData.attachments = [];
+            }
+            
+            this.formData.attachments.push(input.value.trim());
+            input.value = '';
+            this.updateAttachmentsList();
+        };
+
+        if (addBtn) {
+            addBtn.addEventListener('click', addAttachment);
+        }
+
+        if (input) {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addAttachment();
+                }
+            });
+        }
+
+        // Simular upload de arquivo
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', () => {
+                const filename = `arquivo-${Date.now()}.pdf`;
+                if (!this.formData.attachments) {
+                    this.formData.attachments = [];
+                }
+                this.formData.attachments.push(filename);
+                this.updateAttachmentsList();
+            });
+        }
+
+        // Simular gravação de áudio
+        if (audioBtn) {
+            audioBtn.addEventListener('click', () => {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `Audio-Note-${timestamp}.mp3`;
+                if (!this.formData.attachments) {
+                    this.formData.attachments = [];
+                }
+                this.formData.attachments.push(filename);
+                this.updateAttachmentsList();
+            });
+        }
+
+        // Remover attachment
+        if (list) {
+            list.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('[data-remove-attachment]');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-remove-attachment'));
+                    this.removeAttachment(index);
+                }
+            });
+        }
+    }
+
+    updateAttachmentsList() {
+        const list = this.modal.querySelector('#attachments-list');
+        if (!list) return;
+        
+        const attachments = this.formData.attachments || [];
+        list.innerHTML = attachments.map((att, index) => this.renderAttachmentItem(att, index)).join('');
+    }
+
+    removeAttachment(index) {
+        if (!this.formData.attachments) return;
+        this.formData.attachments.splice(index, 1);
+        this.updateAttachmentsList();
+    }
+
+    renderSteps() {
+        const steps = this.formData.steps || [];
+        
+        if (steps.length === 0) {
+            return '<div class="creation-modal-steps-empty">Nenhuma etapa definida</div>';
+        }
+
+        return steps.map((step, index) => `
+            <div class="creation-modal-step-item" data-step-index="${index}">
+                <div class="creation-modal-step-emoji">
+                    <input 
+                        type="text" 
+                        class="creation-modal-step-emoji-input" 
+                        value="${this.escapeHtml(step.emoji)}"
+                        maxlength="2"
+                        placeholder="📝"
+                        data-step-field="emoji"
+                        data-step-index="${index}"
+                    />
+                    <span class="creation-modal-step-order">#${step.order}</span>
+                </div>
+                <div class="creation-modal-step-content">
+                    <input 
+                        type="text" 
+                        class="creation-modal-step-name-input" 
+                        value="${this.escapeHtml(step.name)}"
+                        placeholder="Nome da etapa"
+                        data-step-field="name"
+                        data-step-index="${index}"
+                    />
+                    <input 
+                        type="text" 
+                        class="creation-modal-step-guide-input" 
+                        value="${this.escapeHtml(step.guide || '')}"
+                        placeholder="O que fazer nesta etapa?"
+                        data-step-field="guide"
+                        data-step-index="${index}"
+                    />
+                </div>
+                <button type="button" class="creation-modal-step-remove-btn" data-remove-step="${index}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
     }
 
     setupTemplateListeners() {
@@ -799,15 +1038,20 @@ export class CreationModal {
             data.score = parseFloat((data.impact / data.effort).toFixed(1));
         }
 
-        // Merge com dados iniciais (preservando steps se for template)
+        // Merge com dados iniciais (preservando arrays complexos)
         const finalData = {
             ...this.formData,
             ...data
         };
 
-        // Para templates, garantir que steps estão no formato correto
+        // Preservar arrays que são gerenciados separadamente
         if (this.modalType === 'template' && this.formData.steps) {
             finalData.steps = this.formData.steps;
+        }
+        
+        // Preservar attachments
+        if (['idea', 'planning', 'creation-task'].includes(this.modalType) && this.formData.attachments) {
+            finalData.attachments = this.formData.attachments;
         }
 
         console.log('💾 Salvando dados do modal:', finalData);

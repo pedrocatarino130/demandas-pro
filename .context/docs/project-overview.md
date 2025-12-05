@@ -6,12 +6,14 @@ Gerenciador Pedro v3 é uma SPA 100% client-side que concentra rotinas pessoais,
 ## Quick Facts
 - **Stack:** Vite + JavaScript ES Modules + CSS modularizado, sem backend dedicado.
 - **Persistência:** IndexedDB (`firebase-cache.js`) sempre ativo; sincronização com Firebase Firestore é opcional e controlada pelas variáveis `VITE_FIREBASE_*`.
-- **Deploy:** Automatizado via `.github/workflows/deploy.yml`, que roda `npm run build` com `BASE_URL=/<repo>/` e publica no Pages (assumindo configuração GitHub Actions padrão; verifique `scripts/` para scripts alternativos de deploy manual).
+- **Deploy:** Automatizado via `.github/workflows/deploy.yml`, que roda `npm run build` com `BASE_URL=/demandas/` (nome do repositório) e publica no Pages.
 - **PWA:** `public/service-worker.js` resolve o escopo a partir de `self.registration.scope`, garantindo que o registro funcione mesmo em `/demandas/`.
 - **Testes:** Playwright cobre navegação SPA, refresh em rotas profundas e registro do SW (forçando-o em dev via `window.__ENABLE_SW_IN_DEV__`); relatórios gerados em `playwright-report/` e `test-results/`.
 
 ## File Structure & Code Organization
 - `src/` — views (`src/views/*.js`), componentes compartilhados, router (`src/router.js`), store global e serviços Firebase. Destaque para:
+  - `src/views/`: Contém as views principais: `Home.js`, `Projetos.js`, `Rotina.js`, `Estudos.js` (completo com Kanban/Pomodoro) e `Criacao.js` (novo módulo de fluxo criativo).
+  - `src/components/`: Componentes reutilizáveis e específicos por módulo (ex: `src/components/estudos/`, `src/components/CreationModal.js`).
   - `src/utils/base-path.js`: centraliza leitura/escrita do `BASE_URL`, constrói URLs e restaura rotas após fallback 404.
   - `src/main.js`: registra o SW, ativa indicadores offline e integra o router.
 - `public/` — arquivos copiados sem transformação (manifest, service worker, `404.html` para GitHub Pages).
@@ -20,7 +22,7 @@ Gerenciador Pedro v3 é uma SPA 100% client-side que concentra rotinas pessoais,
 - `docs/` — documentação do projeto, incluindo guias e overviews.
 - Diretórios de saída de testes: `playwright-report/` (relatórios HTML detalhados) e `test-results/` (artefatos de execução).
 - Diretórios históricos (`sprint2/`, `sprint3/`, `SAVES/`) preservam migrações e scripts utilizados nas fases anteriores.
-- `.github/workflows/` — pipelines de CI/CD, incluindo `deploy.yml` para build e publicação automatizada (se presente; caso contrário, use scripts manuais).
+- `.github/workflows/` — pipelines de CI/CD, incluindo `deploy.yml` para build e publicação automatizada.
 
 ## Technology Stack Summary
 - **Runtime local:** Node 18+, Vite dev server (`npm run dev`).

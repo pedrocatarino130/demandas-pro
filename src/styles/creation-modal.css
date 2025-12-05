@@ -364,6 +364,138 @@
     width: 100%;
 }
 
+/* Attachments (Recursos & Arquivos) */
+.creation-modal-attachments-input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.creation-modal-attachment-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.creation-modal-attachment-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    pointer-events: none;
+}
+
+.creation-modal-attachment-input-wrapper .creation-modal-input {
+    padding-left: 2.5rem;
+}
+
+.creation-modal-attachment-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.creation-modal-attachment-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.creation-modal-attachment-btn.audio {
+    color: #f87171;
+}
+
+.creation-modal-attachment-btn.add {
+    background: rgba(3, 169, 244, 0.1);
+    border-color: rgba(3, 169, 244, 0.3);
+    color: #03a9f4;
+}
+
+.creation-modal-attachment-btn.add:hover {
+    background: rgba(3, 169, 244, 0.2);
+}
+
+.creation-modal-attachments-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.creation-modal-attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: #1a1a1c;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    color: #d1d5db;
+    transition: all 0.2s;
+    animation: attachment-appear 0.2s ease-out;
+}
+
+@keyframes attachment-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.creation-modal-attachment-item.link {
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.creation-modal-attachment-item.link svg {
+    color: #3b82f6;
+}
+
+.creation-modal-attachment-item.audio {
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.creation-modal-attachment-item.audio svg {
+    color: #f87171;
+}
+
+.creation-modal-attachment-item.file svg {
+    color: #fbbf24;
+}
+
+.creation-modal-attachment-name {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.creation-modal-attachment-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-left: auto;
+}
+
+.creation-modal-attachment-remove:hover {
+    color: #f87171;
+}
+
 /* Template Steps */
 .creation-modal-steps-header {
     display: flex;

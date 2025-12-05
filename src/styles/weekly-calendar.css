@@ -1,0 +1,265 @@
+/**
+ * Weekly Calendar Component Styles
+ * Cronograma semanal com navegação de mês e seleção de dias
+ */
+
+.weekly-calendar {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.9) 100%);
+    border: 1px solid rgba(236, 72, 153, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Header com navegação */
+.weekly-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.15);
+}
+
+.weekly-calendar-month-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ec4899;
+    text-transform: capitalize;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+}
+
+.weekly-calendar-nav-btn {
+    background: rgba(236, 72, 153, 0.1);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #ec4899;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.weekly-calendar-nav-btn:hover {
+    background: rgba(236, 72, 153, 0.2);
+    border-color: rgba(236, 72, 153, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+}
+
+.weekly-calendar-nav-btn:active {
+    transform: scale(0.95);
+}
+
+/* Container dos dias com scroll horizontal */
+.weekly-calendar-days-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin: 0 -0.5rem;
+    padding: 0.5rem;
+
+    /* Custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(236, 72, 153, 0.3) rgba(17, 24, 39, 0.5);
+}
+
+.weekly-calendar-days-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.weekly-calendar-days-container::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.5);
+    border-radius: 4px;
+}
+
+.weekly-calendar-days-container::-webkit-scrollbar-thumb {
+    background: rgba(236, 72, 153, 0.3);
+    border-radius: 4px;
+}
+
+.weekly-calendar-days-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(236, 72, 153, 0.5);
+}
+
+.weekly-calendar-days {
+    display: flex;
+    gap: 0.75rem;
+    min-width: min-content;
+}
+
+/* Card de dia */
+.weekly-calendar-day-card {
+    position: relative;
+    background: rgba(31, 41, 55, 0.6);
+    border: 2px solid rgba(75, 85, 99, 0.4);
+    border-radius: 12px;
+    padding: 1rem;
+    min-width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.weekly-calendar-day-card:hover {
+    background: rgba(31, 41, 55, 0.8);
+    border-color: rgba(236, 72, 153, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Card ativo (selecionado) */
+.weekly-calendar-day-card.active {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.9) 0%, rgba(219, 39, 119, 0.8) 100%);
+    border-color: #ec4899;
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.6),
+        0 0 40px rgba(236, 72, 153, 0.4);
+    transform: translateY(-4px) scale(1.05);
+}
+
+.weekly-calendar-day-card.active .weekly-calendar-day-name,
+.weekly-calendar-day-card.active .weekly-calendar-day-number {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Dia de hoje */
+.weekly-calendar-day-card.today {
+    border-color: rgba(59, 130, 246, 0.6);
+}
+
+.weekly-calendar-day-card.today .weekly-calendar-day-number {
+    color: #3b82f6;
+}
+
+/* Nome do dia (SEG, TER, etc) */
+.weekly-calendar-day-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(156, 163, 175, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Número do dia */
+.weekly-calendar-day-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f3f4f6;
+    line-height: 1;
+}
+
+/* Badge de contagem de tarefas */
+.weekly-calendar-day-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(17, 24, 39, 0.9);
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.5);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .weekly-calendar {
+        padding: 1rem;
+    }
+
+    .weekly-calendar-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .weekly-calendar-month-title {
+        font-size: 1.25rem;
+    }
+
+    .weekly-calendar-nav-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .weekly-calendar-day-card {
+        min-width: 60px;
+        padding: 0.75rem;
+    }
+
+    .weekly-calendar-day-number {
+        font-size: 1.25rem;
+    }
+
+    .weekly-calendar-day-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+}
+
+/* Animações */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.weekly-calendar-day-card {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.weekly-calendar-day-card:nth-child(n) {
+    animation-delay: calc(0.02s * var(--index, 0));
+}
+
+/* Estado vazio (quando não há tarefas no dia) */
+.weekly-calendar-empty-state {
+    background: rgba(31, 41, 55, 0.4);
+    border: 2px dashed rgba(75, 85, 99, 0.4);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.weekly-calendar-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.weekly-calendar-empty-message {
+    color: rgba(156, 163, 175, 0.8);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Dark mode (já é dark por padrão, mas podemos adicionar variações) */
+@media (prefers-color-scheme: dark) {
+    .weekly-calendar {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(17, 24, 39, 0.9) 100%);
+    }
+}

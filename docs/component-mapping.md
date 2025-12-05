@@ -138,6 +138,21 @@ O design protótipo usa React/TypeScript com Tailwind CSS, enquanto a implementa
 | - Produtividade card com progress bar | - Metrics section | ✅ Compatível |
 | - Kanban view para projects/studies | - Não tem kanban view | ⚠️ Precisa adicionar |
 
+### 9. Creation Module Components (New)
+
+Estes componentes foram implementados diretamente na versão Vanilla JS para o Módulo de Criação (`src/views/Criacao.js`) e não possuem correspondência direta no protótipo original (ou são extensões dele).
+
+| Componente (Vanilla JS) | Função | Status |
+|-------------------|----------------------------------|--------|
+| `src/components/CreationModal.js` | Modal especializado para criação de tarefas e templates de criação. Suporta campos extras como Contexto, Checklist e anexos. | ✅ Implementado |
+| `src/views/Criacao.js` (CriacaoView) | View principal com Kanban de 4 colunas (Inbox, Todo, In Progress, Done) e filtros de contexto/prioridade. | ✅ Implementado |
+| `src/views/CriacaoIdeias.js` | View para backlog de ideias (separado da execução). | ✅ Implementado |
+| `src/views/CriacaoPlanejamento.js` | View para planejamento semanal/mensal de criação. | ✅ Implementado |
+
+**Ações Necessárias:**
+- Garantir que os estilos destes novos componentes sigam os tokens de design do restante do app.
+- Unificar o `CreationModal` com o `TaskEditModal` se possível no futuro para reduzir duplicação de código.
+
 **Ações Necessárias:**
 - Adicionar welcome card no topo
 - Reorganizar dashboard com filtros de abas

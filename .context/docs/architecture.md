@@ -2,15 +2,15 @@
 <!-- agent-update:start:architecture-notes -->
 # Architecture Notes
 
-Gerenciador Pedro é uma SPA estática empacotada com Vite e hospedada em GitHub Pages. Todo o processamento acontece no navegador; não há backend dedicado. Como o domínio público vive em um subdiretório (`https://<user>.github.io/<repo>/`), o `BASE_URL` passou a ser um contrato central, encapsulado em `src/utils/base-path.js` e persistido em storage para que `public/404.html` consiga redirecionar rotas profundas antes da inicialização.
+Gerenciador Pedro é uma SPA estática empacotada com Vite e hospedada em GitHub Pages. Todo o processamento acontece no navegador; não há backend dedicado. Como o domínio público vive em um subdiretório (`https://<user>.github.io/demandas/`), o `BASE_URL` passou a ser um contrato central, encapsulado em `src/utils/base-path.js` e persistido em storage para que `public/404.html` consiga redirecionar rotas profundas antes da inicialização.
 
 ## System Architecture Overview
 1. **Boot (`index.html`)**  injeta todas as folhas de estilo de `src/styles/` e carrega `src/main.js`.
 2. **Base path util (`src/utils/base-path.js`)**  calcula/persiste o `BASE_URL`, monta URLs de assets (`buildAssetPath`), normaliza paths para o router (`stripBasePath`), gera caminhos completos para `history.pushState` (`buildHistoryPath`) e restaura rotas guardadas pelo fallback 404 (`consumePendingRoute`).
-3. **Router (`src/router.js`)**  usa o util para remover/adicionar o prefixo correto e faz lazy-load das views (`src/views/*.js`).
+3. **Router (`src/router.js`)**  usa o util para remover/adicionar o prefixo correto e faz lazy-load das views (`src/views/*.js`). As views principais agora incluem `Home`, `Projetos`, `Rotina`, `Estudos` (Kanban/Timer) e `Criacao` (Kanban/Templates).
 4. **Service Worker (`public/service-worker.js`)**  deriva `BASE_PATH` a partir de `self.registration.scope`, intercepta apenas requests dentro desse escopo, monta `STATIC_ASSETS` com `withBase()` e oferece fallback offline para `index.html`. O registro ocorre apenas fora de dev, salvo quando `window.__ENABLE_SW_IN_DEV__` é definido (Playwright força isso).
 5. **Persistência e sync**  `store.js` mantém estado; `firebase-cache.js` usa IndexedDB; `firebase-service.js`/`firebase-sync.js` só ativam Firestore quando todas as `VITE_FIREBASE_*` existem. Ausência de secrets degrada para modo offline sem quebrar a UI.
-6. **Deploy**  `.github/workflows/deploy.yml` roda `npm ci`, builda com `BASE_URL=/${{ github.event.repository.name }}/`, configura Pages e publica via `actions/deploy-pages`. O workflow injeta todas as `VITE_FIREBASE_*` a partir dos Secrets do repositório.
+6. **Deploy**  `.github/workflows/deploy.yml` roda `npm ci`, builda com `BASE_URL=/demandas/` (ou nome dinâmico do repo), configura Pages e publica via `actions/deploy-pages`. O workflow injeta todas as `VITE_FIREBASE_*` a partir dos Secrets do repositório.
 7. **Fallback 404**  `public/404.html` grava a rota original em `sessionStorage` (`GERENCIADOR_PEDRO_PENDING_ROUTE`), tenta descobrir o base path via storage e redireciona para o `index.html`. Durante o boot, `consumePendingRoute()` restaura a URL com `history.replaceState`.
 
 ```mermaid

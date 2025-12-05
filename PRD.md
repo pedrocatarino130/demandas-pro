@@ -248,12 +248,14 @@ demandas/
 ### 4.2 Módulo de Estudos
 
 #### 4.2.1 Visão Geral
-Sistema completo para gerenciamento de estudos (atualmente é um projeto a ser implementado)
+Sistema completo para gerenciamento de estudos, focado em aprendizado contínuo e revisão.
 
-#### 4.2.2 Funcionalidades
-
-- atualmente deve ter apenas um texto que avise que está em desenvolvimento mas que o usuario posa interagir com a pagina para nao ser uma pagina morta
-
+#### 4.2.2 Funcionalidades Implementadas
+- **Kanban de Estudos**: Fluxo de 4 colunas (A Fazer, Em foco, Revisão, Concluído)
+- **Pomodoro Timer**: Timer integrado para sessões de foco
+- **Revisão Espaçada**: Sistema de agendamento de revisões automáticas
+- **Notas Rápidas**: Captura de insights durante o estudo
+- **Quick Add**: Adição rápida de tópicos com parser de texto natural
 
 ### 4.3 Módulo de Projetos
 
@@ -279,13 +281,24 @@ Gerenciamento de tarefas rotineiras com categorias e histórico.
 - RF-ROT-004: Estatísticas de frequência
 - RF-ROT-005: Marcação de conclusão com data/hora
 
-### 4.5 Módulo Terapêutico
+### 4.5 Módulo de Criação
 
 #### 4.5.1 Visão Geral
-Redireciona para um site já criado atraves de um botão
+Workspace dedicado para tarefas criativas e desenvolvimento de ideias, separado do fluxo operacional diário.
 
+#### 4.5.2 Funcionalidades
+- **Kanban de Criação**: Inbox, A Fazer, Em Progresso, Feito
+- **Filtros de Contexto**: Filtragem por contexto (Dev, Design, Writing, etc.)
+- **Templates**: Criação de tarefas baseadas em modelos reutilizáveis
+- **Integração IA**: Funcionalidade para importar/gerar tarefas via IA (placeholder/botão)
+- **Inbox Zero**: Ferramentas para processar e limpar a caixa de entrada
 
-### 4.6 Sistema de Navegação
+### 4.6 Módulo Terapêutico
+
+#### 4.6.1 Visão Geral
+Espaço reservado para integração futura com ferramentas de bem-estar. Atualmente implementado como uma view informativa (stub).
+
+### 4.7 Sistema de Navegação
 
 #### 4.6.1 Funcionalidades
 - RF-NAV-001: Sidebar responsiva com menu hamburguer

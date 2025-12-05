@@ -25,11 +25,16 @@ import {
     getCompletedTasks
 } from '../utils/taskFilters.js';
 import {
-    formatDuration
+    formatDuration,
+    formatDateISO,
+    isSameDay
 } from '../utils/dateUtils.js';
 import {
     router
 } from '../router.js';
+import {
+    createWeeklyCalendar
+} from '../components/WeeklyCalendar.js';
 
 class HomeView {
     constructor() {
@@ -37,6 +42,9 @@ class HomeView {
         this.searchQuery = '';
         this.unsubscribe = null;
         this.timerInterval = null;
+        this.selectedDate = null; // Data selecionada no calendário
+        this.weeklyCalendar = null; // Instância do calendário
+        this.calendarContainer = null; // Container DOM do calendário
     }
 
     render() {
@@ -60,6 +68,9 @@ class HomeView {
           </section>
         </div>
 
+        <!-- Cronograma Semanal -->
+        <div id="weekly-calendar-container"></div>
+
         <div class="home-section-header">
           <div class="home-dashboard-tabs" id="home-dashboard-tabs"></div>
           <div class="home-search" id="home-search"></div>
@@ -73,6 +84,7 @@ class HomeView {
     mount() {
         this.renderSearch();
         this.renderCTA();
+        this.renderWeeklyCalendar();
         this.renderData();
         this.startTimerLoop();
 
@@ -126,11 +138,20 @@ class HomeView {
         const state = store.getState();
         const tasks = Array.isArray(state.tarefasHome) ? [...state.tarefasHome] : [];
         const filtered = this.applySearch(tasks);
-        const categories = this.buildCategories(filtered);
+
+        // Aplicar filtro de data se houver data selecionada
+        const dateFiltered = this.selectedDate ?
+            filtered.filter(task => this.isTaskOnDate(task, this.selectedDate)) :
+            filtered;
+
+        const categories = this.buildCategories(dateFiltered);
 
         this.renderTabs(categories);
         this.updateTopCards(categories, filtered);
         this.renderGrid(this.getActiveTasks(categories));
+
+        // Atualizar mapa de tarefas no calendário
+        this.updateCalendarTasksMap(tasks);
     }
 
     renderTabs(categories) {
@@ -192,10 +213,20 @@ class HomeView {
         if (!tasks || tasks.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'home-empty-state';
-            empty.innerHTML = `
-        <div class="home-empty-state-icon">📂</div>
-        <p class="home-empty-state-message">Nenhuma tarefa nesta categoria.</p>
-      `;
+
+            // Se há um dia selecionado, mostrar mensagem específica
+            if (this.selectedDate) {
+                empty.innerHTML = `
+          <div class="home-empty-state-icon">🕐</div>
+          <p class="home-empty-state-message">Nada planejado para este dia.</p>
+        `;
+            } else {
+                empty.innerHTML = `
+          <div class="home-empty-state-icon">📂</div>
+          <p class="home-empty-state-message">Nenhuma tarefa nesta categoria.</p>
+        `;
+            }
+
             grid.appendChild(empty);
             return;
         }
@@ -495,6 +526,90 @@ class HomeView {
     compareIds(id1, id2) {
         if (id1 == null || id2 == null) return false;
         return String(id1) === String(id2);
+    }
+
+    /**
+     * Renderiza o calendário semanal
+     */
+    renderWeeklyCalendar() {
+        console.log('🗓️ Iniciando renderWeeklyCalendar...');
+        const container = document.getElementById('weekly-calendar-container');
+        console.log('📦 Container encontrado:', container ? 'SIM' : 'NÃO');
+
+        if (!container) {
+            console.error('❌ Container weekly-calendar-container não encontrado!');
+            return;
+        }
+
+        const state = store.getState();
+        const tasks = Array.isArray(state.tarefasHome) ? state.tarefasHome : [];
+        console.log('📋 Tarefas carregadas:', tasks.length);
+
+        const tasksMap = this.buildTasksMap(tasks);
+        console.log('🗺️ Mapa de tarefas:', tasksMap);
+
+        this.weeklyCalendar = createWeeklyCalendar({
+            initialDate: new Date(),
+            selectedDate: this.selectedDate || null,
+            tasksMap: tasksMap,
+            onDateSelect: (date, dateStr) => {
+                console.log('📅 Data selecionada:', dateStr);
+                // Se clicar na mesma data, desseleciona
+                if (this.selectedDate && isSameDay(date, this.selectedDate)) {
+                    this.selectedDate = null;
+                } else {
+                    this.selectedDate = date;
+                }
+                this.renderData();
+            }
+        });
+
+        container.innerHTML = '';
+        this.calendarContainer = this.weeklyCalendar.render();
+        container.appendChild(this.calendarContainer);
+        console.log('✅ Calendário renderizado com sucesso!');
+    }
+
+    /**
+     * Constrói mapa de contagem de tarefas por data
+     */
+    buildTasksMap(tasks) {
+        const map = {};
+        tasks.forEach(task => {
+            if (task.time) {
+                const dateStr = formatDateISO(new Date(task.time));
+                map[dateStr] = (map[dateStr] || 0) + 1;
+            }
+        });
+        return map;
+    }
+
+    /**
+     * Atualiza o mapa de tarefas no calendário
+     */
+    updateCalendarTasksMap(tasks) {
+        if (!this.weeklyCalendar || !this.calendarContainer) return;
+        const tasksMap = this.buildTasksMap(tasks);
+        this.weeklyCalendar.updateTasksMap(tasksMap, this.calendarContainer);
+    }
+
+    /**
+     * Verifica se uma tarefa está na data selecionada
+     */
+    isTaskOnDate(task, date) {
+        if (!task.time || !date) return false;
+        const taskDate = new Date(task.time);
+        return isSameDay(taskDate, date);
+    }
+
+    /**
+     * Formata a data selecionada para exibição
+     */
+    formatSelectedDate() {
+        if (!this.selectedDate) return '';
+        const day = this.selectedDate.getDate();
+        const month = this.selectedDate.getMonth() + 1;
+        return `${day}/${month}`;
     }
 }
 

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Cronograma Semanal</title>
+    <link rel="stylesheet" href="/src/styles/variables.css" />
+    <link rel="stylesheet" href="/src/styles/reset.css" />
+    <link rel="stylesheet" href="/src/styles/weekly-calendar.css" />
+    <style>
+        body {
+            background: #0f172a;
+            padding: 2rem;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #ec4899;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <h1>Teste do Calendário Semanal</h1>
+        <div id="calendar-container"></div>
+    </div>
+
+    <script type="module">
+        import { createWeeklyCalendar } from './src/components/WeeklyCalendar.js';
+
+        // Dados de teste
+        const tasksMap = {
+            '2025-12-05': 3,
+            '2025-12-10': 1,
+            '2025-12-15': 5,
+            '2025-12-20': 2
+        };
+
+        // Criar calendário
+        const calendar = createWeeklyCalendar({
+            initialDate: new Date(),
+            selectedDate: new Date(),
+            tasksMap: tasksMap,
+            onDateSelect: (date, dateStr) => {
+                console.log('Data selecionada:', dateStr);
+                alert(`Você selecionou: ${dateStr}`);
+            }
+        });
+
+        // Renderizar
+        const container = document.getElementById('calendar-container');
+        const calendarElement = calendar.render();
+        container.appendChild(calendarElement);
+
+        console.log('Calendário renderizado com sucesso!');
+    </script>
+</body>
+
+</html>
