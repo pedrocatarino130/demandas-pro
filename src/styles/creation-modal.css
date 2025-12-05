@@ -1,0 +1,511 @@
+/**
+ * Creation Modal - Estilos
+ * Modal polimórfico para módulo de criação
+ */
+
+.creation-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.creation-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.creation-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    background: #272727;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    animation: modal-appear 0.2s ease-out;
+}
+
+@keyframes modal-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Border glow effect */
+.creation-modal-content::before {
+    content: '';
+    position: absolute;
+    inset: -50px;
+    z-index: -2;
+    background: conic-gradient(from 45deg, transparent 75%, #fff, transparent 100%);
+    animation: spin 4s linear infinite;
+    opacity: 0.2;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.creation-modal-content::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: #272727;
+    border-radius: 1.5rem;
+    z-index: -1;
+}
+
+/* Header */
+.creation-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.creation-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(to right, white, #9ca3af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.creation-modal-close {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    border-radius: 9999px;
+    transition: all 0.2s;
+}
+
+.creation-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Body */
+.creation-modal-form {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(90vh - 120px);
+}
+
+.creation-modal-body {
+    padding: 1rem 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.creation-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.creation-modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.creation-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.creation-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Fields */
+.creation-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.creation-modal-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    margin-left: 0.25rem;
+}
+
+.creation-modal-hint {
+    font-size: 0.625rem;
+    color: #6b7280;
+    margin: -0.25rem 0 0.25rem 0.25rem;
+}
+
+.creation-modal-input {
+    width: 100%;
+    padding: 0.75rem;
+    background: #3a3a3a;
+    color: white;
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    outline: none;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.creation-modal-input::placeholder {
+    color: #6b7280;
+}
+
+.creation-modal-input:focus {
+    border-color: white;
+}
+
+.creation-modal-input.highlight {
+    background: rgba(3, 169, 244, 0.05);
+    border-color: rgba(3, 169, 244, 0.5);
+}
+
+.creation-modal-input.highlight:focus {
+    border-color: #03a9f4;
+}
+
+/* Code input (textarea para prompts de IA) */
+.creation-modal-code-input {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #4ade80;
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(34, 197, 94, 0.2);
+    resize: vertical;
+}
+
+.creation-modal-code-input:focus {
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+/* Row (2 campos lado a lado) */
+.creation-modal-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+/* Scoring Section (para Ideias) */
+.creation-modal-scoring {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.creation-modal-scoring-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+.creation-modal-score-value {
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.creation-modal-score-value strong {
+    color: white;
+}
+
+.creation-modal-score-value strong[data-score="high"] {
+    color: #4ade80;
+}
+
+.creation-modal-score-value strong[data-score="medium"] {
+    color: #fbbf24;
+}
+
+.creation-modal-score-value strong[data-score="low"] {
+    color: #f87171;
+}
+
+.creation-modal-slider {
+    width: 100%;
+    height: 0.375rem;
+    background: #4b5563;
+    border-radius: 0.5rem;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.creation-modal-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    background: #03a9f4;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.creation-modal-slider::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    background: #03a9f4;
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+}
+
+/* AI Import Specific */
+.creation-modal-ai-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #f441a5;
+    margin-bottom: 0.5rem;
+}
+
+.creation-modal-template-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.creation-modal-template-selector select {
+    flex: 1;
+}
+
+.creation-modal-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 0.75rem;
+    color: #4ade80;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.creation-modal-copy-btn:hover:not(:disabled) {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.creation-modal-copy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.creation-modal-template-preview {
+    display: none;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    max-height: 5rem;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.625rem;
+    color: #6b7280;
+    white-space: pre-wrap;
+}
+
+/* Footer */
+.creation-modal-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 2rem 2rem;
+}
+
+.creation-modal-btn-cancel {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    background: transparent;
+    border: 1px solid #4b5563;
+    color: #d1d5db;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.creation-modal-btn-cancel:hover {
+    background: #1f2937;
+}
+
+#modal-save-btn-container {
+    flex: 1;
+}
+
+#modal-save-btn-container .neon-button {
+    width: 100%;
+}
+
+/* Template Steps */
+.creation-modal-steps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.creation-modal-add-step-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: transparent;
+    border: none;
+    color: #03a9f4;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.creation-modal-add-step-btn:hover {
+    color: white;
+}
+
+.creation-modal-steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.creation-modal-steps-empty {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+}
+
+.creation-modal-step-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.creation-modal-step-emoji {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 3rem;
+    flex-shrink: 0;
+}
+
+.creation-modal-step-emoji-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    font-size: 1.25rem;
+    outline: none;
+    color: white;
+}
+
+.creation-modal-step-order {
+    font-size: 0.625rem;
+    color: #6b7280;
+}
+
+.creation-modal-step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.creation-modal-step-name-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.875rem;
+    color: white;
+    outline: none;
+    padding: 0.125rem 0;
+}
+
+.creation-modal-step-guide-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.75rem;
+    color: #9ca3af;
+    outline: none;
+    padding: 0.125rem 0;
+}
+
+.creation-modal-step-name-input::placeholder,
+.creation-modal-step-guide-input::placeholder {
+    color: #4b5563;
+}
+
+.creation-modal-step-remove-btn {
+    padding: 0.25rem;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.creation-modal-step-remove-btn:hover {
+    color: #f87171;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .creation-modal-content {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .creation-modal-header,
+    .creation-modal-body,
+    .creation-modal-footer {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .creation-modal-row {
+        grid-template-columns: 1fr;
+    }
+}
+

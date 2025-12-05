@@ -9,6 +9,7 @@ export class Sidebar {
   constructor() {
     this.isOpen = false;
     this.isMobile = window.innerWidth < 1024;
+    this.expandedSections = {}; // Track which sections are expanded
     this.init();
   }
 
@@ -84,6 +85,44 @@ export class Sidebar {
           </svg>
           <span class="sidebar-link-text">Minha Rotina</span>
         </a>
+        <div class="sidebar-section" data-section="criacao">
+          <button class="sidebar-link sidebar-section-toggle" data-section-toggle="criacao">
+            <svg class="sidebar-link-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            <span class="sidebar-link-text">Criação</span>
+            <svg class="sidebar-section-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="sidebar-submenu" data-submenu="criacao">
+            <a href="/criacao" data-route="/criacao" class="sidebar-sublink">
+              <svg class="sidebar-sublink-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Home (Tarefas)</span>
+            </a>
+            <a href="/criacao/ideias" data-route="/criacao/ideias" class="sidebar-sublink">
+              <svg class="sidebar-sublink-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+              <span>Ideias</span>
+            </a>
+            <a href="/criacao/planejamento" data-route="/criacao/planejamento" class="sidebar-sublink">
+              <svg class="sidebar-sublink-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+              <span>Planejamento</span>
+            </a>
+          </div>
+        </div>
         <a href="/terapeutico" data-route="/terapeutico" class="sidebar-link">
           <svg class="sidebar-link-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -141,6 +180,29 @@ export class Sidebar {
             this.close();
           }
         }
+      });
+    });
+
+    // Sublinks de navegação
+    sidebar.querySelectorAll('.sidebar-sublink').forEach((sublink) => {
+      sublink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const route = sublink.getAttribute('data-route');
+        if (route && router) {
+          router.navigate(route);
+          if (this.isMobile) {
+            this.close();
+          }
+        }
+      });
+    });
+
+    // Section toggle buttons (collapse/expand)
+    sidebar.querySelectorAll('.sidebar-section-toggle').forEach((toggle) => {
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionName = toggle.getAttribute('data-section-toggle');
+        this.toggleSection(sectionName);
       });
     });
 
@@ -224,6 +286,7 @@ export class Sidebar {
   }
 
   updateActiveRoute(path) {
+    // Atualizar sidebar-link
     const links = document.querySelectorAll('.sidebar-link');
     links.forEach((link) => {
       const linkPath = link.getAttribute('data-route');
@@ -233,6 +296,59 @@ export class Sidebar {
         link.classList.remove('active');
       }
     });
+
+    // Atualizar sidebar-sublink
+    const sublinks = document.querySelectorAll('.sidebar-sublink');
+    sublinks.forEach((sublink) => {
+      const sublinkPath = sublink.getAttribute('data-route');
+      if (sublinkPath === path) {
+        sublink.classList.add('active');
+        // Auto-expand parent section when sublink is active
+        const submenu = sublink.closest('.sidebar-submenu');
+        if (submenu) {
+          const sectionName = submenu.getAttribute('data-submenu');
+          if (sectionName && !this.expandedSections[sectionName]) {
+            this.expandSection(sectionName);
+          }
+        }
+      } else {
+        sublink.classList.remove('active');
+      }
+    });
+  }
+
+  toggleSection(sectionName) {
+    if (this.expandedSections[sectionName]) {
+      this.collapseSection(sectionName);
+    } else {
+      this.expandSection(sectionName);
+    }
+  }
+
+  expandSection(sectionName) {
+    this.expandedSections[sectionName] = true;
+    const submenu = document.querySelector(`[data-submenu="${sectionName}"]`);
+    const toggle = document.querySelector(`[data-section-toggle="${sectionName}"]`);
+    
+    if (submenu) {
+      submenu.classList.add('expanded');
+    }
+    if (toggle) {
+      toggle.classList.add('expanded');
+    }
+  }
+
+  collapseSection(sectionName) {
+    this.expandedSections[sectionName] = false;
+    const submenu = document.querySelector(`[data-submenu="${sectionName}"]`);
+    const toggle = document.querySelector(`[data-section-toggle="${sectionName}"]`);
+    
+    if (submenu) {
+      submenu.classList.remove('expanded');
+    }
+    if (toggle) {
+      toggle.classList.remove('expanded');
+    }
   }
 }
 

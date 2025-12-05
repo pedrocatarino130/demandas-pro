@@ -27,7 +27,12 @@ const STATE_COLLECTION_MAP = {
     topicosEstudo: 'topicosEstudo',
     sessoesEstudo: 'sessoesEstudo',
     tagsEstudo: 'tagsEstudo',
-    avaliacoesDiarias: 'avaliacoesDiarias'
+    avaliacoesDiarias: 'avaliacoesDiarias',
+    ideas: 'ideas',
+    plannings: 'plannings',
+    creationTasks: 'creationTasks',
+    templates: 'templates',
+    taskTemplates: 'taskTemplates'
 };
 
 class Store {
@@ -41,9 +46,9 @@ class Store {
         this.listeners = []; // Firestore listeners
         this.userId = 'default'; // Para futuro suporte de autenticação
         this.notifyScheduled = false;
-        this.notifyScheduler = (typeof window !== 'undefined' && window.requestAnimationFrame)
-            ? (cb) => window.requestAnimationFrame(cb)
-            : (cb) => setTimeout(cb, 16); // fallback para ambientes de teste/no-window
+        this.notifyScheduler = (typeof window !== 'undefined' && window.requestAnimationFrame) ?
+            (cb) => window.requestAnimationFrame(cb) :
+            (cb) => setTimeout(cb, 16); // fallback para ambientes de teste/no-window
 
         // Inicializar assincronamente
         this.init();
@@ -87,10 +92,10 @@ class Store {
             try {
                 // Carregar do Firestore (pode sobrescrever dados locais se mais recentes)
                 await this.loadFromFirestore();
-                
+
                 // Configurar listeners real-time
                 this.setupRealtimeListeners();
-                
+
                 console.log('✅ Store inicializado (modo Firebase + local)');
             } catch (error) {
                 console.error('⚠️ Erro ao inicializar Firebase no Store:', error);
@@ -143,6 +148,58 @@ class Store {
             conquistas: {},
             avaliacoesDiarias: [],
 
+            // Módulo de Criação
+            ideas: [],
+            plannings: [],
+            creationTasks: [],
+            templates: [{
+                id: 'prevc-default',
+                name: 'PREVC (Padrão)',
+                description: 'Método padrão de 5 etapas para projetos.',
+                context: 'Dev',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                steps: [{
+                        order: 1,
+                        name: 'Planejamento',
+                        emoji: '📋',
+                        guide: 'Criar escopo/PRD inicial, definir requisitos'
+                    },
+                    {
+                        order: 2,
+                        name: 'Revisão',
+                        emoji: '🔍',
+                        guide: 'Revisar com IA, remover excessos, validar escopo'
+                    },
+                    {
+                        order: 3,
+                        name: 'Execução',
+                        emoji: '⚡',
+                        guide: 'Executar as tarefas/fases planejadas'
+                    },
+                    {
+                        order: 4,
+                        name: 'Validação',
+                        emoji: '✅',
+                        guide: 'Verificar se entregou o esperado'
+                    },
+                    {
+                        order: 5,
+                        name: 'Confirmação',
+                        emoji: '🎯',
+                        guide: 'Confirmar conclusão, ajustes finais'
+                    }
+                ]
+            }],
+            taskTemplates: [{
+                id: 'default-checklist',
+                name: 'Checklist Padrão',
+                context: 'Dev',
+                aiPrompt: 'Crie uma lista de tarefas essenciais para [TÓPICO] focadas em produtividade.',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            }],
+
             // UI
             darkMode: false,
             filtroStatus: null,
@@ -178,17 +235,19 @@ class Store {
                     ...this.getDefaultState(),
                     ...cached
                 };
-                
+
                 // Garantir que arrays sejam sempre arrays válidos
-                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
-                                  'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
-                
+                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias',
+                    'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias',
+                    'ideas', 'plannings', 'creationTasks', 'templates', 'taskTemplates'
+                ];
+
                 arrayKeys.forEach(key => {
                     if (!Array.isArray(state[key])) {
                         state[key] = [];
                     }
                 });
-                
+
                 return state;
             }
         } catch (error) {
@@ -206,23 +265,75 @@ class Store {
 
         try {
             // Mapeamento de coleções do Firestore para chaves do estado
-            const collections = [
-                { collection: 'tarefas', stateKey: 'tarefas' },
-                { collection: 'tarefasHome', stateKey: 'tarefasHome' },
-                { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
-                { collection: 'historico', stateKey: 'historico' },
-                { collection: 'categorias', stateKey: 'categorias' },
-                { collection: 'areasEstudo', stateKey: 'areasEstudo' },
-                { collection: 'topicosEstudo', stateKey: 'topicosEstudo' },
-                { collection: 'sessoesEstudo', stateKey: 'sessoesEstudo' },
-                { collection: 'tagsEstudo', stateKey: 'tagsEstudo' },
-                { collection: 'avaliacoesDiarias', stateKey: 'avaliacoesDiarias' }
+            const collections = [{
+                    collection: 'tarefas',
+                    stateKey: 'tarefas'
+                },
+                {
+                    collection: 'tarefasHome',
+                    stateKey: 'tarefasHome'
+                },
+                {
+                    collection: 'tarefasRotina',
+                    stateKey: 'tarefasRotina'
+                },
+                {
+                    collection: 'historico',
+                    stateKey: 'historico'
+                },
+                {
+                    collection: 'categorias',
+                    stateKey: 'categorias'
+                },
+                {
+                    collection: 'areasEstudo',
+                    stateKey: 'areasEstudo'
+                },
+                {
+                    collection: 'topicosEstudo',
+                    stateKey: 'topicosEstudo'
+                },
+                {
+                    collection: 'sessoesEstudo',
+                    stateKey: 'sessoesEstudo'
+                },
+                {
+                    collection: 'tagsEstudo',
+                    stateKey: 'tagsEstudo'
+                },
+                {
+                    collection: 'avaliacoesDiarias',
+                    stateKey: 'avaliacoesDiarias'
+                },
+                {
+                    collection: 'ideas',
+                    stateKey: 'ideas'
+                },
+                {
+                    collection: 'plannings',
+                    stateKey: 'plannings'
+                },
+                {
+                    collection: 'creationTasks',
+                    stateKey: 'creationTasks'
+                },
+                {
+                    collection: 'templates',
+                    stateKey: 'templates'
+                },
+                {
+                    collection: 'taskTemplates',
+                    stateKey: 'taskTemplates'
+                }
             ];
 
             const updates = {};
 
             // Carregar cada coleção do Firestore
-            for (const { collection, stateKey } of collections) {
+            for (const {
+                    collection,
+                    stateKey
+                } of collections) {
                 try {
                     const docs = await firebaseService.getCollection(
                         collection,
@@ -230,7 +341,7 @@ class Store {
                         '_lastModified',
                         'desc'
                     );
-                    
+
                     if (docs && docs.length > 0) {
                         updates[stateKey] = docs;
                     }
@@ -255,20 +366,22 @@ class Store {
                     ...this.state,
                     ...updates
                 };
-                
+
                 // Garantir que arrays sejam sempre arrays válidos
-                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
-                                  'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
-                
+                const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias',
+                    'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias',
+                    'ideas', 'plannings', 'creationTasks', 'templates', 'taskTemplates'
+                ];
+
                 arrayKeys.forEach(key => {
                     if (!Array.isArray(this.state[key])) {
                         this.state[key] = [];
                     }
                 });
-                
+
                 // Salvar no cache local também
                 await this._persistState(this.state);
-                
+
                 console.log('✅ Dados carregados do Firestore');
                 this.notify();
             }
@@ -314,23 +427,75 @@ class Store {
 
         try {
             // Mapeamento de chaves do estado para coleções do Firestore
-            const collections = [
-                { stateKey: 'tarefas', collection: 'tarefas' },
-                { stateKey: 'tarefasHome', collection: 'tarefasHome' },
-                { stateKey: 'tarefasRotina', collection: 'tarefasRotina' },
-                { stateKey: 'historico', collection: 'historico' },
-                { stateKey: 'categorias', collection: 'categorias' },
-                { stateKey: 'areasEstudo', collection: 'areasEstudo' },
-                { stateKey: 'topicosEstudo', collection: 'topicosEstudo' },
-                { stateKey: 'sessoesEstudo', collection: 'sessoesEstudo' },
-                { stateKey: 'tagsEstudo', collection: 'tagsEstudo' },
-                { stateKey: 'avaliacoesDiarias', collection: 'avaliacoesDiarias' }
+            const collections = [{
+                    stateKey: 'tarefas',
+                    collection: 'tarefas'
+                },
+                {
+                    stateKey: 'tarefasHome',
+                    collection: 'tarefasHome'
+                },
+                {
+                    stateKey: 'tarefasRotina',
+                    collection: 'tarefasRotina'
+                },
+                {
+                    stateKey: 'historico',
+                    collection: 'historico'
+                },
+                {
+                    stateKey: 'categorias',
+                    collection: 'categorias'
+                },
+                {
+                    stateKey: 'areasEstudo',
+                    collection: 'areasEstudo'
+                },
+                {
+                    stateKey: 'topicosEstudo',
+                    collection: 'topicosEstudo'
+                },
+                {
+                    stateKey: 'sessoesEstudo',
+                    collection: 'sessoesEstudo'
+                },
+                {
+                    stateKey: 'tagsEstudo',
+                    collection: 'tagsEstudo'
+                },
+                {
+                    stateKey: 'avaliacoesDiarias',
+                    collection: 'avaliacoesDiarias'
+                },
+                {
+                    stateKey: 'ideas',
+                    collection: 'ideas'
+                },
+                {
+                    stateKey: 'plannings',
+                    collection: 'plannings'
+                },
+                {
+                    stateKey: 'creationTasks',
+                    collection: 'creationTasks'
+                },
+                {
+                    stateKey: 'templates',
+                    collection: 'templates'
+                },
+                {
+                    stateKey: 'taskTemplates',
+                    collection: 'taskTemplates'
+                }
             ];
 
             const operations = [];
 
             // Preparar operações para cada coleção
-            for (const { stateKey, collection } of collections) {
+            for (const {
+                    stateKey,
+                    collection
+                } of collections) {
                 const items = state[stateKey];
                 if (!Array.isArray(items)) continue;
 
@@ -338,7 +503,7 @@ class Store {
                 items.forEach(item => {
                     if (item && item.id) {
                         operations.push({
-                            type: 'UPDATE', // UPDATE faz merge, CREATE não
+                            type: 'SET', // SET com merge cria se não existe
                             collection: collection,
                             docId: item.id,
                             data: item
@@ -395,21 +560,57 @@ class Store {
             this.destroy();
 
             // Coleções principais para listeners real-time
-            const collections = [
-                { collection: 'tarefas', stateKey: 'tarefas' },
-                { collection: 'tarefasHome', stateKey: 'tarefasHome' },
-                { collection: 'tarefasRotina', stateKey: 'tarefasRotina' },
-                { collection: 'historico', stateKey: 'historico' },
-                { collection: 'categorias', stateKey: 'categorias' },
-                { collection: 'areasEstudo', stateKey: 'areasEstudo' },
-                { collection: 'topicosEstudo', stateKey: 'topicosEstudo' },
-                { collection: 'sessoesEstudo', stateKey: 'sessoesEstudo' },
-                { collection: 'tagsEstudo', stateKey: 'tagsEstudo' },
-                { collection: 'avaliacoesDiarias', stateKey: 'avaliacoesDiarias' }
+            // NOTA: Collections do módulo de criação não têm listeners real-time
+            // para evitar race conditions entre exclusão local e sync remoto
+            const collections = [{
+                    collection: 'tarefas',
+                    stateKey: 'tarefas'
+                },
+                {
+                    collection: 'tarefasHome',
+                    stateKey: 'tarefasHome'
+                },
+                {
+                    collection: 'tarefasRotina',
+                    stateKey: 'tarefasRotina'
+                },
+                {
+                    collection: 'historico',
+                    stateKey: 'historico'
+                },
+                {
+                    collection: 'categorias',
+                    stateKey: 'categorias'
+                },
+                {
+                    collection: 'areasEstudo',
+                    stateKey: 'areasEstudo'
+                },
+                {
+                    collection: 'topicosEstudo',
+                    stateKey: 'topicosEstudo'
+                },
+                {
+                    collection: 'sessoesEstudo',
+                    stateKey: 'sessoesEstudo'
+                },
+                {
+                    collection: 'tagsEstudo',
+                    stateKey: 'tagsEstudo'
+                },
+                {
+                    collection: 'avaliacoesDiarias',
+                    stateKey: 'avaliacoesDiarias'
+                }
+                // ideas, plannings, creationTasks, templates, taskTemplates:
+                // → Sem listeners real-time (sincronização manual apenas)
             ];
 
             // Configurar listener para cada coleção
-            collections.forEach(({ collection, stateKey }) => {
+            collections.forEach(({
+                collection,
+                stateKey
+            }) => {
                 const unsubscribe = firebaseService.subscribeToCollection(
                     collection,
                     (docs) => {
@@ -653,18 +854,21 @@ class Store {
      * Garante que arrays sejam sempre arrays válidos
      */
     getState() {
-        const state = { ...this.state };
-        
+        const state = {
+            ...this.state
+        };
+
         // Garantir que arrays sejam sempre arrays válidos
-        const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias', 
-                          'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'];
-        
+        const arrayKeys = ['tarefas', 'tarefasHome', 'tarefasRotina', 'historico', 'categorias',
+            'areasEstudo', 'topicosEstudo', 'sessoesEstudo', 'tagsEstudo', 'avaliacoesDiarias'
+        ];
+
         arrayKeys.forEach(key => {
             if (!Array.isArray(state[key])) {
                 state[key] = [];
             }
         });
-        
+
         return state;
     }
 
@@ -804,6 +1008,216 @@ class Store {
         for (const op of ops) {
             await firebaseSync.addToQueue(op);
         }
+    }
+
+    // ===========================================
+    // MÉTODOS DO MÓDULO DE CRIAÇÃO
+    // ===========================================
+
+    /**
+     * IDEAS
+     */
+    addIdea(idea) {
+        const newIdea = {
+            ...idea,
+            id: idea.id || `idea-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: idea.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        };
+        this.addItem('ideas', newIdea);
+        return newIdea;
+    }
+
+    updateIdea(id, updates) {
+        this.updateItem('ideas', (item) => item.id === id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    deleteIdea(id) {
+        this.removeItem('ideas', (item) => item.id === id);
+    }
+
+    moveIdeaStage(id, direction) {
+        // Import IdeaStage values dynamically or hardcode them
+        const stages = ['Inbox', 'Analisando', 'Validada', 'Executando', 'Congelada', 'Descartada'];
+        const ideas = Array.isArray(this.state.ideas) ? this.state.ideas : [];
+        const idea = ideas.find(i => i.id === id);
+        if (!idea) return;
+
+        const currentIndex = stages.indexOf(idea.stage);
+        if (currentIndex === -1) return; // Invalid stage
+
+        let nextIndex = currentIndex;
+
+        if (direction === 'next') {
+            nextIndex = Math.min(currentIndex + 1, stages.length - 1);
+        } else if (direction === 'prev') {
+            nextIndex = Math.max(currentIndex - 1, 0);
+        }
+
+        if (nextIndex !== currentIndex) {
+            this.updateIdea(id, {
+                stage: stages[nextIndex]
+            });
+        }
+    }
+
+    /**
+     * PLANNINGS
+     */
+    addPlanning(planning) {
+        const newPlanning = {
+            ...planning,
+            id: planning.id || `planning-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: planning.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        };
+        this.addItem('plannings', newPlanning);
+        return newPlanning;
+    }
+
+    updatePlanning(id, updates) {
+        this.updateItem('plannings', (item) => item.id === id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    deletePlanning(id) {
+        this.removeItem('plannings', (item) => item.id === id);
+    }
+
+    movePlanningStep(id, direction) {
+        const plannings = Array.isArray(this.state.plannings) ? this.state.plannings : [];
+        const planning = plannings.find(p => p.id === id);
+        if (!planning || !planning.steps || !Array.isArray(planning.steps)) return;
+
+        const totalSteps = planning.steps.length;
+        let newStep = planning.currentStep || 1;
+        let newStatus = planning.status;
+
+        if (direction === 'next') {
+            if (newStep < totalSteps) {
+                newStep++;
+            } else {
+                newStatus = 'Concluído';
+            }
+        } else if (direction === 'prev') {
+            if (newStep > 1) {
+                newStep--;
+                if (newStatus === 'Concluído') {
+                    newStatus = 'Ativo';
+                }
+            }
+        }
+
+        this.updatePlanning(id, {
+            currentStep: newStep,
+            status: newStatus
+        });
+    }
+
+    changePlanningStatus(id, newStatus) {
+        this.updatePlanning(id, {
+            status: newStatus
+        });
+    }
+
+    /**
+     * CREATION TASKS
+     */
+    addCreationTask(task) {
+        const newTask = {
+            ...task,
+            id: task.id || `ctask-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: task.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        };
+        this.addItem('creationTasks', newTask);
+        return newTask;
+    }
+
+    batchAddCreationTasks(tasks) {
+        const newTasks = tasks.map(task => ({
+            ...task,
+            id: task.id || `ctask-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: task.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        }));
+
+        this.setState({
+            creationTasks: [...this.state.creationTasks, ...newTasks]
+        });
+        return newTasks;
+    }
+
+    updateCreationTask(id, updates) {
+        this.updateItem('creationTasks', (item) => item.id === id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    deleteCreationTask(id) {
+        this.removeItem('creationTasks', (item) => item.id === id);
+    }
+
+    /**
+     * TEMPLATES
+     */
+    addTemplate(template) {
+        const newTemplate = {
+            ...template,
+            id: template.id || `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: template.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        };
+        this.addItem('templates', newTemplate);
+        return newTemplate;
+    }
+
+    updateTemplate(id, updates) {
+        this.updateItem('templates', (item) => item.id === id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    deleteTemplate(id) {
+        this.removeItem('templates', (item) => item.id === id);
+    }
+
+    /**
+     * TASK TEMPLATES
+     */
+    addTaskTemplate(template) {
+        const newTemplate = {
+            ...template,
+            id: template.id || `tasktemplate-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            createdAt: template.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            userId: this.userId
+        };
+        this.addItem('taskTemplates', newTemplate);
+        return newTemplate;
+    }
+
+    updateTaskTemplate(id, updates) {
+        this.updateItem('taskTemplates', (item) => item.id === id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    deleteTaskTemplate(id) {
+        this.removeItem('taskTemplates', (item) => item.id === id);
     }
 
     /**

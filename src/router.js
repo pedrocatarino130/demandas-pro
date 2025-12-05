@@ -103,11 +103,13 @@ class Router {
         path = this.normalizePath(path);
         path = path === '' ? '/' : path;
 
+        console.log('🔄 Router: Carregando rota:', path);
+
         // Encontrar rota correspondente
         const route = this.findRoute(path);
 
         if (!route) {
-            console.warn(`Rota não encontrada: ${path}`);
+            console.warn(`⚠️ Rota não encontrada: ${path}`);
             // Se o path normalizado for vazio ou apenas '/', tentar a rota raiz
             if (path === '/' || path === '') {
                 path = '/';
@@ -115,7 +117,7 @@ class Router {
                 if (rootRoute) {
                     route = rootRoute;
                 } else {
-                    console.error('Rota raiz não encontrada');
+                    console.error('❌ Rota raiz não encontrada');
                     return;
                 }
             } else {
@@ -128,11 +130,14 @@ class Router {
 
         try {
             // Lazy load do componente
+            console.log('📦 Router: Carregando módulo para', path);
             let componentModule;
             try {
                 componentModule = await route.component();
+                console.log('✅ Router: Módulo carregado com sucesso para', path);
             } catch (importError) {
-                console.error(`Erro ao importar módulo da rota ${path}:`, importError);
+                console.error(`❌ Erro ao importar módulo da rota ${path}:`, importError);
+                console.error('Stack trace:', importError.stack);
                 // Tentar recarregar a página se for erro de módulo não encontrado
                 if (importError.message && importError.message.includes('Failed to fetch')) {
                     console.warn('Tentando recarregar devido a erro de fetch...');
@@ -153,6 +158,7 @@ class Router {
             }
             
             const component = componentModule.default || componentModule;
+            console.log('🎯 Router: Componente extraído:', component?.constructor?.name || typeof component);
 
             if (!component) {
                 throw new Error(`Componente não encontrado na rota ${path}`);
@@ -168,35 +174,51 @@ class Router {
             }
 
             // Renderizar nova view
+            console.log('🎨 Router: Renderizando view...');
             let viewInstance = null;
             if (typeof component === 'function') {
+                console.log('🔧 Router: Componente é uma função, executando...');
                 const result = component();
+                console.log('📋 Router: Resultado da execução:', result?.constructor?.name || typeof result);
                 if (result && typeof result.render === 'function') {
-                    this.render(result.render());
+                    console.log('✏️ Router: Chamando render()...');
+                    const html = result.render();
+                    console.log('📄 Router: HTML renderizado (primeiros 100 chars):', html?.substring?.(0, 100));
+                    this.render(html);
                     if (result.mount) {
                         try {
+                            console.log('⚡ Router: Chamando mount()...');
                             viewInstance = result.mount();
+                            console.log('✅ Router: View montada com sucesso');
                         } catch (mountError) {
-                            console.error(`Erro ao montar view ${path}:`, mountError);
+                            console.error(`❌ Erro ao montar view ${path}:`, mountError);
+                            console.error('Stack trace:', mountError.stack);
                         }
                     }
                 } else {
+                    console.log('📝 Router: Renderizando resultado direto');
                     this.render(result);
                 }
             } else if (component && typeof component.render === 'function') {
+                console.log('🎭 Router: Componente tem método render, chamando...');
                 this.render(component.render());
                 if (component.mount) {
                     try {
+                        console.log('⚡ Router: Chamando mount()...');
                         viewInstance = component.mount();
+                        console.log('✅ Router: View montada com sucesso');
                     } catch (mountError) {
-                        console.error(`Erro ao montar view ${path}:`, mountError);
+                        console.error(`❌ Erro ao montar view ${path}:`, mountError);
+                        console.error('Stack trace:', mountError.stack);
                     }
                 }
             } else {
+                console.log('🌐 Router: Renderizando componente direto (HTML?)');
                 this.render(component);
             }
 
             this.currentView = viewInstance || component;
+            console.log('✅ Router: Rota carregada com sucesso:', path);
 
             // Atualizar estado ativo nos links
             this.updateActiveLinks(path);
@@ -320,6 +342,9 @@ export const routes = {
     '/estudos': () => import('./views/Estudos.js').then((m) => m.default),
     '/rotina': () => import('./views/Rotina.js').then((m) => m.default),
     '/terapeutico': () => import('./views/Terapeutico.js').then((m) => m.default),
+    '/criacao': () => import('./views/Criacao.js').then((m) => m.default),
+    '/criacao/ideias': () => import('./views/CriacaoIdeias.js').then((m) => m.default),
+    '/criacao/planejamento': () => import('./views/CriacaoPlanejamento.js').then((m) => m.default),
 };
 
 // Exportar instância do router

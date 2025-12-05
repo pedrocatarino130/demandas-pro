@@ -113,6 +113,20 @@
     pointer-events: none;
 }
 
+/* Dashed button variant */
+.neon-button.btn-dashed,
+.neon-button-secondary.btn-dashed {
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #9ca3af;
+}
+
+.neon-button.btn-dashed:hover,
+.neon-button-secondary.btn-dashed:hover {
+    color: white;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
 /* Responsive buttons */
 @media (max-width: 767px) {
     .btn {
